@@ -12,15 +12,16 @@ made of n consecutive shells
 import numpy as np
 import matplotlib.pyplot as plt 
 
-from shell import Shell
-
-def step(g1=400, g2=100, numshells=5000, mfrac=0.5):
+def step(g1=100, g2=400, numshells=5000, mfrac=0.5):
 	"""
 	Distribute the Lorentz factors of the shells into a step function. 
 	The left (right) side of the step will have a step function of g1 (g2), the step between the two occurs 
 	at a mass fraction equal to mfrac.
 
 	The mass fraction is defined as the sum of the shell masses up to step divided by the total mass.
+	So, the fraction of mass for the region with g1. 
+
+	The first layer is the farthest along in the jet.
 	"""
 
 	# number of shells with Lorentz factor g1: 
@@ -29,15 +30,16 @@ def step(g1=400, g2=100, numshells=5000, mfrac=0.5):
 	n2 = int(numshells - n1)
 
 	# Make array of shells
-	shell_arr = np.ndarray(shape=numshells,dtype=object)
+	shell_arr = np.ndarray(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float)])
+
+	# Start all shell radii at the initial radii
+	shell_arr['RADIUS'] = 10e10
 
 	# Set the Lorentz factors and masses for each section of the step distribution
-	# I vectorize the Shell initialization method, this is used instead of looping over the shell array and creating a new Shell instance 
-	# for each element. 
-	vShell = np.vectorize(Shell)
-	shell_arr[0:n1] = vShell(gamma=np.ones(shape=n1)*g1,mass=mfrac/n1)
-	shell_arr[n1::] = vShell(gamma=np.ones(shape=n2)*g2,mass=(1-mfrac)/n2)
-
+	shell_arr[0:n1]['GAMMA'] = np.ones(shape=n1)*g1
+	shell_arr[0:n1]['MASS'] = np.ones(shape=n1)*mfrac/n1
+	shell_arr[n1::]['GAMMA'] = np.ones(shape=n2)*g2
+	shell_arr[n1::]['MASS'] = np.ones(shape=n2)*(1-mfrac)/n2
 	
 	return shell_arr
 
@@ -46,17 +48,17 @@ def plot_lorentz_dist(lorentz_arr,title=None):
 	Method to plot the given Lorentz factor distribution
 	"""
 
-	lorlist = np.zeros(shape=len(lorentz_arr))
-	masslist = np.zeros(shape=len(lorentz_arr))
-	for i in range(len(lorentz_arr)):
-		lorlist[i] = lorentz_arr[i].gamma
-		masslist[i] = lorentz_arr[i].mass
+	# To match paper graphics
+	flipped_mass_arr = np.flip(lorentz_arr['MASS'])
+	flipped_gamma_arr = np.flip(lorentz_arr['GAMMA'])
 
-	masscum = np.cumsum(masslist)
+	masscum = np.cumsum(flipped_mass_arr)
 	massfraccum = masscum/masscum[-1]
 
-	plt.plot(massfraccum,lorlist)
+	plt.plot(massfraccum,flipped_gamma_arr)
 	if title is not None:
 		plt.title(title)
+	plt.xlabel(r'M/M$_{tot}$')
+	plt.ylabel(r'$\Gamma$')
 
 
