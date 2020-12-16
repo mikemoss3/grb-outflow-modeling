@@ -1,0 +1,6 @@
+# Files and Directories to ignore
+
+# Ignore the many simulations made in these directories
+sim_results/*
+
+# Ignore the contents, but still upload the folders (ex. !Directory/subdirectory/.gitkeep )

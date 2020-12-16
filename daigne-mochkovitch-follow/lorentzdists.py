@@ -43,6 +43,14 @@ def step(g1=100, g2=400, numshells=5000, mfrac=0.5):
 	
 	return shell_arr
 
+def load_lorentz_dist(input_filename):
+	"""
+	Method to upload a Lorentz distribution from a file
+	"""
+
+	ld = np.genfromtxt(input_filename,dtype=([('RADIUS',float),('GAMMA',float),('MASS',float)]) )
+	return ld
+
 def plot_lorentz_dist(lorentz_arr,title=None):
 	"""
 	Method to plot the given Lorentz factor distribution
