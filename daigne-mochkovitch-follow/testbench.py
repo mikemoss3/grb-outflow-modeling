@@ -10,6 +10,7 @@ import timeit
 
 
 
+<<<<<<< HEAD
 # jet_inst = pj.PromptJet(numshells=5000,dte=0.002)
 # jet_inst.jet_evolution()
 
@@ -37,6 +38,24 @@ spec = np.genfromtxt('sim_results/ordlor_spectrum.txt',dtype=[('te',float),('ta'
 
 
 # Plot spectrum
+=======
+# Initialize a prompt jet instance
+jet_inst = pj.PromptJet(numshells=5000,dt=1)
+# Simulate jet dynamics
+# jet_inst.jet_evolution()
+
+
+
+# Load Lorentz distribution and Spectrum from files
+ld_fn = 'sim_results/jet_shells_t1e5.txt'
+spec_fn = 'sim_results/spectrum_t1e5.txt'
+# Make data structure
+lor_dist = ld.load_lorentz_dist(ld_fn)
+jet_inst.spectrum.load_spectrum(spec_fn)
+# Plot data
+plt.figure()
+ld.plot_lorentz_dist(lor_dist)
+>>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 plt.figure()
 sp.plot_spectrum(spectrum=spec)
 

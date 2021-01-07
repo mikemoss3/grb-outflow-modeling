@@ -37,6 +37,7 @@ class PromptJet(object):
 		"""
 		# Number of shells
 		self.numshells = numshells
+<<<<<<< HEAD
 		
 		# Check if a single time step was given or a list of launch times
 		# If a list of launch times was given was given
@@ -54,6 +55,12 @@ class PromptJet(object):
 			
 			# Total duration of central engine activity (total time to produce numshells), in seconds 
 			self.tw = self.dte*(self.numshells+1)
+=======
+		# Time in between successive shell emissions from the central engine.
+		self.dt = dt
+		# Total duration of central engine activity (total time to produce numshells), in seconds 
+		self.tw = self.dt*(self.numshells)
+>>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
 
 		# Make the list of shells with a Lorentz distributions (this is the distribution at t = tw)
@@ -73,6 +80,7 @@ class PromptJet(object):
 
 		"""
 
+<<<<<<< HEAD
 		if jet_shells is None:
 			jet_shells = self.jet_shells
 
@@ -84,6 +92,21 @@ class PromptJet(object):
 
 		# Keep track of global time
 		true_t = tb
+=======
+		# Define time step, in seconds
+		dts = self.dt/4. # use some dts < dt 
+
+		# Initialize start time to 0 sec
+		t = 0
+		# Initialize a tracker of which shell in the Lorentz distribution is to be launched
+		i = 0 
+
+		# Initialize the jet with a first shell
+		jet_shells = np.ndarray(shape=1,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float)])
+
+		# Initialize array of times for jet to be launched
+		t_launch_arr = np.arange(start=0, stop=self.tw+self.dt, step=self.dt)
+>>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
 		# Initialize test flags:
 		t3e4_flag=False
@@ -92,6 +115,7 @@ class PromptJet(object):
 
 		# Flag to mark if all the shells in the jet are ordered (no more collisions occur at this point )
 		ord_lorentz = False
+<<<<<<< HEAD
 		while ord_lorentz == False:
 	
 			# Move through each shell starting at the second farthest out (2nd most downstream) shell and moving upstream
@@ -213,6 +237,50 @@ class PromptJet(object):
 
 					### Calculate Contribution to Spectrum ### 
 					gamma_int = 0.5*(np.sqrt(jet_shells['GAMMA'][ind_shell_1]/jet_shells['GAMMA'][ind_shell_2])+np.sqrt(jet_shells['GAMMA'][ind_shell_2]/jet_shells['GAMMA'][ind_shell_1])) # Lorentz factor for internal motion in shocked material
+=======
+		while ord_lorentz is False:
+			# Increase time step
+			t += dts
+			
+			# To add another layer, first check if the number of shells currently launched is lower than the total number of shells 
+			if (i < self.numshells):
+				# Then check if its time to launch another shell
+				if t > t_launch_arr[i]:
+					r = self.shell_lorentz_arr[i]['RADIUS'] 
+					g = self.shell_lorentz_arr[i]['GAMMA'] 
+					m = self.shell_lorentz_arr[i]['MASS']
+					if i == 0:
+						jet_shells['RADIUS'] = r
+						jet_shells['GAMMA'] = g
+						jet_shells['MASS'] = m
+					else:
+						jet_shells = np.append(jet_shells,np.array((r,g,m),dtype=[('RADIUS',float),('GAMMA',float),('MASS',float)]))
+					i+=1
+			else:
+				# If all the shells have been launched, check if the Lorentz factors of the shells are ordered 
+				# If so, there can be no more collisions.
+				if all((1 - (jet_shells['GAMMA'][k]/jet_shells['GAMMA'][k+1])) < 1e-4 for k in range(len(jet_shells['GAMMA'])-1)):
+					ord_lorentz = True
+					print('Ordered Lorentz factors in the jet.')
+
+			# Move shells forward
+			jet_shells['RADIUS'] = jet_shells['RADIUS']+ (vel(jet_shells['GAMMA'])*dts)
+
+
+			# Make an array to keep track of which shells will be deleted
+			del_shells = []
+			# For each shell, check for collisions with the shell in front of it
+			for j in range(len(jet_shells)-1):
+				# Check if the shells current position is now <= to the shell launched after it
+				if jet_shells['RADIUS'][j] < jet_shells['RADIUS'][j+1]:
+					# Calculate the combined Lorentz factor of the two shells
+					gamma_comb = shell_coll_gamma(s1g=jet_shells[j]['GAMMA'],s2g=jet_shells[j+1]['GAMMA'],s1m=jet_shells[j]['MASS'],s2m=jet_shells[j+1]['MASS'])
+					
+
+					### Calculate spectral addition ### 
+					
+					gamma_int = 0.5*(np.sqrt(jet_shells['GAMMA'][j]/jet_shells['GAMMA'][j+1])+np.sqrt(jet_shells['GAMMA'][j+1]/jet_shells['GAMMA'][j])) # Lorentz factor for internal motion in shocked material
+>>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 					eps = (gamma_int-1)*cc.mp*cc.c**2 # # Average proton factor from the collision of two shells
 
 					# Calculate the characteristic electron Lorentz factor for different assumption: 
@@ -268,10 +336,28 @@ class PromptJet(object):
 					# If the emission time is less than the shell expansion (i.e., the dynamical scale of the shell)
 					t_syn = 6*np.power(gamma_e/100,-1)*np.power(B/1000,-2) # sec, synchrotron time-scale
 					if t_syn < (gamma_comb*t_var*(1+Q_IC)):
+<<<<<<< HEAD
 						ta = true_t - (gamma_comb/cc.c)
 						self.spectrum.add_contribution(te=true_t,ta=ta,asyn=alpha_syn,Beq=B,gammae=gamma_e,Esyn=E_syn)
 
 
+=======
+						ta = t - (gamma_comb/cc.c)
+						self.spectrum.add_contribution(te=t,ta=ta,asyn=alpha_syn,Beq=B,gammae=gamma_e,Esyn=E_syn)
+					
+
+					### Calculate shell dynamics ### 
+
+					#### Method 1: Keep all shells method 
+					"""
+					# Calculate the radius of the two shells
+					jet_shells['RADIUS'][j+1] = jet_shells['RADIUS'][j+1] - (vel(jet_shells['GAMMA'][j+1])*dts) + (vel(gamma_comb)*dts)
+					jet_shells['RADIUS'][j] = jet_shells['RADIUS'][j+1]
+					# Set the Lorentz factor
+					jet_shells[j]['GAMMA']=gamma_comb
+					jet_shells[j+1]['GAMMA']=gamma_comb
+					"""
+>>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
 				# Testing
 				if true_t > 3e4 and t3e4_flag==False:
@@ -284,10 +370,25 @@ class PromptJet(object):
 					np.savetxt('./sim_results/t5e5_shells.txt',jet_shells)
 					t5e5_flag=True 
 
+<<<<<<< HEAD
 				
 				
+=======
+					#### Method 2: Delete shell that was swallowed up
+					
+					# Combine both shells into shell j+1
+					# Calculate the correct shell radius based on the new combined Lorentz factor
+					jet_shells[j+1]['RADIUS'] = jet_shells['RADIUS'][j+1] - (vel(jet_shells['GAMMA'][j+1])*dts) + (vel(gamma_comb)*dts)
+					# Set the Lorentz factor
+					jet_shells[j+1]['GAMMA']=gamma_comb
+					# Set the mass to the combined mass
+					jet_shells[j+1]['MASS']=jet_shells[j]['MASS']+jet_shells[j+1]['MASS']
+>>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
+					# Add shell j to the list of shells to be deleted
+					del_shells.append(j)
 
+<<<<<<< HEAD
 				# Check if all the shells have been launched
 				# and 
 				# Check if all the active shells have an ordered Lorentz factors are ordered
@@ -313,6 +414,47 @@ def calc_t_coll(shell_1,shell_2):
 	# Lorentz factors of shell 1 and shell 2
 	g1 = shell_1['GAMMA']
 	g2 = shell_2['GAMMA']
+=======
+			# Delete the shells that had collided this step
+			jet_shells = np.delete(jet_shells,del_shells)
+			
+			### End: Delete shells method 
+			
+			# Testing Purposes:
+			flag3e4=False
+			if t > 3.4e4 and flag3e4==False:
+				# ord_lorentz = True
+				# plt.figure()
+				# ld.plot_lorentz_dist(jet_shells,title='Time = {} sec'.format(t))
+				np.savetxt('sim_results/jet_shells_t3e4.txt',jet_shells)
+				np.savetxt('sim_results/spectrum_t3e4.txt',self.spectrum.spectrum)
+				flag3e4=True
+
+			flag1e5=False
+			if t > 1.7e5 and flag1e5==False:
+				# ord_lorentz = True
+				# plt.figure()
+				# ld.plot_lorentz_dist(jet_shells,title='Time = {} sec'.format(t))
+				np.savetxt('sim_results/jet_shells_t1e5.txt',jet_shells)
+				np.savetxt('sim_results/spectrum_t1e5.txt',self.spectrum.spectrum)
+				flag1e5=True
+
+			flag5e4=False
+			if t > 5.4e5 and flag5e4==False:
+				# ord_lorentz = True
+				# plt.figure()
+				# ld.plot_lorentz_dist(jet_shells,title='Time = {} sec'.format(t))
+				np.savetxt('sim_results/jet_shells_t5e5.txt',jet_shells)
+				np.savetxt('sim_results/spectrum_t5e5.txt',self.spectrum.spectrum)
+				flag5e4=True
+
+		# After shells are ordered by Lorentz factor
+		# plt.figure()
+		# ld.plot_lorentz_dist(jet_shells,title='Time = {} sec'.format(t))
+		np.savetxt('sim_results/jet_shells_fin.txt',jet_shells)
+		np.savetxt('sim_results/spectrum_fin.txt',self.spectrum.spectrum)
+
+>>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
 	# Calculate the collision time 
 	t_coll = (2*g1**2)*(r20-r10)/(cc.c*((g1/g2)**2 - 1))

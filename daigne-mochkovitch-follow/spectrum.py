@@ -35,6 +35,13 @@ class Spectrum(object):
 		else:
 			self.spectrum = np.append(self.spectrum, np.array((te,ta,asyn,Beq,gammae,Esyn),dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float)])) 
 
+	def load_spectrum(self,input_filename):
+		"""
+		Method to load a spectrum from a text file
+		"""
+
+		self.spectrum = np.genfromtxt(input_filename,dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float)])
+		return self.spectrum
 
 def plot_spectrum(spectrum, num_bins=1000):
 	"""

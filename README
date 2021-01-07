@@ -1,0 +1,9 @@
+Author: Mike Moss
+Contact: mikejmoss3@gmail.com
+
+
+This purpose of this project is to investigate GRB prompt emission by simulating internal jet dynamics and calculating the emitted spectrum using theoretical descriptions of the acceleration mechanisms and emission processes occurring within the jet.
+
+
+Directory Descriptions:
+daigne-mochkovitch-follow/ -- follows the work of Daigne and Mochkovitch 1998 which creates time-integrated GRB prompt emission spectra assuming synchrotron emission from collisions of shells with different Lorentz factors and masses within the jet (i.e., 'internal shocks').
