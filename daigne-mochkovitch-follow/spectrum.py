@@ -36,16 +36,20 @@ class Spectrum(object):
 			self.spectrum = np.append(self.spectrum, np.array((te,ta,asyn,Beq,gammae,Esyn),dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float)])) 
 
 
-	def plot_spectrum(self,num_bins=1000):
-		"""
-		Method to plot the stored spectrum
-		"""
+def plot_spectrum(spectrum, num_bins=1000):
+	"""
+	Method to plot the stored spectrum
+	"""
 
-		# Make spectrum bins
-		emin = np.min(self.spectrum['Esyn'])
-		emax = np.max(self.spectrum['Esyn'])
-		enlogbins = np.logspace(np.log10(emin),np.log10(emax),num_bins)
+	# Make spectrum bins
+	emin = np.min(spectrum['Esyn'])
+	emax = np.max(spectrum['Esyn'])
+	enlogbins = np.logspace(np.log10(emin),np.log10(emax),num_bins)
 
-		plt.hist(self.spectrum['Esyn'],bins=enlogbins)
-		plt.xscale('log')
+	(counts, bins) = np.histogram(spectrum['Esyn'],bins=enlogbins)
 
+	plt.hist(bins[:-1],bins,weights=bins[:-1]**2 *counts)
+	plt.xscale('log')
+	plt.yscale('log')
+	plt.xlabel('E (keV)')
+	plt.ylabel(r'E^2 N(E)')

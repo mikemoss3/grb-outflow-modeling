@@ -30,11 +30,12 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
 	n2 = int(numshells - n1)
 
 	# Make array of shells
-	# This array stores the radius, lorentz factor, mass, and emission time of each shell. The last column is used to record whether the shell is active or not.
-	shell_arr = np.ndarray(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float),('TE',float),('ACTIVE',float)])
+	# This array stores the radius, lorentz factor, mass, and emission time of each shell. The last column is used to record what the status of the shell is.
+	# Status indicator: 0 = deactived, 1 = active and launched, 2 = not launched
+	shell_arr = np.ndarray(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float),('TE',float),('STATUS',float)])
 
 	# Start all shell radii at the initial (photospheric) radii
-	shell_arr['RADIUS'] = np.ones(shape=numshells)*1e10
+	shell_arr['RADIUS'] = np.ones(shape=numshells)*1e13
 
 	# Set the Lorentz factors and masses for each section of the step distribution
 	shell_arr[0:n1]['GAMMA'] = np.ones(shape=n1)*g1
@@ -57,15 +58,20 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
 
 
 	# Deactivate all shells except the initial one
-	shell_arr['ACTIVE'] = np.zeros(shape=numshells,dtype=bool)
-	shell_arr['ACTIVE'][0] = True
+	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)*2
+	shell_arr['STATUS'][0] = 1 # the 1 
 
 
 	return shell_arr
 
-def plot_lorentz_dist(shell_arr,title=None):
+def plot_lorentz_dist(ax, shell_arr,label=None):
 	"""
 	Method to plot the given Lorentz factor distribution
+
+	Attributes:
+	ax = the matplotlib.pyplot.axes instance to make the plot on
+	shell_arr = the array contained the shell distribution to be plotted
+	label = optional label for the plot
 	"""
 
 	# To match paper graphics
@@ -75,10 +81,11 @@ def plot_lorentz_dist(shell_arr,title=None):
 	masscum = np.cumsum(flipped_mass_arr)
 	massfraccum = masscum/masscum[-1]
 
-	plt.plot(massfraccum,flipped_gamma_arr)
-	if title is not None:
-		plt.title(title)
-	plt.xlabel(r'M/M$_{tot}$')
-	plt.ylabel(r'$\Gamma$')
+	line, = ax.step(massfraccum,flipped_gamma_arr,where='pre')
+
+	if label is not None:
+		line.set_label(label)
+	ax.set_xlabel(r'M/M$_{tot}$')
+	ax.set_ylabel(r'$\Gamma$')
 
 
