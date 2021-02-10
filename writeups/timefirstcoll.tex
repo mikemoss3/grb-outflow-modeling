@@ -1,0 +1,118 @@
+\documentclass[10pt]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{ulem}
+\usepackage{setspace}	
+
+
+% Formatting
+\usepackage[margin=1in]{geometry}
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0em}
+
+
+% Make upright subscripts in Mathmode.
+\def\subinrm#1{\sb{\mathrm{#1}}}
+{\catcode`\_=13 \global\let_=\subinrm}
+\mathcode`_="8000
+\def\upsubscripts{\catcode`\_=12 } \def\normalsubscripts{\catcode`\_=8 }
+ 	 	
+% Title
+\title{Derivations for Time and Radius of First Collision}
+
+\begin{document}
+
+\upsubscripts
+
+\section*{Radius and Time of First Collision}
+
+For this example, let us look at only two shells. The second shells is faster than the the first ($\beta_2 > \beta_1$), but was launched with a delay of $\Delta t_e$. We can describe the position of the first and second shells as,
+
+\begin{align}
+	R_1(t) &= L + c \beta_1 t \\
+	R_2(t) &= c \beta_2 t
+\end{align}
+
+where L is the distance between the two shells when shell 2 launches,
+
+\begin{align}
+	L &= c\beta_1*\Delta t_e\\
+	&\rightarrow R_1(t) = c \beta_1 (t + \Delta t_e)
+\end{align}
+
+Alternatively, this can be written as,
+
+\begin{align}
+	R_1(t) &= c \beta_1 t \\
+	R_2(t) &= c \beta_2 (t-\Delta t_e)
+\end{align}
+
+When the two shells collide, their position will be the same and we can solve for the time of collision,
+
+\begin{align}
+	R_1(t_{coll}) &= R_2(t_{coll})\\
+	L + c\beta_1 t_{coll} &= c \beta_2 t_{coll}\\
+	\rightarrow t_{coll} &= \frac{L}{c(\beta_2 - \beta_1)}\\
+	t_{coll} &= \frac{c\beta_1*\Delta t_e}{c(\beta_2 - \beta_1)}\\
+	t_{coll} &= \frac{\beta_1*\Delta t_e}{(\beta_2 - \beta_1)}
+\end{align}
+
+Plugging this back into either the expression for $R_1(t)$ or $R_2(t)$ we can find the position of the collision,
+
+\begin{align}
+	R_1(t_{coll}) &= L+c\beta_1*t_{coll}\\
+	&= L+c\beta_1*(\frac{L}{c(\beta_2 - \beta_1)})\\
+	&= L(1+ \frac{\beta_1}{(\beta_2 - \beta_1)})\\
+	&= L(\frac{\beta_2 - \beta_1 + \beta_1}{(\beta_2 - \beta_1)})\\
+	&= L(\frac{\beta_2}{(\beta_2 - \beta_1)})
+\end{align}
+
+
+\subsection*{Typical Values}
+
+Let us assume that shell 1 and shell 2 have Lorentz factors of $\Gamma_1=100$ and $\Gamma_2=400$, respectively, and that $\Delta t_e = 0.002$ seconds, the time and radius of collision evaluate to
+
+\begin{align}
+	L &= c\beta_1\Delta t_e \approx 5.9*10^7 \text{ cm}\\
+	t_{coll} &= \frac{\beta_1 * \Delta t_e}{\beta_2 - \beta_1} \approx 42.6 \text{ seconds}\\
+	R_{coll} &= L(\frac{\beta_2}{(\beta_2 - \beta_1)}) \approx 1.2*10^{12} \text{ cm}
+\end{align}
+
+This is an expected order of magnitude for the collision radius for GRB prompt emission.
+
+\section*{Can shells be ``pre-launched''?}
+
+In this work, we launch a number of shells from the central engine. There are two ways to implement this. The first method will launch a new shell once the time until the next collision is calculated and it is found to be larger than the time until a new shell is launched, i.e., $t_{coll} > \Delta t_e$. This results in a number of checks equal to the number of shells (minus 1, because the first shell is already launched). The second method assume that very first collision will occur after all shells have been launched, i.e., $t_{coll,1} > t_{e,tot}$, where $t_{e,tot} = \Delta t_e * N$, ($N$ being the number of shells to be launched). 
+
+The first method is valid, but may be a bit slower. Let us check what conditions must be met for the second method to be true. In the following derivation, shell 1 is the very first shell to be launched and shell 2 is next the shell launched.
+
+\begin{align}
+	t_{e,tot} &< t_{coll,1} \\
+	N*\Delta t_e &< \frac{\beta_1 * \Delta t_e}{\beta_2 - \beta_1}\\
+	N &< \frac{\beta_1}{\beta_2 - \beta_1} \\ 
+	N(\beta_2 - \beta_1) &< \beta_1 \\
+	N\beta_2 &< (N+1)\beta_1 \\
+	\rightarrow \frac{\beta_2}{\beta_1} &< \frac{N+1}{N} \label{beta condition}
+\end{align}
+
+As long as Equation \ref{beta condition} is met, all shells will be launched before the first collision occurs. 
+
+\subsection*{Typical Values}
+
+Let us again assume shell 1 and shell 2 have Lorentz factors of $\Gamma_1=100$ and $\Gamma_2=400$, respectively, and that $\Delta t_e = 0.002$ seconds. We now also assume $N=5000$ shells.
+
+\begin{align}
+	\frac{\beta_2}{\beta_1} &< \frac{N+1}{N} \\
+	\sim1.000047 &< 1.0002
+\end{align}
+
+In fact, we can look at the reverse argument. If the first two shells in a jet have $\Gamma_1=100$ and $\Gamma_2=400$, respectively, then $\sim$25,000 shells can be launched (each separated by $\Delta t_e = 0.002$ seconds) before the two initial shells collide.
+
+\end{document}

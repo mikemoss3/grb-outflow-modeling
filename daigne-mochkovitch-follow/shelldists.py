@@ -35,7 +35,7 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
 	shell_arr = np.ndarray(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float),('TE',float),('STATUS',float)])
 
 	# Start all shell radii at the initial (photospheric) radii
-	shell_arr['RADIUS'] = np.ones(shape=numshells)*1e13
+	shell_arr['RADIUS'] = np.ones(shape=numshells)*0
 
 	# Set the Lorentz factors and masses for each section of the step distribution
 	shell_arr[0:n1]['GAMMA'] = np.ones(shape=n1)*g1
@@ -59,12 +59,11 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
 
 	# Deactivate all shells except the initial one
 	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)*2
-	shell_arr['STATUS'][0] = 1 # the 1 
-
+	shell_arr['STATUS'][0] = 1 
 
 	return shell_arr
 
-def plot_lorentz_dist(ax, shell_arr,label=None):
+def plot_lorentz_dist(ax, shell_arr,label=None,xlabel=True,ylabel=True,fontsize=14,fontweight='bold',linestyle='solid'):
 	"""
 	Method to plot the given Lorentz factor distribution
 
@@ -81,11 +80,13 @@ def plot_lorentz_dist(ax, shell_arr,label=None):
 	masscum = np.cumsum(flipped_mass_arr)
 	massfraccum = masscum/masscum[-1]
 
-	line, = ax.step(massfraccum,flipped_gamma_arr,where='pre')
+	line, = ax.step(massfraccum,flipped_gamma_arr,where='pre',linestyle=linestyle)
 
 	if label is not None:
 		line.set_label(label)
-	ax.set_xlabel(r'M/M$_{tot}$')
-	ax.set_ylabel(r'$\Gamma$')
+	if xlabel is True:
+		ax.set_xlabel(r'M/M$_{tot}$',fontsize=fontsize,fontweight=fontweight)
+	if ylabel is True:
+		ax.set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
 
 

@@ -37,7 +37,6 @@ class PromptJet(object):
 		"""
 		# Number of shells
 		self.numshells = numshells
-<<<<<<< HEAD
 		
 		# Check if a single time step was given or a list of launch times
 		# If a list of launch times was given was given
@@ -55,12 +54,6 @@ class PromptJet(object):
 			
 			# Total duration of central engine activity (total time to produce numshells), in seconds 
 			self.tw = self.dte*(self.numshells+1)
-=======
-		# Time in between successive shell emissions from the central engine.
-		self.dt = dt
-		# Total duration of central engine activity (total time to produce numshells), in seconds 
-		self.tw = self.dt*(self.numshells)
->>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
 
 		# Make the list of shells with a Lorentz distributions (this is the distribution at t = tw)
@@ -80,10 +73,8 @@ class PromptJet(object):
 
 		"""
 
-<<<<<<< HEAD
 		if jet_shells is None:
 			jet_shells = self.jet_shells
-
 
 		# Time until next shell is launched
 		t_shell_launch = self.dte
@@ -92,21 +83,6 @@ class PromptJet(object):
 
 		# Keep track of global time
 		true_t = tb
-=======
-		# Define time step, in seconds
-		dts = self.dt/4. # use some dts < dt 
-
-		# Initialize start time to 0 sec
-		t = 0
-		# Initialize a tracker of which shell in the Lorentz distribution is to be launched
-		i = 0 
-
-		# Initialize the jet with a first shell
-		jet_shells = np.ndarray(shape=1,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float)])
-
-		# Initialize array of times for jet to be launched
-		t_launch_arr = np.arange(start=0, stop=self.tw+self.dt, step=self.dt)
->>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
 		# Initialize test flags:
 		t3e4_flag=False
@@ -115,7 +91,6 @@ class PromptJet(object):
 
 		# Flag to mark if all the shells in the jet are ordered (no more collisions occur at this point )
 		ord_lorentz = False
-<<<<<<< HEAD
 		while ord_lorentz == False:
 	
 			# Move through each shell starting at the second farthest out (2nd most downstream) shell and moving upstream
@@ -134,7 +109,7 @@ class PromptJet(object):
 					for i in range(len(jet_shells)):
 						# But only if the shells are active
 						if jet_shells[i]['STATUS'] == 1:
-							jet_shells[i]['RADIUS'] += vel(jet_shells[i]['GAMMA'])*t_shell_launch
+							jet_shells[i]['RADIUS'] += cc.c*beta(jet_shells[i]['GAMMA'])*t_shell_launch
 
 
 					# Launch (activate) next shell
@@ -170,14 +145,13 @@ class PromptJet(object):
 								# The total time of collision equals the time it will the take the two shells to collide plus the breakout time
 								t_coll = calc_t_coll(jet_shells[nxt_act_shell_ind],jet_shells[i])
 
-
 								# check if this is the lowest collision time so far
 								if t_coll < t_coll_lowest:
 									# Record the current lowest collision time
 									t_coll_lowest = t_coll
 									# Keep track of which shells these were
-									ind_shell_1 = nxt_act_shell_ind
-									ind_shell_2 = i
+									ind_shell_1 = nxt_act_shell_ind # Downstream shell (slower)
+									ind_shell_2 = i # Upstream shell (faster)
 
 				# We have found when the next collision will be, but we should now check if the next collision will be before or after a new shells is launched
 				
@@ -190,18 +164,20 @@ class PromptJet(object):
 					delta_t = t_shell_launch
 					true_t += delta_t 
 
-
 					# Move shells forward by the amount of time it took for the new shell to be launched
 					for i in range(len(jet_shells)):
 						# But only if the shells are active
 						if jet_shells[i]['STATUS'] == 1:
-							jet_shells[i]['RADIUS'] += vel(jet_shells[i]['GAMMA'])*delta_t
+							jet_shells[i]['RADIUS'] += cc.c*beta(jet_shells[i]['GAMMA'])*delta_t
 
 					# Launch (activate) next shell
 					jet_shells[activate_ind]['STATUS'] = 1
 
 					# Keep track of the next shell to be launched.
 					activate_ind +=1 
+
+					# Reset shell launch time
+					t_shell_launch = self.dte 
 				else:
 					if t_coll_lowest < t_shell_launch: 
 						# The next time a shell is launched is now reduced by the 
@@ -212,154 +188,126 @@ class PromptJet(object):
 					true_t += delta_t 
 
 
-					# Now that we have found the correct next collision:
-					# Proceed with evaluating the collision and moving all launched shells forward 			
-					# To 'combine' the two shells, we delete the old shell by turning it off, and combine their Lorentz factors and masses
-					jet_shells[ind_shell_1]['STATUS'] = 0
-
-					# Move shells forward 
-					for i in range(len(jet_shells)):
-						# But only if the shells are active and launched
-						if jet_shells[i]['STATUS'] == 1:
-							jet_shells[i]['RADIUS'] += vel(jet_shells[i]['GAMMA'])*t_coll_lowest
-
+					# Now that we have found the correct next collision, find contribution to emission:
+					### Calculate Contribution to Spectrum ### 
 
 					# Calculate the Lorentz factor of collided shell
 					s1g = jet_shells[ind_shell_1]['GAMMA']
 					s2g = jet_shells[ind_shell_2]['GAMMA']
 					s1m = jet_shells[ind_shell_1]['MASS']
 					s2m = jet_shells[ind_shell_2]['MASS']
-					gamma_comb = shell_coll_gamma(s1g, s2g, s1m, s2m)
-					jet_shells[ind_shell_2]['GAMMA'] = gamma_comb
 
-					# Mass of the new shell (add the mass of the other shell)
-					jet_shells[ind_shell_2]['MASS'] += jet_shells[ind_shell_1]['MASS']
+					# Radius at which collision occurred
+					rad_coll = jet_shells['RADIUS'][ind_shell_1] + cc.c*beta(s1g)*t_coll_lowest
 
-					### Calculate Contribution to Spectrum ### 
-					gamma_int = 0.5*(np.sqrt(jet_shells['GAMMA'][ind_shell_1]/jet_shells['GAMMA'][ind_shell_2])+np.sqrt(jet_shells['GAMMA'][ind_shell_2]/jet_shells['GAMMA'][ind_shell_1])) # Lorentz factor for internal motion in shocked material
-=======
-		while ord_lorentz is False:
-			# Increase time step
-			t += dts
-			
-			# To add another layer, first check if the number of shells currently launched is lower than the total number of shells 
-			if (i < self.numshells):
-				# Then check if its time to launch another shell
-				if t > t_launch_arr[i]:
-					r = self.shell_lorentz_arr[i]['RADIUS'] 
-					g = self.shell_lorentz_arr[i]['GAMMA'] 
-					m = self.shell_lorentz_arr[i]['MASS']
-					if i == 0:
-						jet_shells['RADIUS'] = r
-						jet_shells['GAMMA'] = g
-						jet_shells['MASS'] = m
-					else:
-						jet_shells = np.append(jet_shells,np.array((r,g,m),dtype=[('RADIUS',float),('GAMMA',float),('MASS',float)]))
-					i+=1
-			else:
-				# If all the shells have been launched, check if the Lorentz factors of the shells are ordered 
-				# If so, there can be no more collisions.
-				if all((1 - (jet_shells['GAMMA'][k]/jet_shells['GAMMA'][k+1])) < 1e-4 for k in range(len(jet_shells['GAMMA'])-1)):
-					ord_lorentz = True
-					print('Ordered Lorentz factors in the jet.')
-
-			# Move shells forward
-			jet_shells['RADIUS'] = jet_shells['RADIUS']+ (vel(jet_shells['GAMMA'])*dts)
-
-
-			# Make an array to keep track of which shells will be deleted
-			del_shells = []
-			# For each shell, check for collisions with the shell in front of it
-			for j in range(len(jet_shells)-1):
-				# Check if the shells current position is now <= to the shell launched after it
-				if jet_shells['RADIUS'][j] < jet_shells['RADIUS'][j+1]:
-					# Calculate the combined Lorentz factor of the two shells
-					gamma_comb = shell_coll_gamma(s1g=jet_shells[j]['GAMMA'],s2g=jet_shells[j+1]['GAMMA'],s1m=jet_shells[j]['MASS'],s2m=jet_shells[j+1]['MASS'])
-					
-
-					### Calculate spectral addition ### 
-					
-					gamma_int = 0.5*(np.sqrt(jet_shells['GAMMA'][j]/jet_shells['GAMMA'][j+1])+np.sqrt(jet_shells['GAMMA'][j+1]/jet_shells['GAMMA'][j])) # Lorentz factor for internal motion in shocked material
->>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
-					eps = (gamma_int-1)*cc.mp*cc.c**2 # # Average proton factor from the collision of two shells
+					gamma_int = 0.5*(np.sqrt(s1g/s2g)+np.sqrt(s2g/s1g)) # Lorentz factor for internal motion in shocked material
+					eps = (gamma_int-1)*cc.mp*cc.c**2 # erg, Average proton factor from the collision of two shells
 
 					# Calculate the characteristic electron Lorentz factor for different assumption: 
-					# A) protons and electrons are in equipartition
+					# A) Synchrotron emission from accelerated electrons 
 					# B) the electron Lorentz factor is large enough to directly produce Synchroton radiation
 
-					# Start assume A) 
+					# Define constants assumed by model and used by both assumptions
 					alpha_e = 1/3 # Fraction of dissipated energy that goes into the electrons 
-					# gamma_e = alpha_e *eps / (cc.me* cc.c**2) # Average electron lorentz factor
-
-					# End assume A)
-					
-					# Start assume B) 
-					# Define assumed constants of the model
-					alpha_m = 0.5 # Between 0.1 - 1, fraction of the dissipated energy which goes into magnetic fluctuation
+					alpha_m = 1 # Between 0.1 - 1, fraction of the dissipated energy which goes into magnetic fluctuation
+					alpha_b = 1/3 # Fraction of dissipated energy that goes into the magnetic field 
 					ksi = 1e-3 # Fraction of electrons which are accelerated 
 					mu = 1.75 # Between 1.5 - 2, index of the fluctuation spectrum 
-					E_dot = 1e52/(4*np.pi) # erg/s, Injected energy rate
+					E_dot = 1e52 # erg/s, Injected energy rate
 
-					# Calculate necessary parameters to find calculate observable parameters 
-					gamma_e = np.power((alpha_m/ksi)*(eps/cc.me/cc.c**2),1/(3-mu)) # Average electron lorentz factor
+					# Characteristic Lorentz factor of accelerated electrons					
+					# gamma_e = alpha_e *eps / (cc.me* cc.c**2) # Average electron lorentz factor, for electrons in equipartition with protons
+					# gamma_e = np.power((alpha_m/ksi)*(eps/cc.me/cc.c**2),1/(3-mu)) # Average electron lorentz factor, electrons directly produce synchrotron radiation (via turbulent magnetic fields)
+					gamma_e = 1e4 # Average electron lorentz factor, constant
+					gamma_r = np.sqrt(s1g*s2g) # Approximate resulting Lorentz factor from the shell collision
+					gamma_bar = (s1g+s2g)/2 # Average Lorentz factor of jet shells 
 
-					n = E_dot / (4*np.pi * jet_shells[ind_shell_2]['RADIUS']**2 * gamma_comb**2 * cc.mp * cc.c**3) # Comoving proton number density
-					alpha_b = 1/3 # Fraction of dissipated energy that goes into the magnetic field 
-					B = np.sqrt(8*np.pi*alpha_b*n*eps) # Magnetic field strength, assuming B = Beq  
-					gamma_r = np.sqrt(jet_shells['GAMMA'][ind_shell_1]*jet_shells['GAMMA'][ind_shell_2]) # Approximate resulting Lorentz factor from the shell collision
-					E_syn = 50*(gamma_r/300)*(B/1000)*(gamma_e/100)**2 # eV, Synchrotron energy in the rest frame
 
-					E_0syn = E_syn/gamma_r # Synchrotron energy in the comoving frame
+					n = E_dot / (4*np.pi * rad_coll**2 * gamma_bar**2 * cc.mp * cc.c**3) # 1/cm^3, Comoving proton number density
+					# n = E_dot / (4*np.pi * rad_coll**2 * (gamma_bar*gamma_r) * cc.mp * cc.c**3) # 1/cm^3, Comoving proton number density, new implementation of Frederic
+					Beq = np.sqrt(8*np.pi*alpha_b*n*eps) # (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
+
+					# Synchrotron energy emitted by accelerated electron
+					E_syn_ev = 50*(gamma_r/300)*(Beq/1e3)*(gamma_e/100)**2 # eV, Synchrotron energy in the rest frame
+					E_syn = E_syn_ev * 1.60218e-12 # convert to erg
+					E_0syn = E_syn/gamma_r # erg, Synchrotron energy in the comoving frame
+
+					# Check if Klein-Nishina limit or Thompson (i.e., w>>1 or w<<1)
 					w = gamma_e*E_0syn/(cc.me*cc.c**2) # Critical value between Thomson and Klein-Nishina
-					t_var = jet_shells[ind_shell_2]['RADIUS']/(cc.c*gamma_r**2) # Dynamical time scale of the shell
+					# w_alt = 33*(Beq/1e3)*(gamma_e/1e4)**3 # Alternative relation fro w
+					# print('w={} , wp={}'.format(w, w_alt) )
+					
+					t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1e3,-2) # sec, synchrotron time-scale
 
-					# Calculate the optical depth, check if Klein-Nishina limit or Thompson (i.e., w>>1 or w<<1)
 					# Q_IC == tau_star * gamma_e**2 == Y == the Compton Parameter
-					if w > 10:
+					# Write equation 22 in a slightly simplified way
+					c = -(3/2)*(0.2/np.pi/rad_coll**2)*(E_dot/gamma_bar**2 / cc.c**2)*(gamma_e)*np.power(Beq/1000,-2)*100
+					if w >= 1:
 						# Klein-Nishina
 						# Calculate the left hand side of equation 29
 						# Notice the negative sign to move it to the right hand side (to use the quadratic formula)
-						c = -8*1e-4*(1+np.log(2*w))*(E_dot/1e52)*np.power(t_var/1,-2)*np.power(gamma_comb/300,-6)*np.power(B/1000,-4)*np.power(gamma_e/1e4,-5)
-						Q_IC = w * (-1 + np.sqrt(1-4*c))/2
-						alpha_ic = (Q_IC/w)/(1+(Q_IC/w)) # Fraction of energy that goes into Inverse Compton electrons 
-					else: 
-						# Thomson
-						c = - 0.3 *alpha_e/alpha_b
+						# c = -8*1e-4*(1+np.log(2*w))*(E_dot/1e52)*np.power(t_var/1,-2)*np.power(gamma_bar/300,-6)*np.power(Beq/1e3,-4)*np.power(gamma_e/1e4,-5)
+						# Q_ICw = (-1 + np.sqrt(1-4*c))/2
+						# alpha_ic = Q_ICw/(1+Q_ICw) # Fraction of energy that goes into Inverse Compton electrons
+						
 						Q_IC = (-1 + np.sqrt(1-4*c))/2
-						alpha_ic = Q_IC/(1+Q_IC) 
-
+						alpha_ic = (Q_IC/w)/(1+(Q_IC/w)) # Fraction of energy that goes into Inverse Compton electrons
+					else: 
+						# w < 1 
+						# Thomson
+						# c = -0.2 *(E_dot/cc.c**2/gamma_bar**2)*t_syn*gamma_e**2 / (4*np.pi*(cc.c*t_var*gamma_bar**2)**2)
+						Q_IC = (-1 + np.sqrt(1-4*c))/2
+						alpha_ic = Q_IC/(1+Q_IC) # Fraction of energy that goes into Inverse Compton electrons
 
 					alpha_syn = 1 - alpha_ic # Fraction of energy that goes into Synchrotron electrons 
-					# End assume B)
 					
+
+					# Other efficiency quantities to record:
+					# f_dyn = (np.sqrt(s2g/s1g)-1)**2 / ((s2g/s1g)+1), # dynamic efficiency
+					# f_dyn = 1 - (s2m+s1m)*gamma_comb/(s1m*s1g + s2m*s2g) # Equation 3 from Kobayashi, Piran, and Sari 1997 
+					# f_dyn = 1
+
+					# Energy dissipated in the shock, assumes that the energy dissipated occurs when upstream shell sweeps up a mass equal to its own (or sweeps up the entire downstream shell mass)
+					en_diss = np.min(np.array([s1m,s2m])) * cc.c**2 * (s1g + s2g - 2*gamma_r)
+
+					# Variability timescale 
+					delt = rad_coll/(2*cc.c*gamma_r**2) # sec, Dynamical time scale of the shell
+
 					# If the emission is efficient, add the contribution
-					# If the emission time is less than the shell expansion (i.e., the dynamical scale of the shell)
-					t_syn = 6*np.power(gamma_e/100,-1)*np.power(B/1000,-2) # sec, synchrotron time-scale
-					if t_syn < (gamma_comb*t_var*(1+Q_IC)):
-<<<<<<< HEAD
-						ta = true_t - (gamma_comb/cc.c)
-						self.spectrum.add_contribution(te=true_t,ta=ta,asyn=alpha_syn,Beq=B,gammae=gamma_e,Esyn=E_syn)
+					# E.g., If the emission time is less than the shell expansion (i.e., the dynamical scale of the shell)
+					t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1000,-2) # sec, synchrotron time-scale
+					if t_syn < ((1+Q_IC)*rad_coll/cc.c/gamma_bar):
+						# The relative velocity between the shells must be greater than the local sound speed
+						if rel_vel(s2g,s1g) > 0.1:
+							ta = true_t - (rad_coll/cc.c)
+							
+							# The wind most also be transparent to the produced
+							# tau = 0.2 * np.sum( jet_shells['MASS'][jet_shells['STATUS']==1][ind_shell_2:]/(4 * np.pi * jet_shells['RADIUS'][jet_shells['STATUS']==1][ind_shell_2:]**2) )
+							# if tau < 1:
+							
+							# Add contribution to the spectrum 
+							self.spectrum.add_contribution(te=true_t,ta=ta,asyn=alpha_syn,Beq=Beq,gammae=gamma_e,Esyn=E_syn_ev, gammar=gamma_r, e=en_diss, delt = delt)
+
+					# De-active the down-stream jet shell
+					jet_shells[ind_shell_1]['STATUS'] = 0 
+
+					# Move shells forward 
+					for i in range(len(jet_shells)):
+						# But only if the shells are active and launched
+						if jet_shells[i]['STATUS'] == 1:
+							jet_shells[i]['RADIUS'] += cc.c*beta(jet_shells[i]['GAMMA'])*t_coll_lowest
 
 
-=======
-						ta = t - (gamma_comb/cc.c)
-						self.spectrum.add_contribution(te=t,ta=ta,asyn=alpha_syn,Beq=B,gammae=gamma_e,Esyn=E_syn)
-					
+					# Final Lorentz factor of the combined shell (after complete redistribution of momenta)
+					gamma_comb = shell_coll_gamma(s1g, s2g, s1m, s2m)
 
-					### Calculate shell dynamics ### 
+					# Set the Lorentz factor of the merged shells.
+					jet_shells[ind_shell_2]['GAMMA'] = gamma_comb
+					# Mass of the combined shell (add the mass of the other shell)
+					jet_shells[ind_shell_2]['MASS'] += jet_shells[ind_shell_1]['MASS']
 
-					#### Method 1: Keep all shells method 
-					"""
-					# Calculate the radius of the two shells
-					jet_shells['RADIUS'][j+1] = jet_shells['RADIUS'][j+1] - (vel(jet_shells['GAMMA'][j+1])*dts) + (vel(gamma_comb)*dts)
-					jet_shells['RADIUS'][j] = jet_shells['RADIUS'][j+1]
-					# Set the Lorentz factor
-					jet_shells[j]['GAMMA']=gamma_comb
-					jet_shells[j+1]['GAMMA']=gamma_comb
-					"""
->>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
-				# Testing
+				# Record shell positions at specific times (to match D&M 1998)
 				if true_t > 3e4 and t3e4_flag==False:
 					np.savetxt('./sim_results/t3e4_shells.txt',jet_shells)
 					t3e4_flag=True 
@@ -370,25 +318,7 @@ class PromptJet(object):
 					np.savetxt('./sim_results/t5e5_shells.txt',jet_shells)
 					t5e5_flag=True 
 
-<<<<<<< HEAD
-				
-				
-=======
-					#### Method 2: Delete shell that was swallowed up
-					
-					# Combine both shells into shell j+1
-					# Calculate the correct shell radius based on the new combined Lorentz factor
-					jet_shells[j+1]['RADIUS'] = jet_shells['RADIUS'][j+1] - (vel(jet_shells['GAMMA'][j+1])*dts) + (vel(gamma_comb)*dts)
-					# Set the Lorentz factor
-					jet_shells[j+1]['GAMMA']=gamma_comb
-					# Set the mass to the combined mass
-					jet_shells[j+1]['MASS']=jet_shells[j]['MASS']+jet_shells[j+1]['MASS']
->>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
-					# Add shell j to the list of shells to be deleted
-					del_shells.append(j)
-
-<<<<<<< HEAD
 				# Check if all the shells have been launched
 				# and 
 				# Check if all the active shells have an ordered Lorentz factors are ordered
@@ -404,60 +334,22 @@ def calc_t_coll(shell_1,shell_2):
 	"""
 	Function to calculate the time of collision between two shells.
 	Params:
-	shell_1 = contains the mass, radius, Lorentz factor, and emission time of shell 1 
-	shell_2 = contains the mass, radius, Lorentz factor, and emission time of shell 2 
+	shell_1 = (downsteam shell) contains the mass, radius, Lorentz factor, and emission time of shell 1 
+	shell_2 = (upstream shell) contains the mass, radius, Lorentz factor, and emission time of shell 2 
+	# We assume (Radius_shell_1 > Radius_shell_2) and (Gamma_shell_1 < Gamma_shell_2)
 	"""
 
-	# Current radius of shell 1 and shell_2['RADIUS']
+	# Current radius of shell 1 and shell 2 
 	r10 = shell_1['RADIUS']
 	r20 = shell_2['RADIUS']
 	# Lorentz factors of shell 1 and shell 2
 	g1 = shell_1['GAMMA']
 	g2 = shell_2['GAMMA']
-=======
-			# Delete the shells that had collided this step
-			jet_shells = np.delete(jet_shells,del_shells)
-			
-			### End: Delete shells method 
-			
-			# Testing Purposes:
-			flag3e4=False
-			if t > 3.4e4 and flag3e4==False:
-				# ord_lorentz = True
-				# plt.figure()
-				# ld.plot_lorentz_dist(jet_shells,title='Time = {} sec'.format(t))
-				np.savetxt('sim_results/jet_shells_t3e4.txt',jet_shells)
-				np.savetxt('sim_results/spectrum_t3e4.txt',self.spectrum.spectrum)
-				flag3e4=True
-
-			flag1e5=False
-			if t > 1.7e5 and flag1e5==False:
-				# ord_lorentz = True
-				# plt.figure()
-				# ld.plot_lorentz_dist(jet_shells,title='Time = {} sec'.format(t))
-				np.savetxt('sim_results/jet_shells_t1e5.txt',jet_shells)
-				np.savetxt('sim_results/spectrum_t1e5.txt',self.spectrum.spectrum)
-				flag1e5=True
-
-			flag5e4=False
-			if t > 5.4e5 and flag5e4==False:
-				# ord_lorentz = True
-				# plt.figure()
-				# ld.plot_lorentz_dist(jet_shells,title='Time = {} sec'.format(t))
-				np.savetxt('sim_results/jet_shells_t5e5.txt',jet_shells)
-				np.savetxt('sim_results/spectrum_t5e5.txt',self.spectrum.spectrum)
-				flag5e4=True
-
-		# After shells are ordered by Lorentz factor
-		# plt.figure()
-		# ld.plot_lorentz_dist(jet_shells,title='Time = {} sec'.format(t))
-		np.savetxt('sim_results/jet_shells_fin.txt',jet_shells)
-		np.savetxt('sim_results/spectrum_fin.txt',self.spectrum.spectrum)
-
->>>>>>> 8cc23064b7696469710304dfefae871bd755af7f
 
 	# Calculate the collision time 
-	t_coll = (2*g1**2)*(r20-r10)/(cc.c*((g1/g2)**2 - 1))
+	t_coll = (2*g2**2)*(r10-r20)/(cc.c*((g2/g1)**2 - 1))
+	# t_coll = (r10-r20)/cc.c/(beta(g2)-beta(g1)) # Alternative relation from Kobayashi, Piran, Sari 1997
+
 
 	# Check for nan value
 	if t_coll != t_coll:
@@ -471,7 +363,7 @@ def shell_coll_gamma(s1g,s2g,s1m,s2m):
 	"""
 
 	# The approximate Lorentz factor of the combined layer after complete redistribution of momentum and energy
-	gamma_comb = np.sqrt(s1g*s2g*((s1m*s1g + s2m*s2g)/(s1m*s2g + s2m*s1g)))
+	gamma_comb = np.sqrt( s1g*s2g * (s1m*s1g + s2m*s2g) / (s1m*s2g + s2m*s1g)  )
 
 	return gamma_comb
 
@@ -482,6 +374,19 @@ def vel(gamma):
 
 	return cc.c * np.sqrt(1-(1/gamma**2) )
 
+def beta(gamma):
+	"""
+	Method to calculate the beta factor from the Lorentz factor (beta == v/c)
+	"""
+
+	return np.sqrt(1- 1/gamma**2)
+
+def rel_vel(gamma_1, gamma_2):
+	"""
+	Method to calculate the relative velocity of two shells with lorentz factor gamma_1 and gamma_2, where gamma_1 > gamma_2.
+	"""
+
+	return (gamma_1**2 - gamma_2**2)/(gamma_1**2 + gamma_2**2)
 
 def is_sorted(x):
 	"""
@@ -489,3 +394,8 @@ def is_sorted(x):
 	Sorted in this context means x[i] > x[i+1]
 	"""
 	return (np.diff(x)<=0).all()
+
+
+
+
+
