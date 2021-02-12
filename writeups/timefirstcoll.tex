@@ -36,6 +36,13 @@
 For this example, let us look at only two shells. The second shells is faster than the the first ($\beta_2 > \beta_1$), but was launched with a delay of $\Delta t_e$. We can describe the position of the first and second shells as,
 
 \begin{align}
+	R_1(t) &= R_{10} + c \beta_1 t \\
+	R_2(t) &= R_{20} + c \beta_2 t
+\end{align}
+
+Since we are dealing with only two shells being launched, we can set the our position axis to zero at the second shells launch location (e.g.,$R_{20} = 0$), 
+
+\begin{align}
 	R_1(t) &= L + c \beta_1 t \\
 	R_2(t) &= c \beta_2 t
 \end{align}
@@ -71,9 +78,12 @@ Plugging this back into either the expression for $R_1(t)$ or $R_2(t)$ we can fi
 	&= L+c\beta_1*(\frac{L}{c(\beta_2 - \beta_1)})\\
 	&= L(1+ \frac{\beta_1}{(\beta_2 - \beta_1)})\\
 	&= L(\frac{\beta_2 - \beta_1 + \beta_1}{(\beta_2 - \beta_1)})\\
-	&= L(\frac{\beta_2}{(\beta_2 - \beta_1)})
+	&= L(\frac{\beta_2}{(\beta_2 - \beta_1)}) \label{rcoll}
 \end{align}
 
+These calculations can be done for a number of shells greater than 2, but keep in mind, when calculating the time and position of collisions after the initial collision the distance between then (i.e., L) will just be the difference in their positions.
+
+Additionally, when calculating the $R_{coll}$, it may be best to use $t_{coll}$ in the equations for $R_1(t)$ or $R_2(t)$ as Equation \ref{rcoll} typically contains significant numerical instabilities for high Lorentz factors.
 
 \subsection*{Typical Values}
 

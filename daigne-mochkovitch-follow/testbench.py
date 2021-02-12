@@ -11,7 +11,7 @@ import timeit
 
 
 
-jet_inst = pj.PromptJet(numshells=500,dte=0.2)
+jet_inst = pj.PromptJet(numshells=50,dte=0.002)
 jet_inst.jet_evolution(tb=0)
 
 # Load shell distribution data 

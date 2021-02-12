@@ -11,6 +11,8 @@ made of n consecutive shells
 
 import numpy as np
 import matplotlib.pyplot as plt 
+import cosmologicalconstants as cc
+from utils import *
 
 def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
 	"""
@@ -34,9 +36,6 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
 	# Status indicator: 0 = deactived, 1 = active and launched, 2 = not launched
 	shell_arr = np.ndarray(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float),('TE',float),('STATUS',float)])
 
-	# Start all shell radii at the initial (photospheric) radii
-	shell_arr['RADIUS'] = np.ones(shape=numshells)*0
-
 	# Set the Lorentz factors and masses for each section of the step distribution
 	shell_arr[0:n1]['GAMMA'] = np.ones(shape=n1)*g1
 	shell_arr[0:n1]['MASS'] = np.ones(shape=n1)*mfrac/n1
@@ -49,17 +48,18 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
 		# Check if the list is the same size as the number of shells
 		if len(dte) != numshells:
 			print("The list of shell launch times must be the same size as the number of shells.")
-		shell_arr['TE'] = dte
-
+		shell_arr['TE'] = -dte
 	# Else if a single constant difference between launch time
 	else:
 		for i in range(numshells):
-			shell_arr[i]['TE'] = i*dte
+			shell_arr[i]['TE'] = -i*dte
 
+	# Calculate the shell position based on when the shell will be launched
+	shell_arr['RADIUS'] = [cc.c*beta(shell_arr['GAMMA'][i])*shell_arr['TE'][i]for i in range(len(shell_arr))]
+	shell_arr['RADIUS'][0] +=1 # Eliminates divide by zero error and is insignificantly small.
 
 	# Deactivate all shells except the initial one
-	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)*2
-	shell_arr['STATUS'][0] = 1 
+	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)
 
 	return shell_arr
 
