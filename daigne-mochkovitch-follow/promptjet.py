@@ -136,11 +136,11 @@ class PromptJet(object):
 			# Down stream shell 
 			shell_ds_g = jet_shells[ind_s_ds]['GAMMA']
 			shell_ds_m = jet_shells[ind_s_ds]['MASS']
-			shell_ds_r = jet_shells[ind_s_ds]['RADIUS']
+			# shell_ds_r = jet_shells[ind_s_ds]['RADIUS']
 			# Up stream shell
 			shell_us_g = jet_shells[ind_s_us]['GAMMA']
 			shell_us_m = jet_shells[ind_s_us]['MASS']
-			shell_us_r = jet_shells[ind_s_us]['RADIUS']
+			# shell_us_r = jet_shells[ind_s_us]['RADIUS']
 
 			# Radius at which collision occurred
 			rad_coll = jet_shells['RADIUS'][ind_s_ds] + cc.c*beta(shell_ds_g)*t_coll_lowest 
