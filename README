@@ -4,6 +4,16 @@ Contact: mikejmoss3@gmail.com
 
 This purpose of this project is to investigate GRB prompt emission by simulating internal jet dynamics and calculating the emitted spectrum using theoretical descriptions of the acceleration mechanisms and emission processes occurring within the jet.
 
-
 Directory Descriptions:
-daigne-mochkovitch-follow/ -- follows the work of Daigne and Mochkovitch 1998 which creates time-integrated GRB prompt emission spectra assuming synchrotron emission from collisions of shells with different Lorentz factors and masses within the jet (i.e., 'internal shocks').
+sim_results/ -- contains the most recent results produced by a prompt jet simulation
+writeups/ -- useful write-ups and derivations are stored here
+
+Script Descriptions:
+main.py -- used to initiate a prompt jet class instance and simulate its evolution. 
+promptjet.py -- defines the prompt jet class and defines the physics of the evolution
+shelldists.py -- defines various Lorentz distributions for the shells in a prompt jet. 
+spectrum.py -- contains relevant functions for constructing the spectra produced by  prompt jet simulation
+makeplots.py -- script to create all plots specified by the user. The plots are created from the data files most recently stored in sim_results/
+utils.py -- contains various functions useful for several scripts
+cosmologicalconstants.py -- contains all established constants (e.g., speed of light) is cgs units. Acts as global variable space. 
+
