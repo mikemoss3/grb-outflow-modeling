@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import cosmologicalconstants as cc
 from utils import *
 
-def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
+def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5,E_dot=1e52):
 	"""
 	Distribute the Lorentz factors of the shells into a step function. 
 	Params: 
@@ -36,11 +36,13 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
 	# Status indicator: 0 = deactived, 1 = active and launched, 2 = not launched
 	shell_arr = np.ndarray(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float),('TE',float),('STATUS',float)])
 
-	# Set the Lorentz factors and masses for each section of the step distribution
+	# Set the Lorentz factors for each section of the step distribution
 	shell_arr[0:n1]['GAMMA'] = np.ones(shape=n1)*g1
-	shell_arr[0:n1]['MASS'] = np.ones(shape=n1)*mfrac/n1
 	shell_arr[n1::]['GAMMA'] = np.ones(shape=n2)*g2
-	shell_arr[n1::]['MASS'] = np.ones(shape=n2)*(1-mfrac)/n2
+
+	# Set the Mass for each shell 
+	shell_arr['MASS'] = E_dot*dte/shell_arr['GAMMA']/cc.c**2
+
 
 	# Check if a single time step was given or a list of launch times
 	# If a list of launch times was given was given
@@ -63,6 +65,53 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5):
 
 	return shell_arr
 
+def oscillatory(dte,gmin=100,gmax=400,numshells=5000,freq=3,decay=1/3,E_dot=1e52):
+	"""
+	Distribution shells with an oscillatory Lorentz distribution 
+	Params:
+	dte = time between shell launches, this can be specific by a single float to apply a constant time step through out the jet evolution or can be a array of the shell emission times
+	g1 = Lorentz factor of the group of shells launched earlier
+	g2 = Lorentz factor of the group of shells launched later
+	numshells = the total number of shells launched
+	freq = frequency of the oscillations in the distribution
+	decay = used to modulate the decay rate, number multiplied by the halfl ife time scale
+	"""
+
+	# Make array of shells
+	# This array stores the radius, lorentz factor, mass, and emission time of each shell. The last column is used to record what the status of the shell is.
+	shell_arr = np.ndarray(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float),('TE',float),('STATUS',float)])
+
+	# Set the Lorentz factors for each section of the step distribution
+	shell_inds = np.linspace(0,numshells,num=numshells)
+	offset = (gmax+gmin)/2
+	amp = gmax-offset
+	shell_arr['GAMMA'] = (amp*np.cos(shell_inds*(freq*2*np.pi/numshells) + np.pi)+offset ) * np.exp(-shell_inds*decay*2*np.log(2)/numshells)
+
+	# Set the Mass for each shell 
+	shell_arr['MASS'] = E_dot*dte/shell_arr['GAMMA']/cc.c**2
+	
+	# Check if a single time step was given or a list of launch times
+	# If a list of launch times was given was given
+	if hasattr(dte,"__len__"):
+		# Check if the list is the same size as the number of shells
+		if len(dte) != numshells:
+			print("The list of shell launch times must be the same size as the number of shells.")
+		shell_arr['TE'] = -dte
+	# Else if a single constant difference between launch time
+	else:
+		for i in range(numshells):
+			shell_arr[i]['TE'] = -i*dte
+
+	# Calculate the shell position based on when the shell will be launched
+	shell_arr['RADIUS'] = [cc.c*beta(shell_arr['GAMMA'][i])*shell_arr['TE'][i]for i in range(len(shell_arr))]
+	shell_arr['RADIUS'][0] +=1 # Eliminates divide by zero error and is insignificantly small.
+
+	# Deactivate all shells except the initial one
+	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)
+
+	return shell_arr
+
+
 def plot_lorentz_dist(ax, shell_arr,label=None,xlabel=True,ylabel=True,fontsize=14,fontweight='bold',linestyle='solid'):
 	"""
 	Method to plot the given Lorentz factor distribution
@@ -77,9 +126,11 @@ def plot_lorentz_dist(ax, shell_arr,label=None,xlabel=True,ylabel=True,fontsize=
 	flipped_mass_arr = np.flip(shell_arr['MASS'])
 	flipped_gamma_arr = np.flip(shell_arr['GAMMA'])
 
+	# Cumulative mass
 	masscum = np.cumsum(flipped_mass_arr)
 	massfraccum = masscum/masscum[-1]
 
+	# Plot distribution
 	line, = ax.step(massfraccum,flipped_gamma_arr,where='pre',linestyle=linestyle)
 
 	if label is not None:
@@ -88,5 +139,12 @@ def plot_lorentz_dist(ax, shell_arr,label=None,xlabel=True,ylabel=True,fontsize=
 		ax.set_xlabel(r'M/M$_{tot}$',fontsize=fontsize,fontweight=fontweight)
 	if ylabel is True:
 		ax.set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
+
+	for tick in ax.xaxis.get_major_ticks():
+	    tick.label1.set_fontsize(fontsize=fontsize)
+	    tick.label1.set_fontweight(fontweight)
+	for tick in ax.yaxis.get_major_ticks():
+	    tick.label1.set_fontsize(fontsize=fontsize)
+	    tick.label1.set_fontweight(fontweight)
 
 
