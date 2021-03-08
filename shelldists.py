@@ -65,7 +65,7 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5,E_dot=1e52):
 
 	return shell_arr
 
-def oscillatory(dte,gmin=100,gmax=400,numshells=5000,freq=3,decay=1/3,E_dot=1e52):
+def oscillatory(dte,gmin=100,gmax=400,numshells=5000,median=333,ampf=2/3,freq=5,decay=0.5,E_dot=1e52):
 	"""
 	Distribution shells with an oscillatory Lorentz distribution 
 	Params:
@@ -81,15 +81,6 @@ def oscillatory(dte,gmin=100,gmax=400,numshells=5000,freq=3,decay=1/3,E_dot=1e52
 	# This array stores the radius, lorentz factor, mass, and emission time of each shell. The last column is used to record what the status of the shell is.
 	shell_arr = np.ndarray(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float),('TE',float),('STATUS',float)])
 
-	# Set the Lorentz factors for each section of the step distribution
-	shell_inds = np.linspace(0,numshells,num=numshells)
-	offset = (gmax+gmin)/2
-	amp = gmax-offset
-	shell_arr['GAMMA'] = (amp*np.cos(shell_inds*(freq*2*np.pi/numshells) + np.pi)+offset ) * np.exp(-shell_inds*decay*2*np.log(2)/numshells)
-
-	# Set the Mass for each shell 
-	shell_arr['MASS'] = E_dot*dte/shell_arr['GAMMA']/cc.c**2
-	
 	# Check if a single time step was given or a list of launch times
 	# If a list of launch times was given was given
 	if hasattr(dte,"__len__"):
@@ -101,6 +92,15 @@ def oscillatory(dte,gmin=100,gmax=400,numshells=5000,freq=3,decay=1/3,E_dot=1e52
 	else:
 		for i in range(numshells):
 			shell_arr[i]['TE'] = -i*dte
+
+	# Set the Lorentz factors for each section of the step distribution
+	shell_inds = np.linspace(0,numshells,num=numshells)
+	shell_arr['GAMMA'] = median * ( 1 + ampf*np.cos( freq*np.pi*(1 - shell_inds/numshells) ) )*np.exp(- decay*shell_inds/numshells)
+
+	# Set the Mass for each shell 
+	shell_arr['MASS'] = E_dot*dte/shell_arr['GAMMA']/cc.c**2
+	
+
 
 	# Calculate the shell position based on when the shell will be launched
 	shell_arr['RADIUS'] = [cc.c*beta(shell_arr['GAMMA'][i])*shell_arr['TE'][i]for i in range(len(shell_arr))]

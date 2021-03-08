@@ -1,0 +1,98 @@
+\documentclass[10pt]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{ulem}
+\usepackage{setspace}	
+
+
+% Formatting
+\usepackage[margin=1in]{geometry}
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0em}
+
+
+% Make upright subscripts in Mathmode.
+\def\subinrm#1{\sb{\mathrm{#1}}}
+{\catcode`\_=13 \global\let_=\subinrm}
+\mathcode`_="8000
+\def\upsubscripts{\catcode`\_=12 } \def\normalsubscripts{\catcode`\_=8 }
+ 	 	
+% Title
+\title{Derivations for First Arrival Time}
+
+\begin{document}
+
+\upsubscripts
+
+\section*{Assume A Step Function Lorentz Distribution}
+
+In this work we assume $N_{tot}=5,000$ shells which have their Lorentz factors distributed as a step function. Each shell is launched with the same energy, so the mass of shells changes depending on the Lorentz factor assigned. We choose the two Lorentz factor values $\Gamma=100$ and $\Gamma=400$, where each section of step function has an equal mass. This results in 1,000 launched shells with $\Gamma=100$ and 4,000 shells launched with $\Gamma=400$. Each shell is launched $\Delta t_e = 0.002$ sec after the previous.
+
+We define the initial position of these shells as 
+
+\begin{align}
+	R_{i,0} &= -c*\beta_i*\Delta t_e * (N_i-1)
+\end{align}
+
+Where $N_i$ is the shell index and $\beta = \sqrt{1-\frac{1}{\Gamma^2}}$. In this way, the first shell to be launched stars at $R_{0,0} = 0$ cm and all shells to be launched after have an initially negative radius.
+
+For an observer, the arrival time of emission from a collision is given by,
+
+\begin{align}
+	t_{a} = t_{coll} - \frac{R_{coll}}{c}
+\end{align}
+where $t_e$ and $R_{coll}$ are the time and radius of collision (in the jet frame), respectively. 
+
+The first collision must be between the final shell which has $\Gamma=100$ (i.e., $N_i=1000$) and the first shell with $\Gamma=400$ (i.e., $N_i=1001$). For simplicity, we will denote these with a subscript s (for slow) and r (for rapid), respectively. We can calculate when the first collision will be and when the emission will arrive at the observer.
+
+\begin{align}
+	t_{coll,0} &= \frac{(R_{s,0}-R_{r,0})}{c(\beta_r - \beta_s)} \\ 
+	R_{coll,0} &= R_{s,0} + (c\beta_s*t_{coll,0})
+\end{align}
+
+Which can be used to find the time of first arrival:
+
+\begin{align}
+	t_{a,0} &= t_{coll,0} - \frac{R_{coll,0}}{c}\\
+	t_{a,0} &= t_{coll,0} - \frac{R_{s,0} + (c\beta_s*t_{coll,0})}{c}\\
+	t_{a,0} &= t_{coll,0} - \frac{R_{s,0}}{c} - \beta_st_{coll,0}\\
+	t_{a,0} &= t_{coll,0}(1-\beta_s) - \frac{R_{s,0}}{c}\\
+	t_{a,0} &= \frac{(R_{s,0}-R_{r,0})}{c(\beta_r - \beta_s)}(1-\beta_s) - \frac{R_{s,0}}{c}\\
+	t_{a,0} &= \frac{( [-c\beta_s\Delta t_e (1000-1)] - [-c\beta_r\Delta t_e (1001-1)] )}{c(\beta_r - \beta_s)}(1-\beta_s) - \frac{[-c\beta_s\Delta t_e (1000-1)]}{c}\\
+	t_{a,0} &= \frac{\Delta t_e(1000\beta_r - 999\beta_s)}{(\beta_r - \beta_s)}(1-\beta_s) + 999\beta_s\Delta t_e 
+\end{align}
+
+If we use the values of $\Delta t_e = 0.002$ sec, $\beta_s = \sqrt{1-\frac{1}{100^2}}$, and $\beta_r = \sqrt{1-\frac{1}{400^2}}$, we find 
+
+\begin{align}
+	t_{a,0} \approx 2.000133 \text{ sec}
+\end{align}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

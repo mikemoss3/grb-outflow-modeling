@@ -119,7 +119,7 @@ class PromptJet(object):
 
 		# Open file to record collision dynamics
 		file_shell_dyn = open('./sim_results/shell_dyn.txt','w')
-		file_shell_dyn.write("TimeObs \tTimeJet \tRcoll \tDSGamma \tDSMass \tUPGamma \tUPMass \tGammaf\n")
+		file_shell_dyn.write("TimeObs (s) \tTimeJet (s) \tRcoll (cm) \tDSGamma \tDSMass (g) \tUPGamma \tUPMass (g) \tGammaf \ttau\n")
 		file_shell_dyn.close()
 		file_shell_dyn = open('./sim_results/shell_dyn.txt','a')
 		# Initialize flags, used for creating plots:
@@ -128,7 +128,7 @@ class PromptJet(object):
 		t5e5_flag=False
 
 
-		## Thermal considerations
+		### Calculate Thermal considerations
 		# Thermal considerations do not depend on shell collisions, but only on the energy in a particular shell as it passes the photosphere
 
 		# Calculate the photospheric radius for each jet shell, Equation 9 of Hascoet 2013
@@ -154,45 +154,56 @@ class PromptJet(object):
 		for i in range(len(jet_shells)):
 			self.spectrum.add_therm_contribution(t_cross_phot[i],t_obs[i],T_phot[i],L_phot[i])
 		
+
+
+		### Simulate Internal Shocks
 		# Flag to mark if all the shells in the jet are ordered (no more collisions occur at this point )
 		ord_lorentz = False
+
+		# Check if all the active shells have ordered Lorentz factors
+		# If true, no more collisions will be possible at this point
+		if is_sorted(jet_shells[jet_shells['STATUS']==1]['GAMMA'] ) == True:
+			ord_lorentz = True
+			print("Jet shells are already ordered.")
+
+
 		while ord_lorentz == False:
 			
 			# Calculate the time of collision between all adjacent (and active) shells
 			t_coll_lowest = 1e99 # Place holder time until next collision
-			for i in range(len(jet_shells)-1):
-				# We only need to check the active shells 
-				if jet_shells['STATUS'][i] == 1:
+			
+			# Grab all the indices for the active shells
+			active_shell_inds = np.where(jet_shells["STATUS"]==1)[0]
+			# For each active shell, find the next active shell
+			# I don't want to look at the very final active shell, because there will be no shells after it. 
+			for i in range(len(active_shell_inds)-1):
 
-					# Find the closest up stream shell that is active
-					found_nxt = False
-					ind_nxt_shell=0
-					tmp_ind = i
-					while found_nxt == False:
-						tmp_ind+=1
-						if jet_shells['STATUS'][tmp_ind]==1:
-							found_nxt = True
-							ind_nxt_shell = tmp_ind
+				# The current active shell is the downstream shell
+				ind_ds_shell = active_shell_inds[i]
+				# The next active shell will be the up stream shell
+				ind_us_shell = active_shell_inds[i+1]
 
-					# If the down stream shell must have a Lorentz factor smaller than the upstream shell or they will never collide
-					if jet_shells['GAMMA'][i] < jet_shells['GAMMA'][ind_nxt_shell]: 
-						# The down stream shell is farther out, but slower
-						# The up stream shell is closer to the central engine out, but faster
-						tmp_ds_r = jet_shells['RADIUS'][i]
-						tmp_ds_b = beta(jet_shells['GAMMA'][i])
-						tmp_us_r = jet_shells['RADIUS'][ind_nxt_shell]
-						tmp_us_b = beta(jet_shells['GAMMA'][ind_nxt_shell])
+				# If the down stream shell must have a Lorentz factor smaller than the upstream shell or they will never collide
+				if jet_shells['GAMMA'][ind_ds_shell] < jet_shells['GAMMA'][ind_us_shell]: 
 
-						# Calculate the time until collision between these two shells
-						t_coll_i = (tmp_ds_r - tmp_us_r) / (cc.c * (tmp_us_b - tmp_ds_b) )
-						
-						# Check if this time is shorter than our previous time until next collision
-						if t_coll_i < t_coll_lowest:
-							t_coll_lowest = t_coll_i
+					# The down stream shell is farther out, but slower
+					# The up stream shell is closer to the central engine out, but faster
+					tmp_ds_r = jet_shells['RADIUS'][ind_ds_shell]
+					tmp_ds_b = beta(jet_shells['GAMMA'][ind_ds_shell])
+					tmp_us_r = jet_shells['RADIUS'][ind_us_shell]
+					tmp_us_b = beta(jet_shells['GAMMA'][ind_us_shell])
 
-							# Record which shells these were
-							ind_s_ds = i
-							ind_s_us = ind_nxt_shell
+					# Calculate the time until collision between these two shells
+					t_coll_tmp = (tmp_ds_r - tmp_us_r) / (cc.c * (tmp_us_b - tmp_ds_b) )
+
+
+					# Check if this time is shorter than our previous time until next collision
+					if t_coll_tmp < t_coll_lowest:
+						t_coll_lowest = t_coll_tmp
+
+						# Record which shells these were
+						ind_s_ds = ind_ds_shell
+						ind_s_us = ind_us_shell
 
 			true_t += t_coll_lowest
 
@@ -274,7 +285,7 @@ class PromptJet(object):
 
 			# Energy dissipated in the shock, assumes that the energy dissipated occurs when upstream shell sweeps up a mass equal to its own (or sweeps up the entire downstream shell mass)
 			en_diss =  np.min(np.array([shell_ds_m,shell_us_m])) * cc.c**2 * (shell_ds_g + shell_us_g - 2*gamma_r)
-			en_diss *= (alpha_syn * alpha_e * f_dyn * 3e-3)
+			# en_diss *= (alpha_syn * alpha_e * f_dyn * 3e-3)
 
 			# Variability timescale 
 			delt = rad_coll/(2*cc.c*gamma_r**2) # sec, Dynamical time scale of the shell
@@ -282,6 +293,11 @@ class PromptJet(object):
 			# Observer arrival time
 			ta = true_t - (rad_coll/cc.c)
 
+			# Calculate optical depth 
+			if ind_s_ds == 0:
+				tau = 0
+			else:
+				tau = 0.2 * np.sum( jet_shells['MASS'][jet_shells['STATUS']==1][:ind_s_ds]/(4 * np.pi * jet_shells['RADIUS'][jet_shells['STATUS']==1][:ind_s_ds]**2) )
 
 			# If the emission is efficient, add the contribution
 			# E.g., If the emission time is less than the shell expansion (i.e., the dynamical scale of the shell)
@@ -289,18 +305,10 @@ class PromptJet(object):
 			if t_syn < ((1+Q_IC)*rad_coll/cc.c/gamma_bar):
 				# The relative velocity between the shells must be greater than the local sound speed
 				if rel_vel(shell_us_g,shell_ds_g) > 0.1:
-
-					# Calculate optical depth 
-					if ind_s_ds == 0:
-						tau = 0
-					else:
-						tau = 0.2 * np.sum( jet_shells['MASS'][jet_shells['STATUS']==1][:ind_s_ds]/(4 * np.pi * jet_shells['RADIUS'][jet_shells['STATUS']==1][:ind_s_ds]**2) )
-					
 					# The wind must be transparent in order to produce observable emission 
 					if tau < 1:	
 						# Add contribution to the spectrum 
-						self.spectrum.add_synch_contribution(te=true_t,ta=ta,asyn=alpha_syn,Beq=Beq,gammae=gamma_e,Esyn=E_syn_ev, gammar=gamma_r, e=en_diss, delt = delt)
-					
+						self.spectrum.add_synch_contribution(te=true_t,ta=ta,asyn=alpha_syn,Beq=Beq,gammae=gamma_e,Esyn=E_syn_ev, gammar=gamma_r, e=en_diss, delt = delt)	
 
 
 			# De-active the up-stream jet shell
@@ -326,8 +334,8 @@ class PromptJet(object):
 
 
 			# Record collision dynamics for each collision
-			save_coll_arr = np.array([ta,true_t,rad_coll,shell_ds_g,shell_ds_m,shell_us_g,shell_us_m,gamma_comb])
-			[file_shell_dyn.write("{:1.4e}\t".format(save_coll_arr[i])) for i in range(len(save_coll_arr))]
+			save_coll_arr = np.array([ta,true_t,rad_coll,shell_ds_g,shell_ds_m,shell_us_g,shell_us_m,gamma_comb,tau])
+			[file_shell_dyn.write("{:1.5e}\t".format(save_coll_arr[i])) for i in range(len(save_coll_arr))]
 			file_shell_dyn.write("\n")
 
 			# Record shell positions at specific times (to match D&M 1998)

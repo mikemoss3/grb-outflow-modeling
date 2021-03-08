@@ -16,5 +16,6 @@ import shelldists as sd
 
 
 
-jet_inst = pj.PromptJet(numshells=5000,dte=0.002,shelldist=sd.step)
+jet_inst = pj.PromptJet(numshells=5000,dte=0.002,shelldist=sd.oscillatory)
+# jet_inst = pj.PromptJet(numshells=5000,dte=0.002,shelldist=sd.step)
 jet_inst.jet_evolution(tb=0)

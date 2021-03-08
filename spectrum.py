@@ -49,9 +49,52 @@ class Spectrum(object):
 			self.spec_therm = np.append(self.spec_therm, np.array((te,ta,T,L),dtype=[('te',float),('ta',float),('T',float),('L',float)] ) ) 
 
 
+def thermal(energy_bins,temp):
+	"""
+	Method to produce a thermal spectrum over a given energy range given and a specified temperature and
+	"""
+
+	kb = cc.kb # Boltzmann constant
+
+	# Initialize array for thermal spectrum 
+	dNE_therm = np.zeros(shape=len(energy_bins))
+
+	# a thermal spectrum should cutoff before 2 MeV because of pair opacity.
+	for i in range(len( energy_bins[0:np.argmax(energy_bins>2*1e6) ] )):
+		if energy_bins[i] < 4*kb*temp:
+			val = 2* energy_bins[i]**1.4 / (cc.h**2 * cc.c**2) / (np.exp(energy_bins[i]/kb/temp)-1)
+		else: 
+			val = 2* energy_bins[i]**1.4 * np.exp(-energy_bins[i]/kb/temp) / (cc.h**2 * cc.c**2)
+
+		dNE_therm[i] += val
+		
+	return dNE_therm
+
+def synchrotron(energy_bins,Esyn,endiss):
+	"""
+	Method to produce a synchrotron spectrum over a given energy range and specified synchrotron energy and energy dissipated
+	"""
+
+	dNE_sync = np.zeros(shape=len(energy_bins))
+
+	for i in range(len(energy_bins)):
+		# Low energy power law
+		if energy_bins[i] < Esyn:
+			x = -2/3
+		# High energy power law
+		elif energy_bins[i] > Esyn:
+			x = -2.5
+		# val = (0.01*0.33*3e-3)*(spec_synch['e'][j]/spec_synch['Esyn'][j])*np.power(energy_bins[i]/spec_synch['Esyn'][j], x)
+		val = (endiss/Esyn)*np.power(energy_bins[i]/Esyn, x)
+		
+		dNE_sync[i] += val
+
+	return dNE_sync
+
+
 def plot_spectrum( ax, spec_therm=None, spec_synch=None,nuFnu=True, num_bins=1000,emin=100,emax=1e9):
 	"""
-	Method to plot the stored spectrum
+	Method to plot the stored spectrum over a given energy range
 	"""
 
 	# Specify energy range
@@ -73,19 +116,11 @@ def plot_spectrum( ax, spec_therm=None, spec_synch=None,nuFnu=True, num_bins=100
 
 		# Initialize array for thermal spectrum 
 		dNE_therm = np.zeros(shape=len(enlogbins))
-		
-		kb = cc.kb # Boltzmann constant
 
 		for j in range(len(spec_therm)):
-			# a thermal spectrum should cutoff before 2 MeV because of pair opacity.
-			for i in range(len( enlogbins[0:np.argmax(enlogbins>2*1e6) ] )):
-			# for i in range(len(enlogbins)):
-				if enlogbins[i] < 4*kb*spec_therm['T'][j]:
-					val = 2* enlogbins[i]**1.4 / (cc.h**2 * cc.c**2) / (np.exp(enlogbins[i]/kb/spec_therm['T'][j])-1)
-				else: 
-					val = 2* enlogbins[i]**1.4 * np.exp(-enlogbins[i]/kb/spec_therm['T'][j]) / (cc.h**2 * cc.c**2)
-				dNE_therm[i] += val
-				dNE[i] += val
+			therm_contr = thermal(enlogbins,spec_therm['T'][j])
+			dNE_therm += therm_contr
+			dNE += therm_contr
 
 	# If a synchrotron spectrum has been supplied 
 	if spec_synch is not None:
@@ -93,18 +128,10 @@ def plot_spectrum( ax, spec_therm=None, spec_synch=None,nuFnu=True, num_bins=100
 		# Initialize array for synchrotron spectrum 
 		dNE_sync = np.zeros(shape=len(enlogbins))
 
-		for j in range(len(spec_synch['Esyn'])):
-			for i in range(len(enlogbins)):
-				# Low energy power law
-				if enlogbins[i] < spec_synch['Esyn'][j]:
-					x = -2/3
-				# High energy power law
-				elif enlogbins[i] > spec_synch['Esyn'][j]:
-					x = -2.5
-				# val = (0.01*0.33*3e-3)*(spec_synch['e'][j]/spec_synch['Esyn'][j])*np.power(enlogbins[i]/spec_synch['Esyn'][j], x)
-				val = (spec_synch['e'][j]/spec_synch['Esyn'][j])*np.power(enlogbins[i]/spec_synch['Esyn'][j], x)
-				dNE_sync[i] += val
-				dNE[i] += val
+		for j in range(len(spec_synch['Esyn'])):		
+			synch_contr = synchrotron(enlogbins,spec_synch['Esyn'][j],spec_synch['e'][j])
+			dNE_sync += synch_contr
+			dNE += synch_contr
 
 
 	# For axis labels

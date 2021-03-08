@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1612972127 "timefirstcoll.tex" "timefirstcoll.pdf" "timefirstcoll" 1612972128
+["pdflatex"] 1614633217 "collTandR.tex" "collTandR.pdf" "collTandR" 1614633218
   "/usr/local/texlive/2018/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1480098698 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1480098698 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -64,9 +64,9 @@
   "/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1523934492 2717033 f61a5287d9c22a39a74f1979fe3f905c ""
   "/usr/local/texlive/2018/texmf-var/web2c/pdftex/pdflatex.fmt" 1523934516 4220280 10cab8fbd7c5a7c52aba9917e190d018 ""
   "/usr/local/texlive/2018/texmf.cnf" 1523934483 577 0b39adfd7c93507ff20c9c14c2f1a33f ""
-  "timefirstcoll.aux" 1612972128 43 a6a78c1b75be15cc129b3b09744f4d28 ""
-  "timefirstcoll.tex" 1612972127 4633 64891d7a9a87291af523e0560bb36776 ""
+  "collTandR.aux" 1614633218 69 cd5c3d4e80d8cc5d7faa84155b79bac7 ""
+  "collTandR.tex" 1614633152 5371 e38ca667bf17a76801ff5604d6f46572 ""
   (generated)
-  "timefirstcoll.log"
-  "timefirstcoll.pdf"
-  "timefirstcoll.aux"
+  "collTandR.aux"
+  "collTandR.pdf"
+  "collTandR.log"

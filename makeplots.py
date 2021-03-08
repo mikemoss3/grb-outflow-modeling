@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import shelldists as sd
 import spectrum as sp
+import lightcurves as lc
 
 
 
@@ -61,6 +62,65 @@ def plot_spec(save=False):
 	if save == True:
 		plt.savefig('sim_results/spectrum.png')
 
+def plot_light_curve(save=False):
+	"""
+	Plot light curve per time bin 
+	"""
+
+	# Load spectrum data 
+	spec_therm = np.genfromtxt('sim_results/ordlor_spectrum_therm.txt',dtype=[('te',float),('ta',float),('T',float),('L',float)])
+	spec_synch = np.genfromtxt('sim_results/ordlor_spectrum_synch.txt',dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float)])
+
+	fig = plt.figure()
+	ax = fig.gca()
+	lc.plot_light_curve(ax=ax,em_therm=spec_therm,em_synch=spec_synch)
+	# lc.plot_light_curve(ax=ax,em_therm=spec_therm)
+	# lc.plot_light_curve(ax=ax,em_synch=spec_synch)
+
+	# ax.set_ylim(1e48,1e53)
+	# ax.set_xlim(100,1e8)
+	fig.tight_layout()
+	fig.legend()
+	
+	if save == True:
+		plt.savefig('sim_results/lightcurve.png')
+
+def plot_param_vs_t(param,save=False):
+	"""
+	Plot Spectrum and components
+	"""
+
+	# Load spectrum data 
+	spec_therm = np.genfromtxt('sim_results/ordlor_spectrum_therm.txt',dtype=[('te',float),('ta',float),('T',float),('L',float)])
+	spec_synch = np.genfromtxt('sim_results/ordlor_spectrum_synch.txt',dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float)])
+
+	fig = plt.figure()
+	ax = fig.gca()
+
+	if param == 'T' or param =='L':
+		ax.scatter(spec_therm['te'],spec_therm[param],marker='.',label=param)
+	else:
+		ax.scatter(spec_synch['te'],spec_synch[param],marker='.',label=param)
+
+	fig.legend()
+
+	fontsize=14
+	fontweight='bold'
+
+	ax.set_ylabel(param,fontsize=fontsize,fontweight=fontweight)
+	ax.set_xlabel(r't$_e$',fontsize=fontsize,fontweight=fontweight)
+
+	for tick in ax.xaxis.get_major_ticks():
+	    tick.label1.set_fontsize(fontsize=fontsize)
+	    tick.label1.set_fontweight(fontweight)
+	for tick in ax.yaxis.get_major_ticks():
+	    tick.label1.set_fontsize(fontsize=fontsize)
+	    tick.label1.set_fontweight(fontweight)
+
+	fig.tight_layout()
+		
+	if save == True:
+		plt.savefig('sim_results/param-{}-vs-t.png'.format(param))
 
 def plot_evo_therm(save=False):
 	"""
@@ -73,9 +133,9 @@ def plot_evo_therm(save=False):
 
 	fig = plt.figure()
 	ax = fig.gca()
-	boltz= 8.617*1e-8
+	boltz= 8.617*1e-8 # keV K^-1 
 	ax.scatter(spec_therm['ta'],spec_therm['T']*boltz)
-	ax.set_ylabel(r'k$_B$T (K)',fontsize=fontsize,fontweight=fontweight)
+	ax.set_ylabel(r'k$_B$T (KeV)',fontsize=fontsize,fontweight=fontweight)
 
 	# ax.scatter(spec_therm['ta'],spec_therm['L'])
 	# plt.set_ylabel('L (erg/s)',fontsize=fontsize,fontweight=fontweight)
@@ -160,7 +220,7 @@ def plot_evo_synch(save=False):
 	
 	ax[0,1].scatter(spec_synch['ta'],spec_synch['gammae']/1e4)
 	ax[0,1].set_yscale('log')
-	ax[0,1].set_ylabel(r'$\Gamma_{e}$/10000',fontsize=fontsize,fontweight=fontweight)
+	ax[0,1].set_ylabel(r'$\Gamma_{e}$/1e4',fontsize=fontsize,fontweight=fontweight)
 	# ax[0,1].set_xlabel(r't$_a$ (sec), Arrival Time',fontsize=fontsize,fontweight=fontweight)
 	ax[0,1].yaxis.set_label_position("right")
 	ax[0,1].yaxis.tick_right()
@@ -171,9 +231,9 @@ def plot_evo_synch(save=False):
 	ax[1,0].set_xlabel(r't$_a$ (sec), Arrival Time',fontsize=fontsize,fontweight=fontweight)
 
 
-	ax[1,1].scatter(spec_synch['ta'],spec_synch['Esyn']/1000)
+	ax[1,1].scatter(spec_synch['ta'],spec_synch['Esyn']/1e3)
 	ax[1,1].set_yscale('log')
-	ax[1,1].set_ylabel(r'$E_{syn}$/1000',fontsize=fontsize,fontweight=fontweight)
+	ax[1,1].set_ylabel(r'$E_{syn}$/1e3',fontsize=fontsize,fontweight=fontweight)
 	ax[1,1].set_xlabel(r't$_a$ (sec), Arrival Time',fontsize=fontsize,fontweight=fontweight)
 	ax[1,1].yaxis.set_label_position("right")
 	ax[1,1].yaxis.tick_right()
@@ -198,12 +258,16 @@ def plot_evo_synch(save=False):
 		plt.savefig('sim_results/synch-evo-fig1.png')
 
 
+
+
 if __name__ == '__main__':
-	# plot_lor_dist(save=True)
-	# plot_spec(save=True)
-	# plot_evo_therm(save=True)
+	plot_lor_dist(save=True)
+	plot_spec(save=True)
+	plot_light_curve(save=True)
+	plot_param_vs_t(param='gammar',save=True)
+	plot_evo_therm(save=True)
 	plot_evo_synch(save=True)
-	plt.show()
+	# plt.show()
 
 
 
