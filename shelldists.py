@@ -57,8 +57,9 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5,E_dot=1e52):
 			shell_arr[i]['TE'] = -i*dte
 
 	# Calculate the shell position based on when the shell will be launched
-	shell_arr['RADIUS'] = [cc.c*beta(shell_arr['GAMMA'][i])*shell_arr['TE'][i]for i in range(len(shell_arr))]
-	shell_arr['RADIUS'][0] +=1 # Eliminates divide by zero error and is insignificantly small.
+	# Notice this is actually R/c 
+	shell_arr['RADIUS'] = [beta(shell_arr['GAMMA'][i])*shell_arr['TE'][i]for i in range(len(shell_arr))]
+	shell_arr['RADIUS'][0] += 1/cc.c # Eliminates divide by zero error and is insignificantly small.
 
 	# Deactivate all shells except the initial one
 	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)
@@ -103,8 +104,9 @@ def oscillatory(dte,gmin=100,gmax=400,numshells=5000,median=333,ampf=2/3,freq=5,
 
 
 	# Calculate the shell position based on when the shell will be launched
-	shell_arr['RADIUS'] = [cc.c*beta(shell_arr['GAMMA'][i])*shell_arr['TE'][i]for i in range(len(shell_arr))]
-	shell_arr['RADIUS'][0] +=1 # Eliminates divide by zero error and is insignificantly small.
+	# Notice this is actually R/c 
+	shell_arr['RADIUS'] = [beta(shell_arr['GAMMA'][i])*shell_arr['TE'][i]for i in range(len(shell_arr))]
+	shell_arr['RADIUS'][0] +=1/cc.c # Eliminates divide by zero error and is insignificantly small.
 
 	# Deactivate all shells except the initial one
 	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)

@@ -78,15 +78,25 @@ def synchrotron(energy_bins,Esyn,endiss):
 	dNE_sync = np.zeros(shape=len(energy_bins))
 
 	for i in range(len(energy_bins)):
+		"""		
 		# Low energy power law
 		if energy_bins[i] < Esyn:
 			x = -2/3
 		# High energy power law
 		elif energy_bins[i] > Esyn:
 			x = -2.5
-		# val = (0.01*0.33*3e-3)*(spec_synch['e'][j]/spec_synch['Esyn'][j])*np.power(energy_bins[i]/spec_synch['Esyn'][j], x)
 		val = (endiss/Esyn)*np.power(energy_bins[i]/Esyn, x)
-		
+		"""
+
+		# Low energy power law
+		if energy_bins[i] < Esyn:
+			x = -1
+		# High energy power law
+		elif energy_bins[i] > Esyn:
+			x = -2.25
+		val = (1e52*0.02)*np.power(energy_bins[i]/1000, x)
+
+
 		dNE_sync[i] += val
 
 	return dNE_sync

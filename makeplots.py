@@ -54,7 +54,7 @@ def plot_spec(save=False):
 	ax.vlines(x=4*1e3,ymin=1e46,ymax=1e60,linestyle='dashed',color='black',label='GBM Band')
 	ax.vlines(x=4*1e7,ymin=1e46,ymax=1e60,linestyle='dashed',color='black')
 
-	ax.set_ylim(1e48,1e53)
+	# ax.set_ylim(1e48,1e53)
 	ax.set_xlim(100,1e8)
 	fig.tight_layout()
 	fig.legend()
@@ -77,8 +77,6 @@ def plot_light_curve(save=False):
 	# lc.plot_light_curve(ax=ax,em_therm=spec_therm)
 	# lc.plot_light_curve(ax=ax,em_synch=spec_synch)
 
-	# ax.set_ylim(1e48,1e53)
-	# ax.set_xlim(100,1e8)
 	fig.tight_layout()
 	fig.legend()
 	
@@ -261,13 +259,13 @@ def plot_evo_synch(save=False):
 
 
 if __name__ == '__main__':
-	plot_lor_dist(save=True)
-	plot_spec(save=True)
-	plot_light_curve(save=True)
-	plot_param_vs_t(param='gammar',save=True)
-	plot_evo_therm(save=True)
-	plot_evo_synch(save=True)
-	# plt.show()
+	# plot_lor_dist(save=False)
+	# plot_spec(save=False)
+	# plot_light_curve(save=False)
+	# plot_param_vs_t(param='gammar',save=False)
+	# plot_evo_therm(save=False)
+	plot_evo_synch(save=False)
+	plt.show()
 
 
 

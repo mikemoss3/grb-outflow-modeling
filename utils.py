@@ -23,7 +23,10 @@ def beta(gamma):
 	Method to calculate the beta factor from the Lorentz factor (beta == v/c)
 	"""
 
-	return np.sqrt(1- 1/gamma**2)
+	# Approximation
+	return 1- 1/(2*gamma**2)
+	# Exact
+	# return np.sqrt(1- 1/gamma**2)
 
 def rel_vel(gamma_1, gamma_2):
 	"""

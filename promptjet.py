@@ -114,33 +114,40 @@ class PromptJet(object):
 		if sigma is None:
 			sigma = self.sigma
 
-		true_t = tb # Initialize the time in the reference frame of the jet. 
 
+		# Initialize the time in the reference frame of the jet. 
+		te = tb 
+
+		# Average Lorentz factor of all jet shells 
+		gamma_bar = np.mean(jet_shells['GAMMA'])
 
 		# Open file to record collision dynamics
 		file_shell_dyn = open('./sim_results/shell_dyn.txt','w')
 		file_shell_dyn.write("TimeObs (s) \tTimeJet (s) \tRcoll (cm) \tDSGamma \tDSMass (g) \tUPGamma \tUPMass (g) \tGammaf \ttau\n")
 		file_shell_dyn.close()
 		file_shell_dyn = open('./sim_results/shell_dyn.txt','a')
-		# Initialize flags, used for creating plots:
+		# Initialize flags, used for recording shell distributions are particular times:
 		t3e4_flag=False
 		t2e5_flag=False
 		t5e5_flag=False
+
+
+
 
 
 		### Calculate Thermal considerations
 		# Thermal considerations do not depend on shell collisions, but only on the energy in a particular shell as it passes the photosphere
 
 		# Calculate the photospheric radius for each jet shell, Equation 9 of Hascoet 2013
-		r_phot = (0.2*E_dot / ( 8*np.pi*(cc.c**3) *(jet_shells['GAMMA']**3)) ) 
-		# r_phot = 2.9*10**13 * (0.2*(E_dot/1e53) / ( (1+sigma)*(jet_shells['GAMMA']/100)) )
+		r_phot = (0.2*E_dot / ( 8*np.pi*(cc.c**4) *(jet_shells['GAMMA']**3)) ) 
+		# r_phot = 2.9*10**13 * (0.2*(E_dot/1e53) / ( (1+sigma)*(jet_shells['GAMMA']/100)) )/cc.c
 
 		# Times when each shell will cross the photoshpere
-		t_cross_phot = (r_phot - jet_shells['RADIUS']) / ( cc.c*beta(jet_shells['GAMMA']) )
+		t_cross_phot = (r_phot - jet_shells['RADIUS']) / ( beta(jet_shells['GAMMA']) )
 		# Observer time 
-		t_obs = t_cross_phot-r_phot/cc.c
+		t_obs = t_cross_phot - r_phot
 		# Calculate useful constant for next calculations
-		Phi = np.power(theta,-2/3)*np.power(r_phot,-2/3)*np.power(r_open,2/3)*np.power(jet_shells['GAMMA'],2/3)
+		Phi = np.power(theta,-2/3)*np.power(r_phot*cc.c,-2/3)*np.power(r_open,2/3)*np.power(jet_shells['GAMMA'],2/3)
 
 		# Temperature at photosphere
 		a = 7.566 * 1e-15 # erg cm^-3 K^-4, Radiation constant
@@ -179,22 +186,25 @@ class PromptJet(object):
 			for i in range(len(active_shell_inds)-1):
 
 				# The current active shell is the downstream shell
-				ind_ds_shell = active_shell_inds[i]
+				ind_ds_shell_tmp = active_shell_inds[i]
 				# The next active shell will be the up stream shell
-				ind_us_shell = active_shell_inds[i+1]
+				ind_us_shell_tmp = active_shell_inds[i+1]
 
 				# If the down stream shell must have a Lorentz factor smaller than the upstream shell or they will never collide
-				if jet_shells['GAMMA'][ind_ds_shell] < jet_shells['GAMMA'][ind_us_shell]: 
+				if jet_shells['GAMMA'][ind_ds_shell_tmp] < jet_shells['GAMMA'][ind_us_shell_tmp]: 
 
 					# The down stream shell is farther out, but slower
 					# The up stream shell is closer to the central engine out, but faster
-					tmp_ds_r = jet_shells['RADIUS'][ind_ds_shell]
-					tmp_ds_b = beta(jet_shells['GAMMA'][ind_ds_shell])
-					tmp_us_r = jet_shells['RADIUS'][ind_us_shell]
-					tmp_us_b = beta(jet_shells['GAMMA'][ind_us_shell])
+					tmp_ds_r = jet_shells['RADIUS'][ind_ds_shell_tmp]
+					tmp_ds_b = beta(jet_shells['GAMMA'][ind_ds_shell_tmp])
+					tmp_us_r = jet_shells['RADIUS'][ind_us_shell_tmp]
+					tmp_us_b = beta(jet_shells['GAMMA'][ind_us_shell_tmp])
+
+					print(tmp_ds_r,tmp_ds_b)
+					print(tmp_us_r,tmp_us_b)
 
 					# Calculate the time until collision between these two shells
-					t_coll_tmp = (tmp_ds_r - tmp_us_r) / (cc.c * (tmp_us_b - tmp_ds_b) )
+					t_coll_tmp = (tmp_ds_r - tmp_us_r) / ((tmp_us_b - tmp_ds_b) )
 
 
 					# Check if this time is shorter than our previous time until next collision
@@ -202,28 +212,46 @@ class PromptJet(object):
 						t_coll_lowest = t_coll_tmp
 
 						# Record which shells these were
-						ind_s_ds = ind_ds_shell
-						ind_s_us = ind_us_shell
+						ind_s_ds = ind_ds_shell_tmp
+						ind_s_us = ind_us_shell_tmp
 
-			true_t += t_coll_lowest
+			# Emission time in the frame of the jet
+			te += t_coll_lowest
+
+			# Move shells forward 
+			for i in range(len(jet_shells)):
+				# But only if the shells are active and launched
+				if jet_shells[i]['STATUS'] == 1:
+					jet_shells[i]['RADIUS'] += beta(jet_shells[i]['GAMMA'])*t_coll_lowest
 
 			# These are the Lorentz factors, masses, and radii of the two colliding shells
 			# Down stream shell 
 			shell_ds_g = jet_shells[ind_s_ds]['GAMMA']
 			shell_ds_m = jet_shells[ind_s_ds]['MASS']
-			# shell_ds_r = jet_shells[ind_s_ds]['RADIUS']
 			# Up stream shell
 			shell_us_g = jet_shells[ind_s_us]['GAMMA']
 			shell_us_m = jet_shells[ind_s_us]['MASS']
-			# shell_us_r = jet_shells[ind_s_us]['RADIUS']
+
+			# Final Lorentz factor of the combined shell (after complete redistribution of momenta)
+			gamma_comb = shell_coll_gamma(shell_ds_g, shell_us_g, shell_ds_m, shell_us_m)
+			
+			# Set the Lorentz factor of the merged shells.
+			jet_shells[ind_s_ds]['GAMMA'] = gamma_comb
+			# Mass of the merged shell (add the mass of the other shell)
+			jet_shells[ind_s_ds]['MASS'] += jet_shells[ind_s_us]['MASS']
 
 			# Radius at which collision occurred
-			rad_coll = jet_shells['RADIUS'][ind_s_ds] + cc.c*beta(shell_ds_g)*t_coll_lowest 
-			# rad_coll = jet_shells['RADIUS'][ind_s_us] + cc.c*beta(shell_us_g)*t_coll_lowest # Alternative way to calculate
-			# rad_coll = (shell_ds_r - shell_us_r) * ( beta(shell_us_g) / (beta(shell_us_g) - beta(shell_ds_g) )) # Alternative way to calculate, but suffers from numerical instabilities
+			rad_coll = jet_shells['RADIUS'][ind_s_ds]
+			# rad_coll = jet_shells['RADIUS'][ind_s_us] # Alternatively, this should be the same radius
+
+			# De-active the up-stream jet shell
+			jet_shells[ind_s_us]['STATUS'] = 0 
+
+
+
+
 
 			### Calculate Contribution to Spectrum ### 
-
 			## Synchrotron considerations:
 			gamma_int = 0.5*(np.sqrt(shell_ds_g/shell_us_g)+np.sqrt(shell_us_g/shell_ds_g)) # Lorentz factor for internal motion in shocked material
 			eps = (gamma_int-1)*cc.mp*cc.c**2 # erg, Average proton factor from the collision of two shells
@@ -233,11 +261,10 @@ class PromptJet(object):
 			# gamma_e = np.power((alpha_m/ksi)*(eps/cc.me/cc.c**2),1/(3-mu)) # Average electron lorentz factor, electrons directly produce synchrotron radiation (via turbulent magnetic fields)
 			gamma_e = 1e4 # Average electron lorentz factor, constant
 			gamma_r = np.sqrt(shell_ds_g * shell_us_g) # Approximate resulting Lorentz factor from the shell collision
-			gamma_bar = (shell_ds_g + shell_us_g)/2 # Average Lorentz factor of jet shells 
 
 
-			n = E_dot / (4*np.pi * rad_coll**2 * gamma_bar**2 * cc.mp * cc.c**3) # 1/cm^3, Comoving proton number density
-			# n = E_dot / (4*np.pi * rad_coll**2 * (gamma_bar*gamma_r) * cc.mp * cc.c**3) # 1/cm^3, Comoving proton number density, new implementation of Frederic
+			n = E_dot / (4*np.pi * rad_coll**2 * gamma_bar**2 * cc.mp * cc.c**5) # 1/cm^3, Comoving proton number density
+			# n = E_dot / (4*np.pi * rad_coll**2 * (gamma_bar*gamma_r) * cc.mp * cc.c**5) # 1/cm^3, Comoving proton number density, new implementation of Frederic
 			Beq = np.sqrt(8*np.pi*alpha_b*n*eps) # (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
 
 			# Synchrotron energy emitted by accelerated electron
@@ -247,14 +274,13 @@ class PromptJet(object):
 
 			# Check if Klein-Nishina limit or Thompson (i.e., w>>1 or w<<1)
 			w = gamma_e*E_0syn/(cc.me*cc.c**2) # Critical value between Thomson and Klein-Nishina
-			# w_alt = 33*(Beq/1e3)*(gamma_e/1e4)**3 # Alternative relation fro w
-			# print('w={} , wp={}'.format(w, w_alt) )
+			# w_alt = 33*(Beq/1e3)*(gamma_e/1e4)**3 # Alternative relation to find w
 			
 			t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1e3,-2) # sec, synchrotron time-scale
 
 			# Q_IC == tau_star * gamma_e**2 == Y == the Compton Parameter
 			# Write equation 22 in a slightly simplified way
-			c = -(3/2)*(0.2/np.pi/rad_coll**2)*(E_dot/gamma_bar**2 / cc.c**2)*(gamma_e)*np.power(Beq/1000,-2)*100
+			c = -(3/2)*(0.2/np.pi/(rad_coll**2))*(E_dot/gamma_bar**2 / cc.c**4)*(gamma_e)*np.power(Beq/1000,-2)*100
 			if w >= 1:
 				# Klein-Nishina
 				# Calculate the left hand side of equation 29
@@ -284,68 +310,47 @@ class PromptJet(object):
 			# f_dyn = 1
 
 			# Energy dissipated in the shock, assumes that the energy dissipated occurs when upstream shell sweeps up a mass equal to its own (or sweeps up the entire downstream shell mass)
-			en_diss =  np.min(np.array([shell_ds_m,shell_us_m])) * cc.c**2 * (shell_ds_g + shell_us_g - 2*gamma_r)
-			# en_diss *= (alpha_syn * alpha_e * f_dyn * 3e-3)
+			en_diss =  np.min(np.array([shell_ds_m,shell_us_m])) * cc.c**2 * (shell_ds_g + shell_us_g - 2*gamma_r) #* alpha_e*alpha_syn 
 
 			# Variability timescale 
-			delt = rad_coll/(2*cc.c*gamma_r**2) # sec, Dynamical time scale of the shell
+			delt = rad_coll/(2*gamma_r**2) # sec, Dynamical time scale of the shell
 
 			# Observer arrival time
-			ta = true_t - (rad_coll/cc.c)
+			ta = te - rad_coll
 
 			# Calculate optical depth 
 			if ind_s_ds == 0:
 				tau = 0
 			else:
-				tau = 0.2 * np.sum( jet_shells['MASS'][jet_shells['STATUS']==1][:ind_s_ds]/(4 * np.pi * jet_shells['RADIUS'][jet_shells['STATUS']==1][:ind_s_ds]**2) )
+				tau = 0.2 * np.sum( jet_shells['MASS'][jet_shells['STATUS']==1][:ind_s_ds]/(4 * np.pi * cc.c**2 * jet_shells['RADIUS'][jet_shells['STATUS']==1][:ind_s_ds]**2) )
 
 			# If the emission is efficient, add the contribution
 			# E.g., If the emission time is less than the shell expansion (i.e., the dynamical scale of the shell)
 			t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1000,-2) # sec, synchrotron time-scale
-			if t_syn < ((1+Q_IC)*rad_coll/cc.c/gamma_bar):
+			if t_syn < ((1+Q_IC)*rad_coll/gamma_bar):
 				# The relative velocity between the shells must be greater than the local sound speed
 				if rel_vel(shell_us_g,shell_ds_g) > 0.1:
 					# The wind must be transparent in order to produce observable emission 
 					if tau < 1:	
 						# Add contribution to the spectrum 
-						self.spectrum.add_synch_contribution(te=true_t,ta=ta,asyn=alpha_syn,Beq=Beq,gammae=gamma_e,Esyn=E_syn_ev, gammar=gamma_r, e=en_diss, delt = delt)	
-
-
-			# De-active the up-stream jet shell
-			jet_shells[ind_s_us]['STATUS'] = 0 
-
-			# Move shells forward 
-			for i in range(len(jet_shells)):
-				# But only if the shells are active and launched
-				if jet_shells[i]['STATUS'] == 1:
-					jet_shells[i]['RADIUS'] += cc.c*beta(jet_shells[i]['GAMMA'])*t_coll_lowest
-
-			# Final Lorentz factor of the combined shell (after complete redistribution of momenta)
-			gamma_comb = shell_coll_gamma(shell_ds_g, shell_us_g, shell_ds_m, shell_us_m)
-
-			# Set the Lorentz factor of the merged shells.
-			jet_shells[ind_s_ds]['GAMMA'] = gamma_comb
-			# Set the radius of the merged shells.
-			jet_shells[ind_s_ds]['RADIUS'] = rad_coll
-			# Mass of the combined shell (add the mass of the other shell)
-			jet_shells[ind_s_ds]['MASS'] += jet_shells[ind_s_us]['MASS']
+						self.spectrum.add_synch_contribution(te=te,ta=ta,asyn=alpha_syn,Beq=Beq,gammae=gamma_e,Esyn=E_syn_ev, gammar=gamma_r, e=en_diss, delt = delt)	
 
 
 
 
 			# Record collision dynamics for each collision
-			save_coll_arr = np.array([ta,true_t,rad_coll,shell_ds_g,shell_ds_m,shell_us_g,shell_us_m,gamma_comb,tau])
+			save_coll_arr = np.array([ta,te,rad_coll,shell_ds_g,shell_ds_m,shell_us_g,shell_us_m,gamma_comb,tau])
 			[file_shell_dyn.write("{:1.5e}\t".format(save_coll_arr[i])) for i in range(len(save_coll_arr))]
 			file_shell_dyn.write("\n")
 
 			# Record shell positions at specific times (to match D&M 1998)
-			if true_t > 3e4 and t3e4_flag==False:
+			if te > 3e4 and t3e4_flag==False:
 				np.savetxt('./sim_results/t3e4_shells.txt',jet_shells)
 				t3e4_flag=True 
-			if true_t > 2e5 and t2e5_flag==False:
+			if te > 2e5 and t2e5_flag==False:
 				np.savetxt('./sim_results/t2e5_shells.txt',jet_shells)
 				t2e5_flag=True 
-			if true_t > 5e5 and t5e5_flag==False:
+			if te > 5e5 and t5e5_flag==False:
 				np.savetxt('./sim_results/t5e5_shells.txt',jet_shells)
 				t5e5_flag=True 
 
@@ -357,7 +362,7 @@ class PromptJet(object):
 				np.savetxt('./sim_results/ordlor_shells.txt',jet_shells)
 				np.savetxt('./sim_results/ordlor_spectrum_synch.txt',self.spectrum.spec_synch)
 				np.savetxt('./sim_results/ordlor_spectrum_therm.txt',self.spectrum.spec_therm)
-				print("At time t={} s, all shells have been launched and Lorentz factors are ordered.".format(true_t))
+				print("At time t={} s, all shells have been launched and Lorentz factors are ordered.".format(te))
 
 def shell_coll_gamma(s1g,s2g,s1m,s2m):
 	"""
