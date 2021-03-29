@@ -10,7 +10,6 @@ made of n consecutive shells
 """
 
 import numpy as np
-import matplotlib.pyplot as plt 
 import cosmologicalconstants as cc
 import utils as ut
 
@@ -34,7 +33,7 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5,E_dot=1e52):
 	# Make array of shells
 	# This array stores the radius, lorentz factor, mass, and emission time of each shell. The last column is used to record what the status of the shell is.
 	# Status indicator: 0 = deactived, 1 = active and launched, 2 = not launched
-	shell_arr = np.ndarray(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float),('TE',float),('STATUS',float)])
+	shell_arr = np.zeros(shape=numshells,dtype=[('RADIUS',float),('GAMMA',float),('MASS',float),('TE',float),('STATUS',float)])
 
 	# Set the Lorentz factors for each section of the step distribution
 	shell_arr[0:n1]['GAMMA'] = np.ones(shape=n1)*g1
@@ -60,10 +59,11 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5,E_dot=1e52):
 		for i in range(numshells):
 			shell_arr[i]['TE'] = -i*dte
 
+
 	# Calculate the shell position based on when the shell will be launched
 	# Notice this is actually R/c 
 	shell_arr['RADIUS'] = [ut.beta(shell_arr['GAMMA'][i])*shell_arr['TE'][i]for i in range(len(shell_arr))]
-	shell_arr['RADIUS'][0] += 1/cc.c # Eliminates divide by zero error and is insignificantly small.
+	shell_arr['RADIUS'][0] += 1/cc.c # Eliminates possible divide by zero error and is insignificantly small.
 
 	# Deactivate all shells except the initial one
 	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)

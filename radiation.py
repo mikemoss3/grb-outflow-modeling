@@ -41,16 +41,75 @@ class Emission(object):
 		else:
 			self.spec_synch = np.append(self.spec_synch, np.array((te,ta,asyn,Beq,gammae,Esyn,gammar,e,delt),dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float)])) 
 
-	def add_therm_contribution(self,te,ta,T,L):
+	def add_therm_contribution(self,te,ta,delt,T,L):
 		"""
 		Add a contribution to the thermal spectrum
 		"""
 
 		if self.spec_therm is None:
-			self.spec_therm = np.array((te,ta,T,L), dtype=[('te',float),('ta',float),('T',float),('L',float)])
+			self.spec_therm = np.array((te,ta,delt,T,L), dtype=[('te',float),('ta',float),('delt',float),('T',float),('L',float)])
 		# Otherwise, just append to the already created spectrum
 		else:
-			self.spec_therm = np.append(self.spec_therm, np.array((te,ta,T,L),dtype=[('te',float),('ta',float),('T',float),('L',float)] ) ) 
+			self.spec_therm = np.append(self.spec_therm, np.array((te,ta,delt,T,L),dtype=[('te',float),('ta',float),('delt',float),('T',float),('L',float)] ) )
+
+
+	def make_tot_spec(self,spec_therm=None,spec_synch=None,dt=0.01,Emin=4e4,Emax=5e6,dE=100):
+		"""
+		Method to create a spectrum from all active components as a function of time
+
+		Attributes:
+		dt = time resolution, seconds 
+		Emin, Emax = specifies the min and max of the desired energy range, eV
+		"""
+
+
+		# Record which components are active
+		if (spec_synch is None) & (self.spec_synch is not None):
+			spec_synch = self.spec_synch
+		elif (spec_therm is None) & (self.spec_therm is not None):
+			spec_therm = self.spec_therm
+
+		# When does the spectrum start and stop?
+		tstart = 0
+		tend = 0 # will be found from the active spectral components
+		if spec_synch is not None:
+			if np.max(spec_synch['ta']+spec_synch['delt']) > tend:
+				tend  = np.max(spec_synch['ta']+spec_synch['delt'])
+		elif spec_therm is not None:
+			if np.max(spec_therm['ta']+spec_therm['delt']) > tend:
+				tend  = np.max(spec_therm['ta']+spec_therm['delt'])
+		else: 
+			# all components are empty
+			print("At least one spectral component must be provided.")
+			return 0
+
+		# Make time axis
+		time_ax = np.arange(start=tstart,stop=tend+dt,step=dt)
+		# Make spec axis
+		num_bins = int((Emax-Emin)/dE) # Number of bins along the energy axis
+		en_ax = np.logspace(np.log10(Emin),np.log10(Emax),num_bins) # Create energy axis of spectra
+		spec_axis = np.zeros(shape=(len(time_ax),len(en_ax)) )
+
+
+		if spec_synch is not None:
+			for i in range(len(spec_synch)):
+				print(i)
+				time_ind_start = np.argmax(time_ax>spec_synch['ta'][i])-1
+				time_ind_end = np.argmax(time_ax>spec_synch['ta'][i]+spec_synch['delt'][i])
+
+
+				spec_axis[time_ind_start:time_ind_end,:]+=synchrotron(en_ax,spec_synch['Esyn'][i]*10,spec_synch['e'][i]/spec_synch['delt'][i]/dt)
+
+		if spec_therm is not None:
+			for i in range(len(spec_therm)):
+				print(i)
+				time_ind_start = np.argmax(time_ax>spec_therm['ta'][i])-1
+				time_ind_end = np.argmax(time_ax>spec_therm['ta'][i]+spec_therm['delt'][i])
+
+				spec_axis[time_ind_start:time_ind_end,:]+=thermal(en_ax,spec_therm['T'][i])
+
+
+		return time_ax,en_ax, spec_axis
 
 
 def thermal(energy_bins,temp):
@@ -63,15 +122,17 @@ def thermal(energy_bins,temp):
 	# Initialize array for thermal spectrum 
 	dNE_therm = np.zeros(shape=len(energy_bins))
 
-	# a thermal spectrum should cutoff before 2 MeV because of pair opacity.
-	for i in range(len( energy_bins[0:np.argmax(energy_bins>2*1e6) ] )):
-		if energy_bins[i] < 4*kb*temp:
-			val = 2* energy_bins[i]**1.4 / (cc.h**2 * cc.c**2) / (np.exp(energy_bins[i]/kb/temp)-1)
-		else: 
-			val = 2* energy_bins[i]**1.4 * np.exp(-energy_bins[i]/kb/temp) / (cc.h**2 * cc.c**2)
+	# Index at maximum energy for thermal, this is at 2 MeV (pair production)
+	pp_ind = np.argmax(energy_bins>2*1e6)
+	# Index at critical point between power law and exp cut off
+	break_ind = np.argmax(energy_bins>4*kb*temp)
 
-		dNE_therm[i] += val
-		
+	dNE_therm[0:break_ind] +=2* energy_bins[0:break_ind]**1.4 / (cc.h**2 * cc.c**2) / (np.exp(energy_bins[0:break_ind]/kb/temp)-1)
+	if pp_ind == 0:
+		dNE_therm[break_ind:] += 2* energy_bins[break_ind:]**1.4 * np.exp(-energy_bins[break_ind:]/kb/temp) / (cc.h**2 * cc.c**2)
+	else: 
+		dNE_therm[break_ind:pp_ind] += 2* energy_bins[break_ind:pp_ind]**1.4 * np.exp(-energy_bins[break_ind:pp_ind]/kb/temp) / (cc.h**2 * cc.c**2)
+
 	return dNE_therm
 
 def synchrotron(energy_bins,Esyn,endiss):
@@ -81,28 +142,17 @@ def synchrotron(energy_bins,Esyn,endiss):
 
 	dNE_sync = np.zeros(shape=len(energy_bins))
 
-	for i in range(len(energy_bins)):
+	# Which index is the break at?
+	break_ind = np.argmax(energy_bins>Esyn)
 
-		# Low energy power law
-		if energy_bins[i] < Esyn:
-			x = -2/3
-		# High energy power law
-		elif energy_bins[i] > Esyn:
-			x = -2.5
-		val = (endiss/Esyn)*np.power(energy_bins[i]/Esyn, x)
+	# Before break
+	x= -2/3
+	dNE_sync[0:break_ind] += (endiss/Esyn)*np.power(energy_bins[0:break_ind]/Esyn, x)
 
+	# After break
+	x=-2.5
+	dNE_sync[break_ind:] += (endiss/Esyn)*np.power(energy_bins[break_ind:]/Esyn, x)
 
-		"""
-		# Low energy power law
-		if energy_bins[i] < Esyn:
-			x = -1
-		# High energy power law
-		elif energy_bins[i] > Esyn:
-			x = -2.25
-		val = (1e52*0.02)*np.power(energy_bins[i]/1000, x)
-		"""
-
-		dNE_sync[i] += val
 
 	return dNE_sync
 

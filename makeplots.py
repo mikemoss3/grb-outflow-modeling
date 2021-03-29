@@ -48,7 +48,7 @@ def plot_spec(save=False):
 	"""
 
 	# Load spectrum data 
-	spec_therm = np.genfromtxt('sim_results/ordlor_spectrum_therm.txt',dtype=[('te',float),('ta',float),('T',float),('L',float)])
+	spec_therm = np.genfromtxt('sim_results/ordlor_spectrum_therm.txt',dtype=[('te',float),('ta',float),('delt',float),('T',float),('L',float)])
 	spec_synch = np.genfromtxt('sim_results/ordlor_spectrum_synch.txt',dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float)])
 
 	fig = plt.figure()
@@ -73,7 +73,7 @@ def plot_light_curve(save=False):
 	"""
 
 	# Load spectrum data 
-	spec_therm = np.genfromtxt('sim_results/ordlor_spectrum_therm.txt',dtype=[('te',float),('ta',float),('T',float),('L',float)])
+	spec_therm = np.genfromtxt('sim_results/ordlor_spectrum_therm.txt',dtype=[('te',float),('ta',float),('delt',float),('T',float),('L',float)])
 	spec_synch = np.genfromtxt('sim_results/ordlor_spectrum_synch.txt',dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float)])
 
 	fig = plt.figure()
@@ -129,7 +129,7 @@ def plot_evo_therm(save=False):
 	"""
 	Plot evolution of thermal emission parameters 
 	"""
-	spec_therm = np.genfromtxt('sim_results/ordlor_spectrum_therm.txt',dtype=[('te',float),('ta',float),('T',float),('L',float)])
+	spec_therm = np.genfromtxt('sim_results/ordlor_spectrum_therm.txt',dtype=[('te',float),('ta',float),('delt',float),('T',float),('L',float)])
 
 	fontsize=14
 	fontweight='bold'
@@ -160,7 +160,7 @@ def plot_evo_therm(save=False):
 
 
 
-def plot_evo_synch(dt=0.01,save=False):
+def plot_evo_synch(dt=0.1,save=False):
 	"""
 	Plot evolution of synchrotron emission parameters 
 	"""
@@ -183,25 +183,16 @@ def plot_evo_synch(dt=0.01,save=False):
 
 
 	ax1cp = ax[1].twinx()
+	# ax[1].scatter(spec_synch['ta'],spec_synch['e']/spec_synch['e'][0],marker='^')
 	ax[1].scatter(spec_synch['ta'],spec_synch['e']/spec_synch['e'][0],marker='^')
-
-	# tstep=0.1
-	# ta_arr = np.arange(start=spec_synch['ta'][0],stop=np.max(spec_synch['ta']+spec_synch['delt']),step=tstep)
-	# en_diss_arr = np.zeros(shape=len(ta_arr),dtype=[('t',float),('e',float)])
-	# en_diss_arr['t']=ta_arr
-	# for i in range(len(spec_synch['e'])):
-	# 	start_ind = np.argmax(en_diss_arr['t']>spec_synch['ta'][i])-1
-	# 	stop_ind = np.argmax(en_diss_arr['t']>spec_synch['ta'][i]+spec_synch['delt'][i])-1
-	# 	en_diss_arr[start_ind:stop_ind]['e'] += spec_synch['e'][i]*tstep
-	# ax[1].scatter(en_diss_arr['t'],en_diss_arr['e']/en_diss_arr['e'][0],marker='^')
-
 
 	ax1cp.scatter(spec_synch['ta'],spec_synch['gammar']/100,marker='.',color='r')
 	ax[1].set_ylabel('e (en. diss.)',fontsize=fontsize,fontweight=fontweight)
 	ax1cp.set_ylabel(r'$\Gamma_{r}/100$',fontsize=fontsize,fontweight=fontweight)
 	ax1cp.yaxis.set_label_position("right")
 	ax1cp.yaxis.tick_right()
-	ax1cp.set_ylim(0)
+	ax[1].set_xlim(-1)
+	ax1cp.set_ylim(-0.2,4.2)
 
 	for i in range(2):
 		for tick in ax[i].xaxis.get_major_ticks():
@@ -279,10 +270,10 @@ def plot_evo_synch(dt=0.01,save=False):
 if __name__ == '__main__':
 	# plot_lor_dist(save=False)
 	# plot_spec(save=False)
-	plot_light_curve(save=False)
+	# plot_light_curve(save=False)
 	# plot_param_vs_t(param='gammar',save=False)
 	# plot_evo_therm(save=False)
-	# plot_evo_synch(save=False)
+	plot_evo_synch(save=False)
 	plt.show()
 
 

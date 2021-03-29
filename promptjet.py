@@ -118,7 +118,7 @@ class PromptJet(object):
 
 
 		# Initialize the time in the reference frame of the jet. 
-		te = tb 
+		te = tb
 
 		# Average Lorentz factor of all jet shells 
 		gamma_bar = np.mean(jet_shells['GAMMA'])
@@ -150,6 +150,7 @@ class PromptJet(object):
 		t_cross_phot = (r_phot - jet_shells['RADIUS']) / ( ut.beta(jet_shells['GAMMA']) )
 		# Observer time 
 		t_obs = t_cross_phot - r_phot
+		del_t_obs = r_phot/2/jet_shells['GAMMA']**2
 		# Calculate useful constant for next calculations
 		Phi = np.power(theta,-2/3)*np.power(r_phot*cc.c,-2/3)*np.power(r_open,2/3)*np.power(jet_shells['GAMMA'],2/3)
 
@@ -163,7 +164,7 @@ class PromptJet(object):
 		L_phot = (eps_th*theta**2*E_dot/(16*np.pi)) * Phi
 
 		for i in range(len(jet_shells)):
-			self.emission.add_therm_contribution(t_cross_phot[i],t_obs[i],T_phot[i],L_phot[i])
+			self.emission.add_therm_contribution(t_cross_phot[i],t_obs[i],del_t_obs[i],T_phot[i],L_phot[i])
 		
 
 
@@ -176,6 +177,9 @@ class PromptJet(object):
 		if is_sorted(jet_shells[jet_shells['STATUS']==1]['GAMMA'] ) == True:
 			ord_lorentz = True
 			print("Jet shells are already ordered.")
+
+
+		collision=0
 
 
 		while ord_lorentz == False:
@@ -205,7 +209,7 @@ class PromptJet(object):
 					tmp_us_b = ut.beta(jet_shells['GAMMA'][ind_us_shell_tmp])
 
 					# Calculate the time until collision between these two shells
-					t_coll_tmp = (tmp_ds_r - tmp_us_r) / ((tmp_us_b - tmp_ds_b) )
+					t_coll_tmp = (tmp_ds_r - tmp_us_r) / (tmp_us_b - tmp_ds_b)
 
 
 					# Check if this time is shorter than our previous time until next collision
@@ -233,109 +237,106 @@ class PromptJet(object):
 			shell_us_g = jet_shells[ind_s_us]['GAMMA']
 			shell_us_m = jet_shells[ind_s_us]['MASS']
 
+			# Approximate resulting Lorentz factor from the shell collision
+			gamma_r = np.sqrt(shell_ds_g * shell_us_g)
 			# Final Lorentz factor of the combined shell (after complete redistribution of momenta)
 			gamma_comb = shell_coll_gamma(shell_ds_g, shell_us_g, shell_ds_m, shell_us_m)
 			
 			# Set the Lorentz factor of the merged shells.
-			jet_shells[ind_s_ds]['GAMMA'] = gamma_comb
+			jet_shells[ind_s_us]['GAMMA'] = gamma_comb
 			# Mass of the merged shell (add the mass of the other shell)
-			jet_shells[ind_s_ds]['MASS'] += jet_shells[ind_s_us]['MASS']
+			jet_shells[ind_s_us]['MASS'] += jet_shells[ind_s_ds]['MASS']
 
-			# Radius at which collision occurred
-			rad_coll = jet_shells['RADIUS'][ind_s_ds]
-			# rad_coll = jet_shells['RADIUS'][ind_s_us] # Alternatively, this should be the same radius
+			# Radius at which collision occurred (both equations below are valid)
+			# rad_coll = jet_shells['RADIUS'][ind_s_ds]
+			rad_coll = jet_shells['RADIUS'][ind_s_us]
 
-			# De-active the up-stream jet shell
-			jet_shells[ind_s_us]['STATUS'] = 0 
-
-
-
-
-
-			### Calculate Contribution to Spectrum ### 
-			## Synchrotron considerations:
-			gamma_int = 0.5*(np.sqrt(shell_ds_g/shell_us_g)+np.sqrt(shell_us_g/shell_ds_g)) # Lorentz factor for internal motion in shocked material
-			eps = (gamma_int-1)*cc.mp*cc.c**2 # erg, Average proton factor from the collision of two shells
-
-			# Characteristic Lorentz factor of accelerated electrons					
-			# gamma_e = alpha_e *eps / (cc.me* cc.c**2) # Average electron lorentz factor, for electrons in equipartition with protons
-			# gamma_e = np.power((alpha_m/ksi)*(eps/cc.me/cc.c**2),1/(3-mu)) # Average electron lorentz factor, electrons directly produce synchrotron radiation (via turbulent magnetic fields)
-			gamma_e = 1e4 # Average electron lorentz factor, constant
-			gamma_r = np.sqrt(shell_ds_g * shell_us_g) # Approximate resulting Lorentz factor from the shell collision
-
-
-			n = E_dot / (4*np.pi * rad_coll**2 * gamma_bar**2 * cc.mp * cc.c**5) # 1/cm^3, Comoving proton number density
-			# n = E_dot / (4*np.pi * rad_coll**2 * (gamma_bar*gamma_r) * cc.mp * cc.c**5) # 1/cm^3, Comoving proton number density, new implementation of Frederic
-			Beq = np.sqrt(8*np.pi*alpha_b*n*eps) # (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
-
-			# Synchrotron energy emitted by accelerated electron
-			E_syn_ev = 50*(gamma_r/300)*(Beq/1e3)*(gamma_e/100)**2 # eV, Synchrotron energy in the rest frame
-			E_syn = E_syn_ev * 1.60218e-12 # convert to erg
-			E_0syn = E_syn/gamma_r # erg, Synchrotron energy in the comoving frame
-
-			# Check if Klein-Nishina limit or Thompson (i.e., w>>1 or w<<1)
-			w = gamma_e*E_0syn/(cc.me*cc.c**2) # Critical value between Thomson and Klein-Nishina
-			# w_alt = 33*(Beq/1e3)*(gamma_e/1e4)**3 # Alternative relation to find w
-			
-			t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1e3,-2) # sec, synchrotron time-scale
-
-			# Q_IC == tau_star * gamma_e**2 == Y == the Compton Parameter
-			# Write equation 22 in a slightly simplified way
-			c = -(3/2)*(0.2/np.pi/(rad_coll**2))*(E_dot/gamma_bar**2 / cc.c**4)*(gamma_e)*np.power(Beq/1000,-2)*100
-			if w >= 1:
-				# Klein-Nishina
-				# Calculate the left hand side of equation 29
-				# Notice the negative sign to move it to the right hand side (to use the quadratic formula)
-				# c = -8*1e-4*(1+np.log(2*w))*(E_dot/1e52)*np.power(t_var/1,-2)*np.power(gamma_bar/300,-6)*np.power(Beq/1e3,-4)*np.power(gamma_e/1e4,-5)
-				# Q_ICw = (-1 + np.sqrt(1-4*c))/2
-				# alpha_ic = Q_ICw/(1+Q_ICw) # Fraction of energy that goes into Inverse Compton electrons
-				
-				# Calculate the Compton parameter
-				Q_IC = (-1 + np.sqrt(1-4*c))/2
-				alpha_ic = (Q_IC/w)/(1+(Q_IC/w)) # Fraction of energy that goes into Inverse Compton electrons
-			else: 
-				# w < 1 
-				# Thomson
-				# c = -0.2 *(E_dot/cc.c**2/gamma_bar**2)*t_syn*gamma_e**2 / (4*np.pi*(cc.c*t_var*gamma_bar**2)**2)
-				
-				# Calculate the Compton parameter
-				Q_IC = (-1 + np.sqrt(1-4*c))/2
-				alpha_ic = Q_IC/(1+Q_IC) # Fraction of energy that goes into Inverse Compton electrons
-
-			alpha_syn = 1 - alpha_ic # Fraction of energy that goes into Synchrotron electrons 
-
+			# De-active the down-stream jet shell
+			jet_shells[ind_s_ds]['STATUS'] = 0 
 
 			# Observer arrival time
-			delta_t = rad_coll/2/gamma_r**2
 			ta = te - rad_coll
+			# Width of arrival time
+			delta_t = rad_coll/2/gamma_r**2
 
-			# Other efficiency quantities to record:
-			f_dyn = (np.sqrt(shell_us_g/shell_ds_g)-1)**2 / ((shell_us_g/shell_ds_g)+1) # Dynamic efficiency, Equation 2 from Bosnjak, Daigne, Dubus 2009 
-			# f_dyn = 1 - (shell_ds_m+shell_us_m)*gamma_comb/( shell_ds_m*shell_ds_g + shell_us_m*shell_us_g) # Dynamic efficiency, Equation 3 from Kobayashi, Piran, and Sari 1997 
-			# f_dyn = 1
-
-			# Energy dissipated in the shock, assumes that the energy dissipated occurs when upstream shell sweeps up a mass equal to its own (or sweeps up the entire downstream shell mass)
-			en_diss =  np.min(np.array([shell_ds_m,shell_us_m]))*m_bar * cc.c**2 * (shell_ds_g + shell_us_g - 2*gamma_r) * alpha_e*alpha_syn/delta_t 
-
-
+			### Calculate Contribution to Spectrum ### 
 			# Calculate optical depth 
 			if ind_s_ds == 0:
 				tau = 0
 			else:
-				tau = 0.2 * np.sum( jet_shells['MASS'][jet_shells['STATUS']==1][:ind_s_ds]/(4 * np.pi * cc.c**2 * jet_shells['RADIUS'][jet_shells['STATUS']==1][:ind_s_ds]**2) )
+				tau = 0.2 * np.sum( jet_shells['MASS'][jet_shells['STATUS']==1][:ind_s_ds]*m_bar /(4 * np.pi * cc.c**2 * jet_shells['RADIUS'][jet_shells['STATUS']==1][:ind_s_ds]**2) )
 
-			# If the emission is efficient, add the contribution
-			# E.g., If the emission time is less than the shell expansion (i.e., the dynamical scale of the shell)
-			t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1000,-2) # sec, synchrotron time-scale
-			if t_syn < ((1+Q_IC)*rad_coll/gamma_bar):
+
+			collision+=1
+
+			# The wind must be transparent in order to produce observable emission 
+			if tau < 1:	
 				# The relative velocity between the shells must be greater than the local sound speed
 				if ut.rel_vel(shell_us_g,shell_ds_g) > 0.1:
-					# The wind must be transparent in order to produce observable emission 
-					if tau < 1:	
+					## Synchrotron considerations:
+					gamma_int = 0.5*(np.sqrt(shell_ds_g/shell_us_g)+np.sqrt(shell_us_g/shell_ds_g)) # Lorentz factor for internal motion in shocked material
+					eps = (gamma_int-1)*cc.mp*cc.c**2 # erg, Average proton factor from the collision of two shells
+
+					# Characteristic Lorentz factor of accelerated electrons					
+					# gamma_e = alpha_e *eps / (cc.me* cc.c**2) # Average electron lorentz factor, for electrons in equipartition with protons
+					# gamma_e = np.power((alpha_m/ksi)*(eps/cc.me/cc.c**2),1/(3-mu)) # Average electron lorentz factor, electrons directly produce synchrotron radiation (via turbulent magnetic fields)
+					gamma_e = 1e4 # Average electron lorentz factor, constant
+
+					n = E_dot / (4*np.pi * rad_coll**2 * gamma_bar**2 * cc.mp * cc.c**5) # 1/cm^3, Comoving proton number density
+					# n = E_dot / (4*np.pi * rad_coll**2 * (gamma_bar*gamma_r) * cc.mp * cc.c**5) # 1/cm^3, Comoving proton number density, new implementation of Frederic
+					Beq = np.sqrt(8*np.pi*alpha_b*n*eps) # (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
+
+					# Synchrotron energy emitted by accelerated electron
+					E_syn_ev = 50*(gamma_r/300)*(Beq/1e3)*(gamma_e/100)**2 # eV, Synchrotron energy in the rest frame
+					E_syn = E_syn_ev * 1.60218e-12 # convert to erg
+					E_0syn = E_syn/gamma_r # erg, Synchrotron energy in the comoving frame
+
+					# Check if Klein-Nishina limit or Thompson (i.e., w>>1 or w<<1)
+					w = gamma_e*E_0syn/(cc.me*cc.c**2) # Critical value between Thomson and Klein-Nishina
+					# w_alt = 33*(Beq/1e3)*(gamma_e/1e4)**3 # Alternative relation to find w
+					
+					t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1e3,-2) # sec, synchrotron time-scale
+
+					# Q_IC == tau_star * gamma_e**2 == Y == the Compton Parameter
+					# Write equation 22 in a slightly simplified way
+					c = -(3/2)*(0.2/np.pi/(rad_coll**2))*(E_dot/gamma_bar**2 / cc.c**4)*(gamma_e)*np.power(Beq/1000,-2)*100
+					if w >= 1:
+						# Klein-Nishina
+						# Calculate the left hand side of equation 29
+						# Notice the negative sign to move it to the right hand side (to use the quadratic formula)
+						# c = -8*1e-4*(1+np.log(2*w))*(E_dot/1e52)*np.power(t_var/1,-2)*np.power(gamma_bar/300,-6)*np.power(Beq/1e3,-4)*np.power(gamma_e/1e4,-5)
+						# Q_ICw = (-1 + np.sqrt(1-4*c))/2
+						# alpha_ic = Q_ICw/(1+Q_ICw) # Fraction of energy that goes into Inverse Compton electrons
+						
+						# Calculate the Compton parameter
+						Q_IC = (-1 + np.sqrt(1-4*c))/2
+						alpha_ic = (Q_IC/w)/(1+(Q_IC/w)) # Fraction of energy that goes into Inverse Compton electrons
+					else: 
+						# w < 1 
+						# Thomson
+						# c = -0.2 *(E_dot/cc.c**2/gamma_bar**2)*t_syn*gamma_e**2 / (4*np.pi*(cc.c*t_var*gamma_bar**2)**2)
+						
+						# Calculate the Compton parameter
+						Q_IC = (-1 + np.sqrt(1-4*c))/2
+						alpha_ic = Q_IC/(1+Q_IC) # Fraction of energy that goes into Inverse Compton electrons
+
+					alpha_syn = 1 - alpha_ic # Fraction of energy that goes into Synchrotron electrons 
+
+					# Other efficiency quantities to possibly record:
+					# f_dyn = (np.sqrt(shell_us_g/shell_ds_g)-1)**2 / ((shell_us_g/shell_ds_g)+1) # Dynamic efficiency, Equation 2 from Bosnjak, Daigne, Dubus 2009 
+					# f_dyn = 1 - (shell_ds_m+shell_us_m)*gamma_comb/( shell_ds_m*shell_ds_g + shell_us_m*shell_us_g) # Dynamic efficiency, Equation 3 from Kobayashi, Piran, and Sari 1997 
+					# f_dyn = 1
+
+					# Energy dissipated in the shock, assumes that the energy dissipated occurs when upstream shell sweeps up a mass equal to its own (or sweeps up the entire downstream shell mass)
+					en_diss =  np.min(np.array([shell_ds_m,shell_us_m]))*m_bar * cc.c**2 * (shell_ds_g + shell_us_g - 2*gamma_r) * alpha_e*alpha_syn
+
+					# If the emission is efficient, add the contribution
+					# E.g., If the emission time is less than the shell expansion (i.e., the dynamical scale of the shell)
+					t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1000,-2) # sec, synchrotron time-scale
+					if t_syn < ((1+Q_IC)*rad_coll/gamma_bar):
 						# Add contribution to the spectrum 
-						self.emission.add_synch_contribution(te=te,ta=ta,asyn=alpha_syn,Beq=Beq,gammae=gamma_e,Esyn=E_syn_ev, gammar=gamma_r, e=en_diss, delt = delta_t)	
-
-
+						# Also, put the E_syn in to units of keV
+						self.emission.add_synch_contribution(te=te,ta=ta,asyn=alpha_syn,Beq=Beq,gammae=gamma_e,Esyn=E_syn_ev/1e3, gammar=gamma_r, e=en_diss, delt = delta_t)	
 
 
 			# Record collision dynamics for each collision
