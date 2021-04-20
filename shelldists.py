@@ -39,7 +39,7 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5,E_dot=1e52):
 	shell_arr[0:n1]['GAMMA'] = np.ones(shape=n1)*g1
 	shell_arr[n1::]['GAMMA'] = np.ones(shape=n2)*g2
 
-	# Average Lorentz factor
+	# Average Lorentz factor in the outflow
 	gamma_bar = np.mean(shell_arr['GAMMA'])
 
 	# Set the Mass for each shell 
@@ -102,10 +102,12 @@ def oscillatory(dte,gmin=100,gmax=400,numshells=5000,median=333,ampf=2/3,freq=5,
 	shell_inds = np.linspace(0,numshells,num=numshells)
 	shell_arr['GAMMA'] = median * ( 1 + ampf*np.cos( freq*np.pi*(1 - shell_inds/numshells) ) )*np.exp(- decay*shell_inds/numshells)
 
-	# Set the Mass for each shell 
-	shell_arr['MASS'] = E_dot*dte/shell_arr['GAMMA']/cc.c**2
+	# Average Lorentz factor in the outflow
+	gamma_bar = np.mean(shell_arr['GAMMA'])
 	
-
+	# Set the Mass for each shell 
+	# Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+	shell_arr['MASS'] = gamma_bar / shell_arr['GAMMA']
 
 	# Calculate the shell position based on when the shell will be launched
 	# Notice this is actually R/c 

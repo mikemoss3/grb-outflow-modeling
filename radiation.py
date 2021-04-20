@@ -13,9 +13,10 @@ Additionally, this script has methods for creating plots of the spectra and ligh
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import cosmologicalconstants as cc
+import utils as ut
 
+# from scipy.integrate import quad
 
 
 class Emission(object):
@@ -23,315 +24,259 @@ class Emission(object):
 	Spectrum class.
 	"""
 
-	def __init__(self):
+	def __init__(self,components=None,Tmin=None,Tmax=None,Emin=0.1,Emax=5e5,dE=1000):
 		"""
 		Defines the default parameters of a spectrum.
 		"""
-		self.spec_therm = None 
-		self.spec_synch = None 
+		self.components = []
+		if len(self.components) > 0:
+			self.make_spec()
 
-	def add_synch_contribution(self,te,ta,asyn,Beq,gammae,Esyn,gammar,e,delt):
+	def load_spec(self,file_name):
 		"""
-		Add a contribution to the synchrotron spectrum
+		Method to load a synchrotron spectrum from a file, where the file path is specified by file_name. These files are created from the promptjet.py simulation code.
+		A redshift is given by the user so the spectral values can be calculated in the observer frame (the simulation code calculates in the source frame). 
 		"""
-		# If this is the first contribution to the spectrum, the spectrum must be initialized. 
-		if self.spec_synch is None:
-			self.spec_synch = np.array((te,ta,asyn,Beq,gammae,Esyn,gammar,e,delt), dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float)])
-		# Otherwise, just append to the already created spectrum
-		else:
-			self.spec_synch = np.append(self.spec_synch, np.array((te,ta,asyn,Beq,gammae,Esyn,gammar,e,delt),dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float)])) 
+		
+		# Grab the length of the first line in the file
+		first_line_len=len(open(file_name).readline().rstrip().split())
 
-	def add_therm_contribution(self,te,ta,delt,T,L):
-		"""
-		Add a contribution to the thermal spectrum
-		"""
+		# Check which type of component this is. We do this by checking the length of the first line
+		if first_line_len == 11:
+			# Load spectrum component and add it into the components list
+			spec_synch = np.genfromtxt('sim_results/ordlor_spectrum_synch.txt',dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float),('tau',float),('relvel',float)])
+			self.components.append(spec_synch)
 
-		if self.spec_therm is None:
-			self.spec_therm = np.array((te,ta,delt,T,L), dtype=[('te',float),('ta',float),('delt',float),('T',float),('L',float)])
-		# Otherwise, just append to the already created spectrum
-		else:
-			self.spec_therm = np.append(self.spec_therm, np.array((te,ta,delt,T,L),dtype=[('te',float),('ta',float),('delt',float),('T',float),('L',float)] ) )
+			# Return the spectral component 
+			return spec_synch
+
+		elif first_line_len == 5:
+			# Load spectrum component and add it into the components list
+			spec_therm = np.genfromtxt('sim_results/ordlor_spectrum_therm.txt',dtype=[('te',float),('ta',float),('delt',float),('T',float),('Flux',float)])
+			self.components.append(spec_therm)
+
+			# Return the spectral component 
+			return spec_therm
 
 
-	def make_tot_spec(self,spec_therm=None,spec_synch=None,dt=0.01,Emin=4e4,Emax=5e6,dE=100):
+	def make_spec(self,comp_num=None,Tmin=None,Tmax=None,Emin=0.1,Emax=5e5,num_bins=1000,z=0):
 		"""
 		Method to create a spectrum from all active components as a function of time
 
 		Attributes:
 		dt = time resolution, seconds 
-		Emin, Emax = specifies the min and max of the desired energy range, eV
+		Emin, Emax = specifies the min and max of the desired energy range, keV
 		"""
 
+		# Find start and stop time if a time interval is not specified
+		if Tmin is None:
+			Tmin=1e99
+			for comp in self.components:
+				if Tmin > comp['ta'][0]*(1+z):
+					Tmin = comp['ta'][0]*(1+z)
 
-		# Record which components are active
-		if (spec_synch is None) & (self.spec_synch is not None):
-			spec_synch = self.spec_synch
-		elif (spec_therm is None) & (self.spec_therm is not None):
-			spec_therm = self.spec_therm
+		if Tmax is None:
+			Tmax=-1e99
+			for comp in self.components:
+				if Tmax < np.max(comp['ta']+comp['delt'])*(1+z):
+					Tmax = np.max(comp['ta']+comp['delt'])*(1+z)
 
-		# When does the spectrum start and stop?
-		tstart = 0
-		tend = 0 # will be found from the active spectral components
-		if spec_synch is not None:
-			if np.max(spec_synch['ta']+spec_synch['delt']) > tend:
-				tend  = np.max(spec_synch['ta']+spec_synch['delt'])
-		elif spec_therm is not None:
-			if np.max(spec_therm['ta']+spec_therm['delt']) > tend:
-				tend  = np.max(spec_therm['ta']+spec_therm['delt'])
-		else: 
-			# all components are empty
-			print("At least one spectral component must be provided.")
-			return 0
+		# Make array to store spectrum
+		spectrum = np.zeros(shape=num_bins,dtype=[("ENERGY",float),("RATE",float)])
 
-		# Make time axis
-		time_ax = np.arange(start=tstart,stop=tend+dt,step=dt)
-		# Make spec axis
-		num_bins = int((Emax-Emin)/dE) # Number of bins along the energy axis
-		en_ax = np.logspace(np.log10(Emin),np.log10(Emax),num_bins) # Create energy axis of spectra
-		spec_axis = np.zeros(shape=(len(time_ax),len(en_ax)) )
+		# Create energy axis of spectrum
+		spectrum['ENERGY'] = np.logspace(np.log10(Emin),np.log10(Emax),num_bins) 
 
 
-		if spec_synch is not None:
-			for i in range(len(spec_synch)):
-				print(i)
-				time_ind_start = np.argmax(time_ax>spec_synch['ta'][i])-1
-				time_ind_end = np.argmax(time_ax>spec_synch['ta'][i]+spec_synch['delt'][i])
+		# If comp_num = None, then include contributions from all stored components
+		if comp_num == None:
+			# For each component stored in our Emission class, sum the spectral contribution
+			for comp in self.components:
+			# Grab only the emission which occurred between Tmin and Tmax (i.e., emission with has (ta + delt_a)*(1+z) overlapping with (Tmin,Tmax) )
+				partial_comp = comp[(comp['ta']*(1+z)<=Tmax) & ( (comp['ta']+comp['delt'])*(1+z)>=Tmin)] 
 
 
-				spec_axis[time_ind_start:time_ind_end,:]+=synchrotron(en_ax,spec_synch['Esyn'][i]*10,spec_synch['e'][i]/spec_synch['delt'][i]/dt)
+				# Check which type of component this is. We do this by checking if the component has specific fields unique to component types
+				if 'T' in partial_comp.dtype.names:
+					# For each elementary in this partial component, find the contribution to the spectrum (and normalize by the duration of the emission)
+					for i in range(len(partial_comp)):
+						spectrum['RATE']+= 1e20*( partial_comp['Flux'][i]/4/np.pi/ut.lum_dis(z)**2 )*thermal(spectrum['ENERGY'],partial_comp['T'][i]/(1+z))/(partial_comp['delt'][i]*(1+z))
 
-		if spec_therm is not None:
-			for i in range(len(spec_therm)):
-				print(i)
-				time_ind_start = np.argmax(time_ax>spec_therm['ta'][i])-1
-				time_ind_end = np.argmax(time_ax>spec_therm['ta'][i]+spec_therm['delt'][i])
+				if 'asyn' in partial_comp.dtype.names:
+					# For each elementary in this partial component, find the contribution to the spectrum (and normalize by the duration of the emission)
+					for i in range(len(partial_comp)):
+						spectrum['RATE']+= partial_comp['e'][i]*synchrotron(spectrum['ENERGY'],partial_comp['Esyn'][i]/(1+z))/(partial_comp['delt'][i]*(1+z))
 
-				spec_axis[time_ind_start:time_ind_end,:]+=thermal(en_ax,spec_therm['T'][i])
+			return spectrum
+		# Else, record the spectrum for the particular component 
+		elif comp_num is not None:
+			# For each component stored in our Emission class, sum the spectral contribution
+			comp = self.components[comp_num]
+			# Grab only the emission which occurred between Tmin and Tmax (i.e., emission with has (ta + delt_a)*(1+z) overlapping with (Tmin,Tmax) )
+			partial_comp = comp[(comp['ta']*(1+z)<Tmax) & ((comp['ta']+comp['delt'])*(1+z)>Tmin)]
 
 
-		return time_ax,en_ax, spec_axis
+			# Check which type of component this is. We do this by checking if the component has specific fields unique to component types
+			if 'T' in partial_comp.dtype.names:
+				# For each elementary in this partial component, find the contribution to the spectrum (and normalize by the duration of the emission)
+				for i in range(len(partial_comp)):
+					spectrum['RATE']+= 1e20*(partial_comp['Flux'][i]/4/np.pi/ut.lum_dis(z)**2 )*thermal(spectrum['ENERGY'],partial_comp['T'][i]/(1+z))/(partial_comp['delt'][i]*(1+z))
 
+			if 'asyn' in partial_comp.dtype.names:
+				# For each elementary in this partial component, find the contribution to the spectrum (and normalize by the duration of the emission)
+				for i in range(len(partial_comp)):
+					spectrum['RATE']+= partial_comp['e'][i]*synchrotron(spectrum['ENERGY'],partial_comp['Esyn'][i]/(1+z))/(partial_comp['delt'][i]*(1+z))
 
-def thermal(energy_bins,temp):
+			return spectrum
+
+	def make_light_curve(self,comp_num=None,Tmin=None,Tmax=None,dt=0.05,Emin=0.1,Emax=5e5,z=0):
+		# Find start and stop time if a time interval is not specified
+		
+		if Tmin is None:
+			Tmin=1e99
+			for comp in self.components:
+				if Tmin > comp['ta'][0]*(1+z):
+					Tmin = comp['ta'][0]*(1+z)
+
+		if Tmax is None:
+			Tmax=-1e99
+			for comp in self.components:
+				if Tmax < np.max(comp['ta']+comp['delt'])*(1+z):
+					Tmax = np.max(comp['ta']+comp['delt'])*(1+z)
+	
+		# Make light curve array
+		time_arr = np.arange(start=Tmin,stop=Tmax+5,step=dt) # Add 5 seconds after the light curve, This time array is in the observer frame.
+		light_curve = np.zeros(shape=len(time_arr),dtype=[('TIME',float),('RATE',float)])
+		light_curve['TIME'] = time_arr
+		
+		# If comp_num = None, then include contributions from all stored components
+		if comp_num == None:
+			# Move through each time bin
+			for idt in range(len(light_curve)-1):
+				# Sum the spectral contribution within this time bin
+				light_curve['RATE'][idt] = np.sum(self.make_spec(comp_num=None, Tmin=light_curve['TIME'][idt], Tmax=light_curve['TIME'][idt+1], Emin=Emin, Emax=Emax,z=z)['RATE'])
+
+		# Else, record the spectrum for the particular component 
+		elif comp_num is not None:
+			# Move through each time bin
+			for idt in range(len(light_curve)-1):
+				light_curve['RATE'][idt] = np.sum(self.make_spec(comp_num=comp_num, Tmin=light_curve['TIME'][idt], Tmax=light_curve['TIME'][idt+1], Emin=Emin, Emax=Emax,z=z)['RATE'])
+
+		return light_curve
+
+	
+	def plot_spectrum(self, ax, comp_num=None, plot_comps=False, nuFnu=True, Tmin=None,Tmax=None,Emin=0.1,Emax=5e5,num_bins=1000,z=0):
+		"""
+		Method to plot the stored spectrum over a given energy range
+		"""
+	
+		# For axis labels
+		fontsize=14
+		fontweight='bold'
+	
+		if comp_num is not None:
+			spectrum = self.make_spec(comp_num=comp_num,Tmin=Tmin,Tmax=Tmax,num_bins=num_bins,Emin=Emin,Emax=Emax,z=z)
+			
+			if nuFnu is True:
+				ax.plot(spectrum['ENERGY'],spectrum['RATE']*spectrum['ENERGY']**2,label='Comp. {}'.format(comp_num))
+			if nuFnu is False:
+				ax.plot(spectrum['ENERGY'],spectrum['RATE'],label='Comp. {}'.format(comp_num))
+		
+		else:
+			spectrum = self.make_spec(Tmin=Tmin,Tmax=Tmax,num_bins=num_bins,Emin=Emin,Emax=Emax,z=z)
+
+			if nuFnu is True:
+				ax.plot(spectrum['ENERGY'],spectrum['RATE']*spectrum['ENERGY']**2,label='Total')
+				if plot_comps is True:
+					for i in range(len(self.components)):
+						comp_spec = self.make_spec(comp_num=i,Tmin=Tmin,Tmax=Tmax,num_bins=num_bins,Emin=Emin,Emax=Emax,z=z)
+						ax.plot(comp_spec['ENERGY'],comp_spec['RATE']*comp_spec['ENERGY']**2,label='Comp. {}'.format(i))
+				ax.set_ylabel(r'E$^2$N(E)',fontsize=fontsize,fontweight=fontweight)
+			if nuFnu is False:
+				ax.plot(spectrum['ENERGY'],spectrum['RATE'],label='Total')
+				if plot_comps is True:
+					for i in range(len(self.components)):
+						comp_spec = self.make_spec(comp_num=i,Tmin=Tmin,Tmax=Tmax,num_bins=num_bins,Emin=Emin,Emax=Emax,z=z)
+						ax.plot(comp_spec['ENERGY'],comp_spec['RATE'],label='Comp. {}'.format(i))
+				ax.set_ylabel(r'N(E)',fontsize=fontsize,fontweight=fontweight)
+	
+	
+	def plot_light_curve(self, ax,comp_num=None, plot_comps=True, Tmin=None,Tmax=None,dt=0.05, Emin=0.1,Emax=5e5,z=0):
+		"""
+		Method to plot the simulated light curve
+		"""
+
+		# Plot complete light curvce
+		if comp_num is not None:
+			light_curve = self.make_light_curve(comp_num=comp_num,Tmin=Tmin, Tmax=Tmax, Emin=Emax, Emax=Emax, dt=dt,z=z)
+			ax.step(light_curve['TIME'],light_curve['RATE'],label='Total')
+
+		else:
+			light_curve = self.make_light_curve(Tmin=Tmin, Tmax=Tmax, Emin=Emax, Emax=Emax, dt=dt,z=z)
+			ax.step(light_curve['TIME'],light_curve['RATE'],label='Total')
+
+			# Plot component light curves
+			if plot_comps is True:
+				for comp_num in range(len(self.components)):
+					light_curve = self.make_light_curve(comp_num=comp_num, Tmin=Tmin, Tmax=Tmax, Emin=Emax, Emax=Emax, dt=dt,z=z)
+					ax.step(light_curve['TIME'],light_curve['RATE'],label='Comp. {}'.format(comp_num))
+	
+
+def thermal(x,temp):
 	"""
 	Method to produce a thermal spectrum over a given energy range given and a specified temperature and
 	"""
 
-	kb = cc.kb # Boltzmann constant
+	kb = cc.kb/1e3 # Boltzmann constant, in units keV/K
 
-	# Initialize array for thermal spectrum 
-	dNE_therm = np.zeros(shape=len(energy_bins))
+	if hasattr(x,'__len__'):
+		f = np.zeros(shape=len(x))
 
-	# Index at maximum energy for thermal, this is at 2 MeV (pair production)
-	pp_ind = np.argmax(energy_bins>2*1e6)
-	# Index at critical point between power law and exp cut off
-	break_ind = np.argmax(energy_bins>4*kb*temp)
+		# If below the break energy:
+		# low_ind_i=0
+		low_ind_f=np.argmax(x>4*kb*temp)
+		f[:low_ind_f] = 2* x[:low_ind_f]**1.4 / (cc.h**2 * cc.c**2) / (np.exp(x[:low_ind_f]/kb/temp)-1)
+		# If below the Pair-Production energy but above the break energy, around 2.5 MeV
+		high_ind_f=np.argmax(x>2.5*1e3)
+		f[low_ind_f:high_ind_f] = 2* x[low_ind_f:high_ind_f]**1.4 * np.exp(-x[low_ind_f:high_ind_f]/kb/temp) / (cc.h**2 * cc.c**2)
+		# If above the PP energy, then the emission is just zero, which is the default value of the array
 
-	dNE_therm[0:break_ind] +=2* energy_bins[0:break_ind]**1.4 / (cc.h**2 * cc.c**2) / (np.exp(energy_bins[0:break_ind]/kb/temp)-1)
-	if pp_ind == 0:
-		dNE_therm[break_ind:] += 2* energy_bins[break_ind:]**1.4 * np.exp(-energy_bins[break_ind:]/kb/temp) / (cc.h**2 * cc.c**2)
-	else: 
-		dNE_therm[break_ind:pp_ind] += 2* energy_bins[break_ind:pp_ind]**1.4 * np.exp(-energy_bins[break_ind:pp_ind]/kb/temp) / (cc.h**2 * cc.c**2)
+		return f
 
-	return dNE_therm
+	else:
 
-def synchrotron(energy_bins,Esyn,endiss):
+		# If below the break energy:
+		if x<3.9*kb*temp:
+			return 2* x**1.4 / (cc.h**2 * cc.c**2) / (np.exp(x/kb/temp)-1)
+		# If below the PP energy but above the break energy, around 2.5 MeV
+		elif (x>=4*kb*temp) and (x<2.5*1e3):
+			return 2* x**1.4 * np.exp(-x/kb/temp) / (cc.h**2 * cc.c**2)
+		else:
+			return 0
+
+def synchrotron(x,Esyn):
 	"""
 	Method to produce a synchrotron spectrum over a given energy range and specified synchrotron energy and energy dissipated
 	"""
-
-	dNE_sync = np.zeros(shape=len(energy_bins))
-
-	# Which index is the break at?
-	break_ind = np.argmax(energy_bins>Esyn)
-
-	# Before break
-	x= -2/3
-	dNE_sync[0:break_ind] += (endiss/Esyn)*np.power(energy_bins[0:break_ind]/Esyn, x)
-
-	# After break
-	x=-2.5
-	dNE_sync[break_ind:] += (endiss/Esyn)*np.power(energy_bins[break_ind:]/Esyn, x)
-
+	dNE_sync = (1/Esyn) * bpl(x,Esyn)
 
 	return dNE_sync
 
+def bpl(x,ep):
+	if hasattr(x,'__len__'):
+		f = np.zeros(shape=len(x))
+		
+		alpha = -2/3
+		f[:np.argmax(x>ep)-1] = np.power(x[:np.argmax(x>ep)-1]/ep,alpha)
+		beta= -2.5
+		f[np.argmax(x>ep)-1:] = np.power(x[np.argmax(x>ep)-1:]/ep,beta)
 
-def plot_spectrum( ax, spec_therm=None, spec_synch=None,nuFnu=True, num_bins=1000,emin=100,emax=1e9):
-	"""
-	Method to plot the stored spectrum over a given energy range
-	"""
+		return f
 
-	# Specify energy range
-	emin = emin # eV 
-	emax = emax # eV 
-	# Make energy bins (x-axis)
-	enlogbins = np.logspace(np.log10(emin),np.log10(emax),num_bins)
-
-	# Initialize array for total spectrum 
-	dNE = np.zeros(shape=len(enlogbins))
-
-	# If all spectrum types are empty, then there is nothing to plot
-	if spec_therm is None and spec_synch is None:
-		print("You must supply a spectrum to be plotted.")
-		return 0 
-
-	# If a thermal spectrum has been supplied
-	if spec_therm is not None:
-
-		# Initialize array for thermal spectrum 
-		dNE_therm = np.zeros(shape=len(enlogbins))
-
-		for j in range(len(spec_therm)):
-			therm_contr = thermal(enlogbins,spec_therm['T'][j])
-			dNE_therm += therm_contr
-			dNE += therm_contr
-
-	# If a synchrotron spectrum has been supplied 
-	if spec_synch is not None:
-
-		# Initialize array for synchrotron spectrum 
-		dNE_sync = np.zeros(shape=len(enlogbins))
-
-		for j in range(len(spec_synch['Esyn'])):		
-			synch_contr = synchrotron(enlogbins,spec_synch['Esyn'][j],spec_synch['e'][j])
-			dNE_sync += synch_contr
-			dNE += synch_contr
-
-
-	# For axis labels
-	fontsize=14
-	fontweight='bold'
-
-	if nuFnu is True:
-		# Plot each spectral component and the total spectrum
-		ax.plot(enlogbins,dNE*enlogbins**2,label='Total')
-		if spec_therm is not None:
-			ax.plot(enlogbins,dNE_therm*enlogbins**2,label='Therm')
-		if spec_synch is not None:
-			ax.plot(enlogbins,dNE_sync*enlogbins**2,label='Synch')
-		ax.set_ylabel(r'E$^2$N(E)',fontsize=fontsize,fontweight=fontweight)
-	if nuFnu is False:
-		# Plot each spectral component and the total spectrum
-		ax.plot(enlogbins,dNE,label='Total')
-		if spec_therm is not None:
-			ax.plot(enlogbins,dNE_therm,label='Therm')
-		if spec_synch is not None:
-			ax.plot(enlogbins,dNE_sync,label='Synch')
-		ax.set_ylabel(r'N(E)',fontsize=fontsize,fontweight=fontweight)
-
-
-	# Plot aesthetics
-	ax.set_xscale('log')
-	ax.set_yscale('log')
-	ax.set_xlabel('E (eV)',fontsize=fontsize,fontweight=fontweight)
-
-	for tick in ax.xaxis.get_major_ticks():
-	    tick.label1.set_fontsize(fontsize=fontsize)
-	    tick.label1.set_fontweight(fontweight)
-	for tick in ax.yaxis.get_major_ticks():
-	    tick.label1.set_fontsize(fontsize=fontsize)
-	    tick.label1.set_fontweight(fontweight)
-
-
-def plot_light_curve( ax, em_therm=None, em_synch=None, dt=0.03, emin=8000,emax=4e6):
-	"""
-	Method to plot the simulated light curve
-	"""
-
-	# If all spectrum types are empty, then there is nothing to plot
-	if em_therm is None and em_synch is None:
-		print("You must supply an emission file to be plotted.")
-		return 0 
-
-	# Specify energy range
-	emin = emin # eV 
-	emax = emax # eV
-
-	num_bins=1000
-	enlogbins = np.logspace(np.log10(emin),np.log10(emax),num_bins)
-
-	# Time range in observer frame (set by the first and last emission arrival time)	
-	T_min = 0
-	
-	T_max_therm = 0
-	T_max_synch = 0
-	if em_therm is not None:
-		T_max_therm = np.max(em_therm['ta'])
-	if em_synch is not None:
-		T_max_synch = np.max(em_synch['ta'])
-
-	T_max = np.max([T_max_therm, T_max_synch])
-
-	# Observer time axis
-	time_arr = np.arange(start=T_min,stop=T_max,step=dt)
-
-	# Initialize count array
-	count_arr = np.zeros(shape=len(time_arr))
-	if em_therm is not None:
-		count_arr_therm = np.zeros(shape=len(time_arr))
-	if em_synch is not None:
-		count_arr_synch = np.zeros(shape=len(time_arr))
-
-	
-	# For each observer time bin, find the emission contribution
-	for i in range(len(time_arr)-1):
-
-		# Initialize array for total spectrum 
-		dNE = np.zeros(shape=len(enlogbins))
-	
-		# If a thermal spectrum has been supplied
-		if em_therm is not None:
-			dt_em_therm = em_therm[(em_therm['ta']>time_arr[i]) & (em_therm['ta']<time_arr[i+1]) ]
-
-			# Initialize array for thermal spectrum 
-			dNE_therm = np.zeros(shape=len(enlogbins))
-
-			for j in range(len(dt_em_therm)):
-				therm_contr = thermal(enlogbins,dt_em_therm['T'][j])
-				dNE_therm += therm_contr
-				dNE += therm_contr
-
-			# Take the sum of the spectrum and add it to the count array in the correct time bin
-			count_arr_therm[i] += np.sum(dNE_therm)
-			count_arr[i] += np.sum(dNE)
-
-		# If a synchrotron spectrum has been supplied 
-		if em_synch is not None:
-
-			dt_em_synch = em_synch[(em_synch['ta']>time_arr[i]) & (em_synch['ta']<time_arr[i+1]) ]
-
-			# Initialize array for synchrotron spectrum 
-			dNE_synch = np.zeros(shape=len(enlogbins))
-
-			for j in range(len(dt_em_synch['Esyn'])):
-				synch_contr = synchrotron(enlogbins,dt_em_synch['Esyn'][j],dt_em_synch['e'][j])
-				dNE_synch += synch_contr
-				dNE += synch_contr
-
-			# Take the sum of the spectrum and add it to the count array in the correct time bin
-			count_arr_synch[i] += np.sum(dNE_synch)
-			count_arr[i] += np.sum(dNE)
-
-
-	# For axis labels
-	fontsize=14
-	fontweight='bold'
-
-	if em_therm is not None:
-		ax.step(time_arr,count_arr_therm,label='Thermal',where='mid')
-	if em_synch is not None:
-		ax.step(time_arr,count_arr_synch,label='Synchrotron',where='mid')
-	
-	ax.step(time_arr,count_arr,label='Total',where='mid')
-
-	# Plot aesthetics
-	ax.set_xlabel('Time (sec)',fontsize=fontsize,fontweight=fontweight)
-	ax.set_ylabel('Counts/Sec',fontsize=fontsize,fontweight=fontweight)
-
-	for tick in ax.xaxis.get_major_ticks():
-	    tick.label1.set_fontsize(fontsize=fontsize)
-	    tick.label1.set_fontweight(fontweight)
-	for tick in ax.yaxis.get_major_ticks():
-	    tick.label1.set_fontsize(fontsize=fontsize)
-	    tick.label1.set_fontweight(fontweight)
+	else:
+		if x < ep:
+			alpha = -2/3
+			return np.power(x/ep,alpha)
+		elif x>= ep:
+			beta= -2.5
+			return np.power(x/ep,beta)

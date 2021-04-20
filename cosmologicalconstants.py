@@ -14,10 +14,12 @@ me = 9.1093e-28# electron mass, in g
 c = 2.99792e10 # speed of light, in cm/s
 
 sigma_T = 6.6524e-25 # cm^2, Thomson cross-section 
-kappa_T = 0.4 # cm^2 / g, Thomson opacity 
+kappa_T = 0.2 # cm^2 / g, Thomson opacity 
 
 kb=8.62*1e-5 # ev/K, Boltzmann constant
 h=6.6*1e-27 # cm^2 g s^-1, Planck constant 
+
+a = 7.566 * 1e-15 # erg cm^-3 K^-4, Radiation constant
 
 omega_m = 0.3 # matter density of the universe
 omega_lam = 0.7 # dark energy density of the universe
