@@ -1,0 +1,77 @@
+\documentclass[10pt]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{ulem}
+\usepackage{setspace}	
+
+
+% Formatting
+\usepackage[margin=1in]{geometry}
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0em}
+
+
+% Make upright subscripts in Mathmode.
+\def\subinrm#1{\sb{\mathrm{#1}}}
+{\catcode`\_=13 \global\let_=\subinrm}
+\mathcode`_="8000
+\def\upsubscripts{\catcode`\_=12 } \def\normalsubscripts{\catcode`\_=8 }
+ 	 	
+% Title
+\title{Spectrum Normalization Constant}
+
+\begin{document}
+
+\upsubscripts
+
+\section*{Derivations of the Normalization Constant}
+
+We begin by defining the photon spectrum function. Let's first look at a Synchrotron spectrum as defined by Equation 34 in Daigne and Mochkovitch 1998, 
+
+\begin{align}
+	\frac{dn}{dE} = N \frac{e}{E_{syn}} \left(\frac{E}{E_{syn}} \right)^{x}
+\end{align}
+
+Where $e$ is the dissipated energy of the emission, $E_{syn}$ is the typical synchrotron energy of the emission, and $N$ is a normalization constant for the spectrum (which we compute in this derivation). 
+
+This spectral function is normalized by setting the constraint:
+
+\begin{align}
+	\int_0^\infty E \frac{dn}{dE} dE = e
+\end{align}
+
+From here we can find $N$:
+
+\begin{align}
+	&\int_0^\infty E \frac{dn}{dE} dE = e \\
+	&\int_0^\infty E N \frac{e}{E_{syn}} \left(\frac{E}{E_{syn}} \right)^{x} dE = e \\
+	&\int_0^\infty E N \frac{1}{E_{syn}} \left(\frac{E}{E_{syn}} \right)^{x} dE = 1 \\
+	N &\int_0^\infty \left(\frac{E}{E_{syn}} \right)^{x+1} dE = 1 \\
+	N &=  \frac{1}{\int_0^\infty \left(\frac{E}{E_{syn}} \right)^{x+1} dE }
+\end{align}
+
+\section*{Application to Light Curves}
+
+To find the luminosity in the band ($E_1$, $E_2$) due to the spectrum, we must divide the total counts from the emission, $A$, by the duration of the emission, $\Delta t$:
+
+\begin{align}
+	L =& A/\Delta t\\
+	&\text{where,} \\
+	& A = \int_{(1+z)E_1}^{(1+z)E_2} \frac{dn}{dE}dE = \int_{(1+z)E_1}^{(1+z)E_2}N \frac{e}{E_{syn}} \left(\frac{E}{E_{syn}} \right)^{x} dE \\
+	& =  \int_{(1+z)E_1}^{(1+z)E_2} \frac{1}{\left[\int_0^\infty \left(\frac{E}{E_{syn}} \right)^{x+1} dE \right]} \frac{e}{E_{syn}} \left(\frac{E}{E_{syn}} \right)^{x} dE \\
+\end{align}
+
+\section*{Thermal Spectrum}
+
+\begin{align}
+	\frac{dn}{dE} \approx N L_{therm} \left(\frac{E}{4k_BT} \right)^{-0.4} * e^{\frac{-E}{4k_BT}}
+\end{align}
+
+\end{document}

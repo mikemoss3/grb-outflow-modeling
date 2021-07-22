@@ -13,7 +13,7 @@ import numpy as np
 import cosmologicalconstants as cc
 import utils as ut
 
-def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5,E_dot=1e52):
+def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5,E_dot=1e52,fluctuations=False):
 	"""
 	Distribute the Lorentz factors of the shells into a step function. 
 	Params: 
@@ -68,9 +68,28 @@ def step(dte, g1=100, g2=400, numshells=5000, mfrac=0.5,E_dot=1e52):
 	# Deactivate all shells except the initial one
 	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)
 
+
+	# Add fluctuations to the Lorentz factors
+	if fluctuations is True:
+		# Fluctuate all Lorentz factors according to a Gaussian distribution centered around their un-fluctuated value
+		# and a standard deviation equal to the square root of the larger Lorentz factor
+		shell_arr['GAMMA'] = np.random.normal(shell_arr['GAMMA'],np.sqrt(np.max([g1,g2])) )
+
+		# Kick a N/100 random Lorentz factors to a factor of 10 stronger
+		num_rand_inds = int(numshells*0.005)
+		rand_inds = np.random.random_integers(low=0, high=numshells, size=num_rand_inds)
+
+		# Only down
+		shell_arr['GAMMA'][rand_inds] /= 2
+
+		# Both up and down
+		# shell_arr['GAMMA'][rand_inds[::2]] *= 1.5
+		# shell_arr['GAMMA'][rand_inds[1::2]] /= 1.5
+
+
 	return shell_arr
 
-def oscillatory(dte,gmin=100,gmax=400,numshells=5000,median=333,ampf=2/3,freq=5,decay=0.5,E_dot=1e52):
+def oscillatory(dte,gmin=100,gmax=400,numshells=5000,median=333,ampf=2/3,freq=5,decay=0.5,E_dot=1e52,fluctuations=False):
 	"""
 	Distribution shells with an oscillatory Lorentz distribution 
 	Params:
@@ -116,6 +135,23 @@ def oscillatory(dte,gmin=100,gmax=400,numshells=5000,median=333,ampf=2/3,freq=5,
 
 	# Deactivate all shells except the initial one
 	shell_arr['STATUS'] = np.ones(shape=numshells,dtype=int)
+
+	# Add fluctuations to the Lorentz factors
+	if fluctuations is True:
+		# Fluctuate all Lorentz factors according to a Gaussian distribution centered around their un-fluctuated value
+		# and a standard deviation equal to the square root of the larger Lorentz factor
+		shell_arr['GAMMA'] = np.random.normal(shell_arr['GAMMA'],np.sqrt(gmax) )
+
+		# Kick a N/100 random Lorentz factors to a factor of 10 stronger
+		num_rand_inds = int(numshells*0.005)
+		rand_inds = np.random.random_integers(low=0, high=numshells, size=num_rand_inds)
+
+		# Only down
+		shell_arr['GAMMA'][rand_inds] /= 2
+
+		# Both up and down
+		# shell_arr['GAMMA'][rand_inds[::2]] *= 1.5
+		# shell_arr['GAMMA'][rand_inds[1::2]] /= 1.5
 
 	return shell_arr
 

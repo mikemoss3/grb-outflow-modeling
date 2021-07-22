@@ -1,0 +1,47 @@
+\documentclass[10pt]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{ulem}
+\usepackage{setspace}	
+
+
+% Formatting
+\usepackage[margin=1in]{geometry}
+\setlength{\parskip}{1em}
+\setlength{\parindent}{0em}
+
+
+% Make upright subscripts in Mathmode.
+\def\subinrm#1{\sb{\mathrm{#1}}}
+{\catcode`\_=13 \global\let_=\subinrm}
+\mathcode`_="8000
+\def\upsubscripts{\catcode`\_=12 } \def\normalsubscripts{\catcode`\_=8 }
+ 	 	
+% Title
+\title{Complete Outline of the Code}
+
+\begin{document}
+\upsubscripts
+
+\section{Jet Dynamics}
+
+
+
+\subsection{Thermal Emission}
+\subsection{Internal Shocks}
+
+
+\section{Spectrum Creation}
+
+\subsection{Thermal Spectrum}
+\subsection{Synchrotron Spectrum}
+
+
+\end{document}

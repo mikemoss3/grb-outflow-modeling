@@ -13,11 +13,11 @@ This code aims to recreate the results of Daigne and Mochkovitch 1998.
 """
 
 import numpy as np
-import matplotlib.pyplot as plt 
+# import matplotlib.pyplot as plt 
 
 import utils as ut
 import shelldists as sd
-import radiation as rd
+# import radiation as rd
 import cosmologicalconstants as cc
 
 
@@ -26,7 +26,7 @@ class PromptJet(object):
 	Prompt Jet class.
 	"""
 
-	def __init__(self,numshells=5000,dte=0.002,shelldist=sd.step,alpha_e=1/3,alpha_m=1,alpha_b=1/3,ksi=1e-3,mu=1.74,E_dot=1e52,tb=1,theta=0.1,r_open=1e7,r_sat=1e8,eps_th=0.03,sigma=0.1):
+	def __init__(self,numshells=5000,dte=0.002,shelldist=sd.step,alpha_e=1/3,alpha_m=1,alpha_b=1/3,ksi=1e-3,mu=1.74,E_dot_iso=1e53,tb=0,theta=0.1,r_open=1e6,r_sat=1e8,eps_th=0.03,sigma=0.1):
 		"""
 		Defines the default parameters of the jet.
 
@@ -59,7 +59,7 @@ class PromptJet(object):
 			self.tw = self.dte*(self.numshells+1)
 
 		# Make the list of shells with a Lorentz distributions (this is the distribution at t = tw)
-		self.jet_shells = shelldist(dte=dte,numshells=self.numshells,E_dot=E_dot)
+		self.jet_shells = shelldist(dte=dte,numshells=self.numshells,E_dot=E_dot_iso)
 
 		# Define constants of the jet environment
 		self.alpha_e = alpha_e # Fraction of dissipated energy that goes into the electrons 
@@ -67,7 +67,7 @@ class PromptJet(object):
 		self.alpha_b = alpha_b # Fraction of dissipated energy that goes into the magnetic field 
 		self.ksi = ksi # Fraction of electrons which are accelerated 
 		self.mu = mu # Between 1.5 - 2, index of the fluctuation spectrum 
-		self.E_dot = E_dot # erg/s, Injected energy rate
+		self.E_dot_iso = E_dot_iso # erg/s, Injected isotropic energy rate
 		self.tb = tb # Break out time of the jet (when the first shell breaks out of the ejecta material surrounding the compact object)
 		self.theta = theta # radians, Half-opening angle of the jet
 		self.r_open = r_open # cm, Opening radius of the jet
@@ -79,9 +79,9 @@ class PromptJet(object):
 		np.savetxt('./sim_results/t0_shells.txt',self.jet_shells)
 
 		# Initialize a spectrum object 
-		self.emission = rd.Emission()
+		# self.emission = rd.Emission()
 
-	def jet_evolution(self,jet_shells=None,alpha_e=None,alpha_m=None,alpha_b=None,ksi=None,mu=None,E_dot=None,tb=None,theta=None,r_open=None,r_sat=None,eps_th=None,sigma=None):
+	def jet_evolution(self,jet_shells=None,alpha_e=None,alpha_m=None,alpha_b=None,ksi=None,mu=None,E_dot_iso=None,tb=None,theta=None,r_open=None,r_sat=None,eps_th=None,sigma=None):
 		"""
 		Method to emulate the evolution of a jet made of consecutive shells (including the collisions of shells)
 		
@@ -101,8 +101,8 @@ class PromptJet(object):
 			ksi = self.ksi
 		if mu is None:
 			mu = self.mu
-		if E_dot is None:
-			E_dot = self.E_dot
+		if E_dot_iso is None:
+			E_dot_iso = self.E_dot_iso
 		if tb is None:
 			tb = self.tb	
 		if theta is None:
@@ -116,13 +116,17 @@ class PromptJet(object):
 		if sigma is None:
 			sigma = self.sigma
 
+		E_dot_kin = E_dot_iso/(1+sigma) # Fraction of the energy in kinetic
+		# E_dot_kin = E_dot_iso # Fraction of the energy in kinetic
+		E_dot_therm = E_dot_iso*eps_th # Fraction of the energy in thermal
+
 		# Initialize the time in the reference frame of the jet. 
 		te = tb
 
 		# Average Lorentz factor of all jet shells 
 		gamma_bar = np.mean(jet_shells['GAMMA'])
 		# Average mass of each shell
-		m_bar = E_dot*self.dte_step/gamma_bar/cc.c**2
+		m_bar = E_dot_iso*self.dte_step/gamma_bar/cc.c**2
 
 		# Open file to record collision dynamics
 		file_shell_dyn = open('./sim_results/shell_dyn.txt','w')
@@ -130,13 +134,14 @@ class PromptJet(object):
 		file_shell_dyn.close()
 		file_shell_dyn = open('./sim_results/shell_dyn.txt','a')
 		# Initialize flags, used for recording shell distributions are particular times:
-		t3e4_flag=False
-		t2e5_flag=False
-		t5e5_flag=False
+		# t3e4_flag=False
+		# t2e5_flag=False
+		# t5e5_flag=False
 
-		# Arrays to record emission contributions
-		spec_therm = np.zeros(shape=len(jet_shells),dtype=[('te',float),('ta',float),('delt',float),('T',float),('Flux',float)])
-		spec_synch = np.zeros(shape=len(jet_shells),dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float),('tau',float),('relvel',float)])
+		# Arrays to record emission contributions, 
+		spec_therm = np.zeros(shape=len(jet_shells),dtype=[('te',float),('ta',float),('delt',float),('T',float),('Flux',float),('Rphot',float)])
+		spec_synch = np.zeros(shape=len(jet_shells)-1,dtype=[('te',float),('ta',float),('asyn',float),('Beq',float),('gammae',float),('Esyn',float),('gammar',float),('e',float),('delt',float),('tau',float),('relvel',float)])
+		# Note: the number of collisions is equal to the number of shells minus 1. 
 		col_num=0 # initialize the zero index of the internal shock collisions 
 
 
@@ -144,34 +149,39 @@ class PromptJet(object):
 		# Thermal considerations do not depend on shell collisions, but only on the energy in a particular shell as it passes the photosphere
 
 		# Calculate the photospheric radius for each jet shell, Equation 9 of Hascoet 2013
-		r_phot = (0.2*E_dot / ( 8*np.pi*(cc.c**4) *(jet_shells['GAMMA']**3)) ) 
-		# r_phot = 2.9*10**13 * (0.2*(E_dot/1e53) / ( (1+sigma)*(jet_shells['GAMMA']/100)) )/cc.c
+		r_phot = (0.2*E_dot_iso / ( (1+sigma)*8*np.pi*(cc.c**4) *(jet_shells['GAMMA']**3)) ) # units of lightseconds, cm/speed of light
+		# r_phot = 2.9*10**13 *(E_dot_iso/1e53) / ( cc.c*(1+sigma)*(jet_shells['GAMMA']/100)**3) # units of lightseconds, cm/(cm/s)
 
 		# Times when each shell will cross the photoshpere
-		t_cross_phot = (r_phot - jet_shells['RADIUS']) / ( ut.beta(jet_shells['GAMMA']) )
+		t_cross_phot = (r_phot - jet_shells['RADIUS']) / ut.beta(jet_shells['GAMMA'])
 		# Observer time 
 		t_obs = (t_cross_phot - r_phot)
+
 		del_t_obs = r_phot/2/jet_shells['GAMMA']**2
 		# Calculate useful constant for next calculations
-		Phi = np.power(theta,-2/3)*np.power(r_phot*cc.c,-2/3)*np.power(r_open,2/3)*np.power(jet_shells['GAMMA'],2/3)
+		Phi = np.power(theta,-2/3)*np.power(r_phot*cc.c,-2/3)*np.power(r_open,2/3)*np.power(jet_shells['GAMMA'],2/3) # Eq. 11 in Hascoet 2013
 
 		# Temperature at photosphere
-		T0 = np.power(E_dot*eps_th*theta**2 / (16*np.pi**2 * cc.a * cc.c * r_open**2),1/4) # K, rearrange Eq. 1 of Hascoet 2013 
-		# T0 = (2/3)*np.power(eps_th,1/4)*np.power(theta/0.1,1/2)*np.power(E_dot/1e53,1/4)*np.power(r_open/1e7,-1/2) # MeV
-		# T_phot = T0 * Phi/jet_shells['GAMMA']
-		T_phot_obs = T0*Phi
+		T0 = np.power(E_dot_therm*theta**2 / (4*np.pi * cc.a * cc.c * r_open**2),1/4) # K, rearrangement Eq. 1 of Hascoet 2013 
+		# T0 =  (2/3)*np.power(eps_th,1/4)*np.power(theta/0.1,1/2)*np.power(E_dot_iso/1e53,1/4)*np.power(r_open/1e7,-1/2) / (cc.kb_kev/1000) # K, alternative expression, Eq. in Hascoet
 
-		# Luminosity at photosphere 
-		L_phot = (eps_th*theta**2*E_dot/(16*np.pi)) * Phi # erg/s
-		# L_phot = jet_shells['GAMMA']**2 * cc.a * T_phot**4 * cc.c * (np.pi * theta**2 * r_phot**2) # erg/s, alternative expression
-		# L_phot_eV = L_phot / 1.60218e-12 # convert to ev
+		T_phot_obs = T0*Phi # K, Equation 7 in Hascoet 2013
+
+		# Luminosity at photosphere, from equation 8 in Hascoet 2013
+		L_phot = (theta**2 / 4) * E_dot_therm * Phi # erg/s
+		# L_phot = jet_shells['GAMMA']**2 * cc.a * (T0*Phi/jet_shells['GAMMA'])**4 * cc.c * (np.pi * theta**2 * (cc.c*r_phot)**2) # erg/s, alternative expression
+		
+		# L_phot_keV = L_phot * cc.erg_to_kev # convert to kev
 
 		spec_therm['te'] = t_cross_phot
 		spec_therm['ta'] = t_obs
 		spec_therm['delt'] = del_t_obs
 		spec_therm['T'] = T_phot_obs
 		spec_therm['Flux'] = L_phot
+		spec_therm['Rphot'] = r_phot
 
+		np.savetxt('./sim_results/ordlor_spectrum_therm.txt',spec_therm)
+		print("At time t={} s, all shells have passed the photoshpere".format(spec_therm['te'][-1]))
 
 		### Simulate Internal Shocks
 		# Flag to mark if all the shells in the jet are ordered (no more collisions occur at this point )
@@ -267,81 +277,80 @@ class PromptJet(object):
 			else:
 				tau = 0.2 * np.sum( jet_shells['MASS'][jet_shells['STATUS']==1][:ind_s_ds]*m_bar /(4 * np.pi * cc.c**2 * jet_shells['RADIUS'][jet_shells['STATUS']==1][:ind_s_ds]**2) )
 
-			if tau < 1: 
-				if ut.rel_vel(shell_us_g,shell_ds_g) > 0.1:
-					## Synchrotron considerations:
-					gamma_int = 0.5*(np.sqrt(shell_ds_g/shell_us_g)+np.sqrt(shell_us_g/shell_ds_g)) # Lorentz factor for internal motion in shocked material
-					eps = (gamma_int-1)*cc.mp*cc.c**2 # erg, Average proton factor from the collision of two shells
+			# if tau < 1: 
+				# if ut.rel_vel(shell_us_g,shell_ds_g) > 0.1:
+			## Synchrotron considerations:
+			gamma_int = 0.5*(np.sqrt(shell_ds_g/shell_us_g)+np.sqrt(shell_us_g/shell_ds_g)) # Lorentz factor for internal motion in shocked material
+			eps = (gamma_int-1)*cc.mp*cc.c**2 # erg, Average proton factor from the collision of two shells
 
-					# Characteristic Lorentz factor of accelerated electrons					
-					# gamma_e = alpha_e *eps / (cc.me* cc.c**2) # Average electron lorentz factor, for electrons in equipartition with protons
-					# gamma_e = np.power((alpha_m/ksi)*(eps/cc.me/cc.c**2),1/(3-mu)) # Average electron lorentz factor, electrons directly produce synchrotron radiation (via turbulent magnetic fields)
-					gamma_e = 1e4 # Average electron lorentz factor, constant
+			# Characteristic Lorentz factor of accelerated electrons					
+			# gamma_e = alpha_e *eps / (cc.me* cc.c**2) # Average electron lorentz factor, for electrons in equipartition with protons
+			# gamma_e = np.power((alpha_m/ksi)*(eps/cc.me/cc.c**2),1/(3-mu)) # Average electron lorentz factor, electrons directly produce synchrotron radiation (via turbulent magnetic fields)
+			gamma_e = 1e4 # Average electron lorentz factor, constant
 
-					n = E_dot / (4*np.pi * rad_coll**2 * gamma_bar**2 * cc.mp * cc.c**5) # 1/cm^3, Comoving proton number density
-					# n = E_dot / (4*np.pi * rad_coll**2 * (gamma_bar*gamma_r) * cc.mp * cc.c**5) # 1/cm^3, Comoving proton number density, new implementation of Frederic
-					Beq = np.sqrt(8*np.pi*alpha_b*n*eps) # (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
+			n = E_dot_kin / (4*np.pi * rad_coll**2 * gamma_bar**2 * cc.mp * cc.c**5) # 1/cm^3, Comoving proton number density
+			Beq = np.sqrt(8*np.pi*alpha_b*n*eps) # (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
 
-					# Synchrotron energy emitted by accelerated electron
-					E_syn_ev = 50*(gamma_r/300)*(Beq/1e3)*(gamma_e/100)**2 # eV, Synchrotron energy in the rest frame
-					E_syn = E_syn_ev * 1.60218e-12 # convert to erg
-					E_0syn = E_syn/gamma_r # erg, Synchrotron energy in the comoving frame
+			# Synchrotron energy emitted by accelerated electron
+			E_syn_ev = 50*(gamma_r/300)*(Beq/1e3)*(gamma_e/100)**2 # eV, Synchrotron energy in the rest frame
+			E_syn = E_syn_ev * cc.ev_to_erg # convert to erg
+			E_0syn = E_syn/gamma_r # erg, Synchrotron energy in the comoving frame
 
-					# Check if Klein-Nishina limit or Thompson (i.e., w>>1 or w<<1)
-					w = gamma_e*E_0syn/(cc.me*cc.c**2) # Critical value between Thomson and Klein-Nishina
-					# w_alt = 33*(Beq/1e3)*(gamma_e/1e4)**3 # Alternative relation to find w
-					
-					t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1e3,-2) # sec, synchrotron time-scale
+			# Check if Klein-Nishina limit or Thompson (i.e., w>>1 or w<<1)
+			w = gamma_e*E_0syn/(cc.me*cc.c**2) # Critical value between Thomson and Klein-Nishina
+			# w_alt = 33*(Beq/1e3)*(gamma_e/1e4)**3 # Alternative relation to find w
+			
+			t_syn = 6*np.power(gamma_e/100,-1)*np.power(Beq/1e3,-2) # sec, synchrotron time-scale
 
-					# Q_IC == tau_star * gamma_e**2 == Y == the Compton Parameter
-					# Write equation 22 in a slightly simplified way
-					c = -(3/2) * (0.2/np.pi/(cc.c**2 * rad_coll**2)) * gamma_e * 100 * (E_dot/gamma_bar**2 / cc.c**2) * np.power(Beq/1000,-2)
-					if w >= 1:
-						# Klein-Nishina
-						# Calculate the left hand side of equation 29
-						# Notice the negative sign to move it to the right hand side (to use the quadratic formula)
-						# c = -8*1e-4*(1+np.log(2*w))*(E_dot/1e52)*np.power(t_var/1,-2)*np.power(gamma_bar/300,-6)*np.power(Beq/1e3,-4)*np.power(gamma_e/1e4,-5)
-						# Q_ICw = (-1 + np.sqrt(1-4*c))/2
-						# alpha_ic = Q_ICw/(1+Q_ICw) # Fraction of energy that goes into Inverse Compton electrons
-						
-						# Calculate the Compton parameter
-						Q_IC = (-1 + np.sqrt(1-4*c))/2
-						alpha_ic = (Q_IC/w)/(1+(Q_IC/w)) # Fraction of energy that goes into Inverse Compton electrons
-					else: 
-						# w < 1 
-						# Thomson
-						# c = -0.2 *(E_dot/cc.c**2/gamma_bar**2)*t_syn*gamma_e**2 / (4*np.pi*(cc.c*t_var*gamma_bar**2)**2)
-						
-						# Calculate the Compton parameter
-						Q_IC = (-1 + np.sqrt(1-4*c))/2
-						alpha_ic = Q_IC/(1+Q_IC) # Fraction of energy that goes into Inverse Compton electrons
+			# Q_IC == tau_star * gamma_e**2 == Y == the Compton Parameter
+			# Write equation 22 in a slightly simplified way
+			c = -(3/2) * (0.2/np.pi/(cc.c**2 * rad_coll**2)) * gamma_e * 100 * (E_dot_kin/gamma_bar**2 / cc.c**2) * np.power(Beq/1000,-2)
+			if w >= 1:
+				# Klein-Nishina
+				# Calculate the left hand side of equation 29
+				# Notice the negative sign to move it to the right hand side (to use the quadratic formula)
+				# c = -8*1e-4*(1+np.log(2*w))*(E_dot_kin/1e52)*np.power(t_var/1,-2)*np.power(gamma_bar/300,-6)*np.power(Beq/1e3,-4)*np.power(gamma_e/1e4,-5)
+				# Q_ICw = (-1 + np.sqrt(1-4*c))/2
+				# alpha_ic = Q_ICw/(1+Q_ICw) # Fraction of energy that goes into Inverse Compton electrons
+				
+				# Calculate the Compton parameter
+				Q_IC = (-1 + np.sqrt(1-4*c))/2
+				alpha_ic = (Q_IC/w)/(1+(Q_IC/w)) # Fraction of energy that goes into Inverse Compton electrons
+			else: 
+				# w < 1 
+				# Thomson
+				# c = -0.2 *(E_dot_kin/cc.c**2/gamma_bar**2)*t_syn*gamma_e**2 / (4*np.pi*(cc.c*t_var*gamma_bar**2)**2)
+				
+				# Calculate the Compton parameter
+				Q_IC = (-1 + np.sqrt(1-4*c))/2
+				alpha_ic = Q_IC/(1+Q_IC) # Fraction of energy that goes into Inverse Compton electrons
 
-					alpha_syn = 1 - alpha_ic # Fraction of energy that goes into Synchrotron electrons 
+			alpha_syn = 1 - alpha_ic # Fraction of energy that goes into Synchrotron electrons 
 
-					# Other efficiency quantities to possibly record:
-					# f_dyn = (np.sqrt(shell_us_g/shell_ds_g)-1)**2 / ((shell_us_g/shell_ds_g)+1) # Dynamic efficiency, Equation 2 from Bosnjak, Daigne, Dubus 2009 
-					# f_dyn = 1 - (shell_ds_m+shell_us_m)*gamma_comb/( shell_ds_m*shell_ds_g + shell_us_m*shell_us_g) # Dynamic efficiency, Equation 3 from Kobayashi, Piran, and Sari 1997 
-					# f_dyn = 1
+			# Other efficiency quantities to possibly record:
+			# f_dyn = (np.sqrt(shell_us_g/shell_ds_g)-1)**2 / ((shell_us_g/shell_ds_g)+1) # Dynamic efficiency, Equation 2 from Bosnjak, Daigne, Dubus 2009 
+			# f_dyn = 1 - (shell_ds_m+shell_us_m)*gamma_comb/( shell_ds_m*shell_ds_g + shell_us_m*shell_us_g) # Dynamic efficiency, Equation 3 from Kobayashi, Piran, and Sari 1997 
+			# f_dyn = 1
 
-					# Energy dissipated in the shock, assumes that the energy dissipated occurs when upstream shell sweeps up a mass equal to its own (or sweeps up the entire downstream shell mass)
-					en_diss =  np.min(np.array([shell_ds_m,shell_us_m]))*m_bar * cc.c**2 * (shell_ds_g + shell_us_g - 2*gamma_r) * alpha_e*alpha_syn
+			# Energy dissipated in the shock, assumes that the energy dissipated occurs when upstream shell sweeps up a mass equal to its own (or sweeps up the entire downstream shell mass)
+			en_diss =  np.min(np.array([shell_ds_m,shell_us_m]))*m_bar * cc.c**2 * (shell_ds_g + shell_us_g - 2*gamma_r) * alpha_e*alpha_syn # erg
 
-					# If the emission is efficient, add the contribution
-					# E.g., If the emission time is less than the shell expansion (i.e., the dynamical scale of the shell)
-					if t_syn < ((1+Q_IC)*rad_coll/gamma_bar):
-						# Add contribution to the spectrum 
-						spec_synch[col_num]['te']=te
-						spec_synch[col_num]['ta']=ta
-						spec_synch[col_num]['asyn']=alpha_syn
-						spec_synch[col_num]['Beq']=Beq
-						spec_synch[col_num]['gammae']=gamma_e
-						spec_synch[col_num]['Esyn']=E_syn_ev/1e3 # Put the E_syn in to units of keV
-						spec_synch[col_num]['gammar']=gamma_r
-						spec_synch[col_num]['e']=en_diss
-						spec_synch[col_num]['delt']=delta_t
-						spec_synch[col_num]['tau']=tau
-						spec_synch[col_num]['relvel']=ut.rel_vel(shell_us_g,shell_ds_g)
-						col_num+=1
+			# If the emission is efficient, add the contribution
+			# E.g., If the emission time is less than the shell expansion (i.e., the dynamical scale of the shell)
+			if t_syn < ((1+Q_IC)*rad_coll/gamma_bar):
+				# Add contribution to the spectrum 
+				spec_synch[col_num]['te']=te
+				spec_synch[col_num]['ta']=ta
+				spec_synch[col_num]['asyn']=alpha_syn
+				spec_synch[col_num]['Beq']=Beq
+				spec_synch[col_num]['gammae']=gamma_e
+				spec_synch[col_num]['Esyn']=E_syn_ev/1e3 # Put the E_syn in to units of keV
+				spec_synch[col_num]['gammar']=gamma_r
+				spec_synch[col_num]['e']=en_diss
+				spec_synch[col_num]['delt']=delta_t
+				spec_synch[col_num]['tau']=tau
+				spec_synch[col_num]['relvel']=ut.rel_vel(shell_us_g,shell_ds_g)
+				col_num+=1
 
 
 			# Record collision dynamics for each collision
@@ -349,22 +358,28 @@ class PromptJet(object):
 			# [file_shell_dyn.write("{:1.5e}\t".format(save_coll_arr[i])) for i in range(len(save_coll_arr))]
 			# file_shell_dyn.write("\n")
 
-			# Record shell positions at specific times (to match D&M 1998)
-			if te > 3e4 and t3e4_flag==False:
-				np.savetxt('./sim_results/t3e4_shells.txt',jet_shells)
-				t3e4_flag=True 
-			if te > 2e5 and t2e5_flag==False:
-				np.savetxt('./sim_results/t2e5_shells.txt',jet_shells)
-				t2e5_flag=True 
-			if te > 5e5 and t5e5_flag==False:
-				np.savetxt('./sim_results/t5e5_shells.txt',jet_shells)
-				t5e5_flag=True 
+			## Record shell positions at specific times (to match D&M 1998)
+			# if te > 3e4 and t3e4_flag==False:
+			# 	np.savetxt('./sim_results/t3e4_shells.txt',jet_shells)
+			# 	t3e4_flag=True 
+			# if te > 2e5 and t2e5_flag==False:
+			# 	np.savetxt('./sim_results/t2e5_shells.txt',jet_shells)
+			# 	t2e5_flag=True 
+			# if te > 5e5 and t5e5_flag==False:
+			# 	np.savetxt('./sim_results/t5e5_shells.txt',jet_shells)
+			# 	t5e5_flag=True 
 
 
 			# Check if all the active shells have ordered Lorentz factors
 			# If true, no more collisions will be possible at this point
 			if is_sorted(jet_shells[jet_shells['STATUS']==1]['GAMMA'] ) == True:
 				ord_lorentz = True
+
+				# I made the length of the synchrotron array to be as long as the maximum number of collisions,
+				# For some Lorentz distributions not all of the maximum possible collisions will occur. I will delete the excess rows.
+				# The col_num variable has kept track of the number of collisions. I can use this to delete the excess rows. 
+				spec_synch = spec_synch[:col_num]
+
 				np.savetxt('./sim_results/ordlor_shells.txt',jet_shells)
 				np.savetxt('./sim_results/ordlor_spectrum_synch.txt',spec_synch)
 				np.savetxt('./sim_results/ordlor_spectrum_therm.txt',spec_therm)

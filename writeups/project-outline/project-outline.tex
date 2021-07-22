@@ -1,0 +1,456 @@
+\documentclass[linenumbers]{aastex631}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{ulem}
+
+% Editing commands
+\newcommand{\mm}[1]{{\textcolor{purple}{\bf #1}}}
+
+% Make upright subscripts in Mathmode.
+\def\subinrm#1{\sb{\mathrm{#1}}}
+{\catcode`\_=13 \global\let_=\subinrm}
+\mathcode`_="8000
+\def\upsubscripts{\catcode`\_=12 } \def\normalsubscripts{\catcode`\_=8 }
+
+\newcommand{\vdag}{(v)^\dagger}
+\newcommand\aastex{AAS\TeX}
+\newcommand\latex{La\TeX}
+
+% Title
+\shorttitle{GRB Prompt Emission Simulation}
+\shortauthors{Michael Moss}
+
+\begin{document}
+
+\upsubscripts
+\title{GRB Prompt Emission Simulation}
+
+\author{Michael Moss}
+\affiliation{The Department of Physics, The George Washington University, 725 21st NW, Washington, DC 20052, USA}
+\affiliation{NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
+
+\correspondingauthor{Michael Moss}
+\email{mikejmoss3@gmail.com}
+
+
+\begin{abstract}
+Abs
+\end{abstract}
+
+\keywords{Gamma-Ray Bursts (629)}
+
+\section{Introduction} \label{sec:intro}
+\section{Jet Dynamics} \label{sec:jet dynamics}
+
+Input parameters for jet dynamics in Table \ref{tab: jet dynamic params}
+\begin{deluxetable*}{llll}
+\tablecaption{ List of parameters used in the jet dynamic simulations, their variable names and default values in the code, as well as a description of each. \label{tab: jet dynamic params}}
+\tablewidth{0pt}
+\tablehead{
+\colhead{Parameter symbol} & \colhead{Variable Name (in code)} & \colhead{Default Value} &  \colhead{Description}
+}
+\decimalcolnumbers
+\startdata
+N & numshells & 5000 & Number of shells in the jet. \\
+$\Delta$t$_e$ & dte & 0.002 s & Time between shell launching. \\
+$\alpha_e$ & alpha_e & 1/3 & Fraction of energy which goes into the electrons. \\
+$\alpha_m$ & alpha_m & 1/3 & Fraction of energy which goes into the magnetic field. \\
+$\xi$ & ksi & 0.001 & Fraction of electron which are accelerated. \\
+$\mu$ & mu & 1.74 & Index of the fluctuation spectrum. \\
+$\dot{E}_{iso}$ & E_dot_iso & $10^{53}$ erg/s & Isotropic energy injection rate. \\
+t$_b$ & tb & 0 s & Break out time. \\
+$\theta$ & theta & 0.1 & Opening angle of the jet. \\
+r$_{open}$ & r_open & $10^6$ & Opening radius of the jet. \\
+r$_{sat}$ & r_sat & $10^8$ & Saturation radius. \\
+$\epsilon_{th}$ & eps_th & 0.03 & Fraction of injected energy turned in thermal. \\
+$\sigma$ & sigma & 0.1 & The magnetization. \\
+entry1 & entry2 & entry3 & entry4 \\
+\enddata
+\end{deluxetable*}
+
+We derive two energies from the above input parameters,
+
+\begin{align}
+	\dot{E}_{kin} &= \frac{\dot{E}_{iso}}{1+\sigma} \\
+	\dot{E}_{th} &= \dot{E}_{iso} * \epsilon_{th}
+\end{align}
+
+where $\dot{E}_{kin}$ is the amount of the injected energy in the form of kinetic and $\dot{E}_{th}$ is the amount of the injected energy in thermal.
+
+
+\subsection{Shell Distribution}
+
+We begin by assigning the initial Lorentz factor, mass, emission time since jet launch, radius, and status of the N shells in the jet. 
+
+The distribution of the shell Lorentz factors can be specified by the user before running the jet dynamics simulation. Currently, there is a step function and a oscillatory function implemented. For the step function, two Lorentz factors must be specified to specify the upper $\Gamma_1$ and low steps $\Gamma_2$. The the fraction of the total mass with $\Gamma_1$ must also be specified, $f=M_1/M_{tot}$
+
+\begin{align}
+	N(\Gamma_1) &= \frac{N_{tot}}{\frac{(1-f)*\Gamma_2}{f*\Gamma_1} + 1} \\
+	N(\Gamma_2) &= N_{tot} - N(\Gamma_1) \\ 
+\end{align}
+
+ For the oscillatory distribution, we adapt the function from Equation 16 in \citet{2013A&A...551A.124H}, but has been made more general,
+
+ \begin{align}
+	\Gamma_i = \Gamma_{mean} * \left(1+A\cos\left(\pi f\left(1-\frac{i}{N_{tot}}\right)\right)\right)*e^{-\lambda \frac{i}{N_{tot}}} 
+ \end{align}
+
+where $\Gamma_{mean}$ is the mean Lorentz, A is the amplitude, f is the frequency, i is the shell number, and $\lambda$ is the decay constant.
+
+The mass of each shell is defined as
+
+\begin{align}
+	M_i &= \frac{\bar{\Gamma}}{\Gamma_i} \\ 
+\end{align}
+
+where $\bar{\Gamma}$ is the mean Lorentz factor. Currently, this is a dimensionless quantity, later it is multiplied by the $\bar{M}$ to give dimensions, where
+
+\begin{align}
+\bar{M} = \frac{\dot{E}_{iso} \Delta t_e}{\bar{\Gamma}c^2} \text{ g}
+\end{align}
+
+The emission time of each shell can either be supplied as a list by the user or will be calculated if only $\Delta t_e$ is given. The emission time is the $t_e = -\Delta t_e * i$, where i is the shell number. Notice the emission time is negative, this doesn't have a physical reason, its just how I coded it. 
+
+The radius of the jet computed as,
+
+\begin{align}
+	R_{0,i} = \beta_i * t_{e,i}\text{ cm/c}
+\end{align}
+
+where $\beta_i = \sqrt(1 - \Gamma^{-2})$ Notice that these are in units of $R/c$, for the remainder of this discussion distances will be in units of light seconds. Distances should be multiplied by $c$ in order to obtain distance units. Recall that the values of $t_{e,i}$ are negative, so these radii will also be negative. We set $R = 0 = R_{0,0}$ and all shells begin at negative distances.
+
+The status of a shell indicates whether it is currently active or not. An active shell is one that is currently propagating through the jet. An inactive shell is one that has not been launched yet or alternatively has already collided. 
+
+\subsection{Thermal Shell Dynamics and Emission}
+
+Once we have assigned the initial Radius, Lorentz factor, Mass, and emission time of each shell, we can begin to calculate the dynamics of the shells. We calculate when the shells will cross their respective photospheres and we calculate when/where collisions between the shells will occur. 
+
+We have found that all the shells pass their respective photospheres much before the first collision between two shells (in the source frame).
+
+The photospheric radius and crossing time of each shell is given by:
+
+\begin{align}
+	R_{phot,i} &= \frac{0.2 \dot{E}_{iso}}{(1+\sigma)8\pi c^4 \Gamma_i^3} \text{ cm/c}\\
+	t_{phot,i} &= \frac{R_{phot} - R_{0,i}}{\beta_i}\text{ s}
+\end{align}
+
+where $R_{0,i}$ is the initial radius of the $i$th shell.
+
+For all thermal emission events, the arrival time of the photons and duration of the emission is given by
+
+\begin{align}
+	t_a &= (t_e - R_{phot}) \text{s}\\
+	\Delta t_{obs} &= \frac{R_{phot}}{2\Gamma_r^2} (1+z) \text{ s}
+\end{align}
+
+Following the prescription from \citet{2013A&A...551A.124H}.
+
+\begin{align}
+	& \Phi = \theta^{-2/3} (R_{phot}*c)^{-2/3} (R_{open})^{2/3} \Gamma^{2/3} \\
+	& T0 = \left(\frac{\dot{E}_{th}^2 \theta^2}{4\pi a c R_{open}^2} \right)^{1/4} \text{ K} \\ 
+	& T_{phot,obs} = T0*\Phi*(1+z) \text{ K} \\
+	& L_{phot} = \frac{\theta^2 \dot{E}_{th} \Phi }{4} \text{ erg/s}
+\end{align}
+
+where $a$ is the radiation constant. 
+
+Output data for thermal emission in Table \ref{tab: thermal data output}
+
+\begin{deluxetable*}{ll}
+\tablecaption{Output data for thermal emission \label{tab: thermal data output}}
+\tablewidth{0pt}
+\tablehead{
+\colhead{Parameter} & \colhead{Description}
+}
+\decimalcolnumbers
+\startdata
+$t_{e,i}$ & The time when shell $i$ crosses the photosphere. Also will be the emission time. \\
+$t_{a,i}$ & The arrival time of photons produced by shell $i$. \\
+$\Delta t_{i}$ & Duration width of the emission of shell $i$. \\
+$T_{i}$ & Temperature of shell $i$ at emission. \\
+$L_{i}$ & Emitted luminosity of shell $i$. \\
+$R_{phot,i}$ & Radius of the photosphere for shell $i$. \\
+\enddata
+\end{deluxetable*}
+
+
+\subsection{Internal Shock Shell Dynamics and Emission}
+
+When considering the collisions between shells, we take each pair of adjacent active shells (shells which have already been launched) and calculate the time till they collide (see Appendix A). Selecting the minimum time until collision, $t_{coll,min}$, we move all shells according to $R_{new,i} = R_{old,i} + ()\beta_i * t_{coll,min})$. The two shells that collide will have an initial average Lorentz factor given by
+
+\begin{align}
+	\Gamma_r \sim \sqrt(\Gamma_s \Gamma_r)
+\end{align}
+
+for the slow and rapid shells. Once the momentum and energy of the shells has been fully redistributed the final Lorentz factor will be 
+
+\begin{align}
+	\Gamma_f = \sqrt(\Gamma_s \Gamma_r \frac{m_1 \Gamma_1 + m_2 \Gamma_2}{m_1\Gamma_2 + m_2\Gamma_1})
+\end{align}
+
+The new mass will be the sum of the two colliding shell masses. 
+
+For all collision events, the arrival time of the photons and duration of the emission is given by
+
+\begin{align}
+	t_a &= (t_e - R_{coll})\\
+	\Delta t_{obs} &= \frac{R_{coll}}{2\Gamma_r^2} (1+z)
+\end{align}
+
+To calculate the emission from the internal shocks, we follow the procedure detailed in \citet{1998MNRAS.296..275D}. Assuming synchrotron emission from electrons accelerated in a magnetic field. 
+
+The average energy dissipated per proton in a shock is given by
+
+\begin{align}
+	\epsilon &= (\Gamma_{int} - 1) m_p c^2 \\
+	& \text{ where } \Gamma_{int} = \frac{1}{2}\left[\left(\frac{\Gamma_1/\Gamma_2}{den}\right)^{1/2} + \left(\frac{\Gamma_2/\Gamma_1}{den}\right)^{1/2}\right]
+\end{align}
+
+where $\Gamma_{int}$ is the Lorentz factor for internal motions in the shocked material.
+
+The comoving proton number density is given by 
+
+\begin{align}
+	n \approx \frac{\dot{M}}{4\pi r^2 \bar{\Gamma}m_p c} \approx \frac{\dot{E}_{kin}}{4\pi r^2 \bar{\Gamma}^2m_p c^3} \text{ 1/cm}^3
+\end{align}
+
+which allows us to calculate the equipartition magnetic field 
+
+\begin{align}
+	B_{eq} \approx (8\pi \alpha_B n \epsilon)^{1/2} \text{ (erg/cm$^3$)}^{1/2}
+\end{align}
+
+where $\alpha_B\lesssim1$. 
+
+The typical synchrotron energy of the emitting electrons is given by
+
+\begin{align}
+	E_{syn} = 50 \frac{\Gamma_r}{300}\frac{B_{eq}}{1000\text{G}}\left(\frac{\Gamma_e}{100}\right)^2 \text{ eV}
+\end{align}
+
+This can be placed in the comoving frame 
+
+\begin{align}
+	E_{syn}^0 = E_{syn}/\Gamma_r \text{ eV}
+\end{align} 
+
+For electrons with a large enough Lorentz factor to produce gamma-rays via synchrotron emission, $\Gamma_e$ can be expressed using \citet{1996ApJ...461L..37B} who considered the scattering of electrons by turbulent magnetic field fluctuations and found 
+
+\begin{align}
+	\Gamma_e \sim \left[ \left(\frac{\alpha_M}{\xi}\right)\left(\frac{\epsilon}{m_ec^2}\right) \right]^{-1/(3-\mu)}
+\end{align}
+
+where $\alpha_M$ is the fraction fo the dissipated energy which goes into magnetic field fluctuations, $\xi$ is the fraction of electrons which are accelerated, and $\mu$ is the index of the fluctuation spectrum. For simplicity, we have currently used $\Gamma_e=10^4$.
+
+Although we do not calculate the Inverse Compton (IC) emission in this work, we still must calculate the amount of electrons scattered to higher energies due to Compton scatter. This also requires considering when the particles are in the Klein-Nishina regime. Using the Klein-Nishina cross section occurs when $w>>1$, where
+
+\begin{align}
+	w = \frac{\Gamma_e E_{syn}^0}{m_e c^2} \approx 33 \frac{B_{eq}}{1000\text{G}}\left(\frac{\Gamma_e}{10^4}\right)^3
+\end{align}
+
+In the Klein-Nishina regime, the fraction of electrons which are scattered up to higher energies is given by 
+
+\begin{align}
+	\alpha_{IC} &= \frac{Q_{IC}}{(1+Q_{IC})} \text{ for } w < 1 \\
+	\alpha_{IC} &= \frac{Q_{IC}/w}{(1+Q_{IC}/w)} \text{ for } w >> 1 
+\end{align}
+
+where $Q_{IC}$ is the Compton parameter and can be defined as 
+
+\begin{align}
+	Q_{IC} = \tau_{*}\Gamma_e^2
+\end{align}
+
+(Note: commonly in the literature, the Compton is labeled with a $Y$) where $\tau_{*}$ is the optical depth of the shell with mass $M_{*}$ and radius $r_{*}$ which contains relativistic electrons, 
+
+\begin{align} \label{eq: QIC p1}
+	\tau_{*} &= \frac{\kappa_T M_{*}}{4 \pi r_{*}^2}
+\end{align}
+
+where $\kappa_t$ is the Thomson opacity. The mass $M_{*}$ can be estimated
+
+\begin{align} \label{eq: QIC p2}
+	M_{*} &= \frac{t_{syn}}{1+Q_{IC}} \dot{M}_shock \\
+	&\text{where}\\
+	t_{syn} &= 6*\left(\frac{\Gamma_e}{100}\right)^{-1} \left(\frac{B_{eq}}{1000\text{G}}\right)^{-2}
+\end{align}
+
+is the synchrotron time of the relativistic electrons and $\dot{M}_{shock}$ is the mass flow rate across the shock, both in the comoving frame of the shocked material. Since the shock moves with a Lorentz factor $\sim \bar{\Gamma}$, $\dot{M}_{shock}$ can be approximated by 
+
+\begin{align} \label{eq: QIC p3}
+	\dot{M}_{shock} &\approx \frac{\dot{M}}{\bar{\Gamma}} \\
+	&= \frac{\dot{E}_{iso}}{c^2 \bar{\Gamma}^2} 
+\end{align}
+
+From Equations \ref{eq: QIC p1}, \ref{eq: QIC p1}, and \ref{eq: QIC p1}, we can form the relation
+
+\begin{align}
+	Q_{IC} &= \frac{\kappa_T \dot{M}_{shock} t_{syn} \Gamma_e^2}{4\pi r_{*}^2 (1+Q_{IC})}\\ 
+	Q_{IC}(1+Q_{IC}) &= \frac{\kappa_T}{4 \pi r_{*}^2} \frac{\dot{E}_{iso}}{c^2 \bar{\Gamma}^2} \Gamma_e^2 t_{syn}\\
+	Q_{IC}(1+Q_{IC}) &= 150 \frac{\kappa_T}{\pi r_{*}^2} \frac{\dot{E}_{iso}\Gamma_e}{c^2 \bar{\Gamma}^2} \left(\frac{B_{eq}}{1000\text{G}}\right)^{-2}
+\end{align}
+
+The fraction of electrons which remain to emit synchrotron emission is simply 
+
+\begin{align}
+	\alpha_{syn} = 1 - \alpha_{IC}
+\end{align}
+
+Lastly, the energy dissipated in a collision between two shells is given by
+
+\begin{align}
+	e = min(M_1,M_2) c^2 (\Gamma_1 + \Gamma_2 - 2*\Gamma_r) * \alpha_e * \alpha_{syn} \text{ erg}
+\end{align}
+
+Where we use the smaller mass of the two colliding shells.
+
+Although, this is the emission that occurs from two collisions, two more constraints must be met in order to be observed: (i) the relative velocity between the two shells must be larger than the local sound speed and (ii) the wind must be transparent to the emitted photons. The relative velocity between two layers is given by 
+
+\begin{align}
+	\frac{v_{rel}}{c} \approx \frac{\Gamma_1^2 - \Gamma_2^2}{\Gamma_1^2 + \Gamma_2^2}
+\end{align}
+
+where we have adopted a sound speed of $v_s/c = 0.1$. \citet{1998MNRAS.296..275D} have checked that other choices make little difference in the results since the main contribution to the burst comes from shocks with large differences in the Lorentz factors, e.g., $\frac{\Gamma_r}{\Gamma_s} \gtrsim 2$. 
+
+The transparency of the wind to the emitted photons is 
+
+\begin{align}
+	\tau = \kappa_T \sum_{i>i_{shock}} \frac{m_i}{4\pi r_i^2}
+\end{align}
+
+where $m_i$ and $r_i$ are the mass and radius of shell $i$. The sum over indices $i$ larger than $i_{shock}$, which corresponds to the colliding shells. 
+
+Output data for synchrotron emission in Table \ref{tab: synchrotron data output}
+
+\begin{deluxetable*}{ll}
+\tablecaption{Output data for synchrotron emission \label{tab: synchrotron data output}}
+\tablewidth{0pt}
+\tablehead{
+\colhead{Col1} & \colhead{Col2}
+}
+\decimalcolnumbers
+\startdata
+$t_{e,i}$ & Time of the $i$th collision (source frame). \\
+$t_{a,i}$ & The arrival time of photons produced the $i$th collision. \\
+$\alpha_{syn,i}$ & Fraction of energy which went into synchrotron elections for the $i$th collision. \\
+$B_{eq,i}$ & Magnetic field in equipartition for the $i$th collision. \\
+$\Gamma_{e,i}$ & Average Lorentz factor of the electrons in the $i$th collision.\\
+$E_{syn}$ & Typical synchrotron energy in the $i$th collision. \\
+$\Gamma_{r,i}$ & =$\sqrt{\Gamma_s\Gamma_r}$, initial averaged Lorentz factor of the $i$th collision. \\
+$e_{diss,i}$ & Energy dissipated in the $i$th collision. \\
+$\Delta t_{i}$ & Duration width of the emission of shell $i$. \\
+$\tau_i$ & Optical depth at the $i$th collision. \\
+$v_{rel,i}$ & Relative collision speed between the slow and fast shells of the $i$th collision. \\
+\enddata
+\end{deluxetable*}
+
+
+\section{Spectrum Generation} \label{sec:spectrum}
+\subsection{Thermal Spectrum}
+\subsection{Synchrotron Spectrum}
+
+\section{Light Curve Generation} \label{sec:light curve}
+
+
+% \begin{figure}[!ht]
+%     \centering
+%     \includegraphics[width=0.65\textwidth]{figures/example.png}
+%     \caption{}
+%     \label{fig: example fig}
+% \end{figure}
+
+% \begin{deluxetable*}{ll}
+% \tablenum{3}
+% \tablecaption{ \label{tab: example table}}
+% \tablewidth{0pt}
+% \tablehead{
+% \colhead{Col1} & \colhead{Col2}
+% }
+% \decimalcolnumbers
+% \startdata
+% entry1 & entry2 \\
+% \enddata
+% \end{deluxetable*}
+
+
+
+\newpage
+\bibliographystyle{aasjournal}
+\bibliography{bibliograpy-list}
+
+
+\begin{appendix}
+\section{Shell Collision Time and Radius}
+
+Consider two shells traveling along the same axis. We will label the radius, Lorentz factor,  more rapid shell with $r$ and the slower shell with $s$
+
+Consider two shells launched into from a central engine into a collimated relativistic jet. The second shell is launched with a delay of $\Delta t_e$. We can describe the position of the shells at a time $t$ with
+
+\begin{align}
+	R_1(t) &= R_{1,0} + c\beta_1 t \\
+	R_2(t) &= R_{2,0} + c\beta_2 t
+\end{align}
+
+where $R_{i,0}$ is the initial radius of the launched shell and $\beta_i = v_i/c$. Since we are only considering these two shells, we can set the zero position at $R_{2,0}$, 
+
+\begin{align}
+	R_1(t) &= L + c\beta_1 t \\
+	R_2(t) &= c\beta_2 t
+\end{align}
+
+where $L$ is the distance between the two shells at the launch of the second shell
+
+\begin{align}
+	L &= c\beta_1 \Delta t_e\\ 
+	&\rightarrow R_1(t) = c\beta_1(t+\Delta t_e)
+\end{align}
+
+Alternatively, we could have set the zero to $R_{1,0}$ and found 
+
+\begin{align}
+	R_1(t) &= c\beta_1 t \\
+	R_2(t) &= c\beta_2 (t-\Delta t_e)
+\end{align}
+
+The case where the second shell launched is slower than the first is trivial and results in no collision between the two. In the case where the second shell is more rapid than the first, there will eventually be a collision between the two shells. The time until collision can be written as
+
+\begin{align}
+	R_1(t_{coll}) &= R_2(t_{coll}) \\ 
+	L + c\beta_1t_{coll}&= c\beta_2t_{coll}\\
+	\rightarrow t_{coll}&= \frac{L}{c(\beta_2 - \beta_1)}\\
+	t_{coll}&= \frac{c\beta_1 \Delta t_e}{c(\beta_2 - \beta_1)}\\
+	t_{coll}&= \frac{\beta_1 \Delta t_e}{(\beta_2 - \beta_1)}
+\end{align}
+
+Substituting this back in the expression for the position we can find the collision radius, 
+
+\begin{align}
+	R_1(t_{coll}) &= L + c\beta_1 t_{coll} \\
+	&= L+c\beta_1\left(\frac{L}{c(\beta_2-\beta_1)}\right) \\
+	&= L\left(1+\frac{\beta_1}{(\beta_2-\beta_1)}\right)\\
+	R_{coll} &= L\left(\frac{\beta_2}{\beta_2-\beta_1}\right) \label{eq: rcoll}
+\end{align}
+
+These calculations can be done for more than two shells, but keep in mind when calculating the time and position of the collisions after the initial collision the distance between them (i.e., L) will just be the difference in their positions (not their ``initial'' separation, but the separation at the time of calculation).
+
+When calculating $R_{coll}$, it may be advantageous to use $R_1(t)$ or $R_2(t)$
+because Equation \ref{eq: rcoll} typically leads to significant numerical instabilities for high Lorentz factors.
+
+\subsection{Typical Values}
+
+Let us assume shell 1 and 2 have Lorentz factors $\Gamma_1=100$ and $\Gamma_2=400$ and that $\Delta t_e = 0.002$ seconds. The time and radius of collision would be
+
+\begin{align}
+	L &= 5.9 * 10^7 \text{ cm} \\ 
+	t_{coll} &\approx 42.6 \text{ seconds}\\
+	R_{coll} &= 1.2*10^{12} \text{ cm}
+\end{align}
+
+\end{appendix}
+
+\end{document}

@@ -15,9 +15,13 @@ import os
 import promptjet as pj
 import shelldists as sd
 
-os.system('rm sim_results/*.txt')
-os.system('rm sim_results/*.png')
+# Remove previous simulation results and figures 
+# os.system('rm sim_results/*.txt')
+# os.system('rm sim_results/*.png')
 
-# jet_inst = pj.PromptJet(numshells=500,dte=0.002,shelldist=sd.oscillatory)
-jet_inst = pj.PromptJet(numshells=5000,dte=0.002,shelldist=sd.step,E_dot=10e52)
-jet_inst.jet_evolution(tb=0)
+# Initialize a jet with specific physical characteristics
+jet_inst = pj.PromptJet(numshells=5000,dte=0.002,shelldist=sd.oscillatory)
+# jet_inst = pj.PromptJet(numshells=5000,dte=0.002,shelldist=sd.step)
+
+# Simulate the jet evolution
+jet_inst.jet_evolution()

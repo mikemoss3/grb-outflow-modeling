@@ -16,7 +16,11 @@ c = 2.99792e10 # speed of light, in cm/s
 sigma_T = 6.6524e-25 # cm^2, Thomson cross-section 
 kappa_T = 0.2 # cm^2 / g, Thomson opacity 
 
-kb=8.62*1e-5 # ev/K, Boltzmann constant
+kb = 8.62*1e-5 # ev/K, Boltzmann constant
+kb_kev = 8.617*1e-8 # keV/K, Boltzmann constant
+
+sigma_sb = 5.67*10**(-5) # erg cm^-2 K^-4 s^-1, Stephan-Boltzmann constant 
+
 h=6.6*1e-27 # cm^2 g s^-1, Planck constant 
 
 a = 7.566 * 1e-15 # erg cm^-3 K^-4, Radiation constant
@@ -27,3 +31,8 @@ H0 = 67.4*1e5 # Hubbles Constant cm/s/Mpc
 
 bol_lum = [1,100000] # bolumetric luminosity range
 
+# Conversion factors: 
+kev_to_erg = 1.6022e-9
+ev_to_erg = 1.6022e-12
+erg_to_kev = 6.242e8
+erg_to_ev = 6.242e11
