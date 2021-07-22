@@ -463,8 +463,8 @@ if __name__ == '__main__':
 	# plot_param_vs_ta(emission.components[1],ax=ax,z=z,param='Esyn',save=False)
 
 	
-	plot_spec_cpp(["thermal","synchrotron"],['sim_results/ordlor_spectrum_therm.txt','sim_results/ordlor_spectrum_synch.txt'], ax=ax, z=0.5, nuFnu=True, Tmin=0, Tmax=20, Emin=0.1, Emax=1e5, num_bins=160, save=False)
-	# plot_light_curve_cpp(["thermal","synchrotron"],['sim_results/ordlor_spectrum_therm.txt','sim_results/ordlor_spectrum_synch.txt'], ax=ax, z=z, Tmin=0, Tmax=30, dt=0.05, Emin=8, Emax=40000, save=False)
+	# plot_spec_cpp(["thermal","synchrotron"],['sim_results/ordlor_spectrum_therm.txt','sim_results/ordlor_spectrum_synch.txt'], ax=ax, z=0.5, nuFnu=True, Tmin=0, Tmax=20, Emin=0.1, Emax=1e5, num_bins=160, save=False)
+	plot_light_curve_cpp(["thermal","synchrotron"],['sim_results/ordlor_spectrum_therm.txt','sim_results/ordlor_spectrum_synch.txt'], ax=ax, z=z, Tmin=0, Tmax=30, dt=0.05, Emin=8, Emax=40000, save=False)
 	# plot_light_curve_cpp(["thermal"],['sim_results/ordlor_spectrum_therm.txt'], ax=ax, z=z, Tmin=0, Tmax=20, dt=0.05, Emin=0.1, Emax=5e5, save=False)
 
 	fig.tight_layout()
