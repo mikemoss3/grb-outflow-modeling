@@ -124,7 +124,7 @@ def plot_spec_cpp(emission_types, emission_file_names,ax=None,z=0, nuFnu=True, T
 		# For each emission component supplied to the method
 		for i in range(len(emission_file_names)):
 			# Execute cpp code for each file name specified
-			subprocess.run(["./c_scripts/spectrum {} {} {} {} {} {} {} {} {} false".format(emission_types[i], emission_file_names[i], Tmin, Tmax, Emin, Emax, num_bins, z, nuFnu)],shell=True,stderr=STDOUT)
+			subprocess.run(["./c_scripts/spectrum_make {} {} {} {} {} {} {} {} {} false".format(emission_types[i], emission_file_names[i], Tmin, Tmax, Emin, Emax, num_bins, z, nuFnu)],shell=True,stderr=STDOUT)
 			# Load the text file that contains the spectrum and append it
 			spec_plot_points = np.genfromtxt('./sim_results/spectrum_points.txt',dtype=[("ENERGY",float),("RATE",float)])
 			# Plot spectrum component
@@ -140,7 +140,7 @@ def plot_spec_cpp(emission_types, emission_file_names,ax=None,z=0, nuFnu=True, T
 	# If only one file name was given
 	else:
 		# Execute the Cpp script on the file name
-		subprocess.run(["./c_scripts/spectrum {} {} {} {} {} {} {} {} {} false".format(emission_types, emission_file_names, Tmin, Tmax, Emin, Emax, num_bins, z, nuFnu)],shell=True,stderr=STDOUT)
+		subprocess.run(["./c_scripts/spectrum_make {} {} {} {} {} {} {} {} {} false".format(emission_types, emission_file_names, Tmin, Tmax, Emin, Emax, num_bins, z, nuFnu)],shell=True,stderr=STDOUT)
 		# Load the text file that contains plot points:
 		spec_plot_points = np.genfromtxt('./sim_results/spectrum_points.txt',dtype=[("ENERGY",float),("RATE",float)])
 		# Plot the spectrum 
@@ -220,7 +220,7 @@ def plot_light_curve_cpp(emission_types,emission_file_names, ax=None, z=0, Tmin=
 		# For each emission component supplied to the method
 		for i in range(len(emission_file_names)):
 			# Execute cpp code for each file name specified
-			subprocess.run(["./c_scripts/light_curve {} {} {} {} {} {} {} {}".format(emission_types[i], emission_file_names[i], Tmin, Tmax, dt, Emin, Emax, z)],shell=True,stderr=STDOUT)
+			subprocess.run(["./c_scripts/light_curve_make {} {} {} {} {} {} {} {}".format(emission_types[i], emission_file_names[i], Tmin, Tmax, dt, Emin, Emax, z)],shell=True,stderr=STDOUT)
 			# Load the text file that contains the spectrum and append it
 			lc_plot_points = np.genfromtxt('./sim_results/light_curve_points.txt',dtype=[("TIME",float),("RATE",float)])
 			# Plot spectrum component
@@ -237,7 +237,7 @@ def plot_light_curve_cpp(emission_types,emission_file_names, ax=None, z=0, Tmin=
 	# If only one file name was given
 	else:
 		# Execute the Cpp script on the file name
-		subprocess.run(["./c_scripts/light_curve {} {} {} {} {} {} {} {}".format(emission_types[0], emission_file_names[0], Tmin, Tmax, dt, Emin, Emax, z)],shell=True,stderr=STDOUT)
+		subprocess.run(["./c_scripts/light_curve_make {} {} {} {} {} {} {} {}".format(emission_types[0], emission_file_names[0], Tmin, Tmax, dt, Emin, Emax, z)],shell=True,stderr=STDOUT)
 		# Load the text file that contains plot points:
 		lc_plot_points = np.genfromtxt('./sim_results/light_curve_points.txt',dtype=[("TIME",float),("RATE",float)])
 		# Plot the spectrum 

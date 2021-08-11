@@ -17,6 +17,7 @@ This file defines all the functions necessary to read in emission data from a gi
 
 // Import Custom Libraries
 #include "cosmology.hpp"
+#include "Spectrum.hpp"
 // Reference Self-header
 #include "spectrum_funcs.hpp"
 
