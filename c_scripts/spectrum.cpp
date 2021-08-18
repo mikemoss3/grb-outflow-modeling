@@ -26,17 +26,9 @@ using namespace std;
 // Define Spectrum class and member functions 
 
 // Spectrum constructor
-Spectrum::Spectrum(float E_min, float E_max, int num_E_bins)
+Spectrum::Spectrum()
 {
-	// Set class variables
-	_E_min = E_min;
-	_E_max = E_max;
-	_num_E_bins = num_E_bins;
 
-	// Fill in the energy vector
-	make_ENERG_arrs(true);
-	// Zero out the spectrum (this also serves to set the length of the vector)
-	zero_spectrum();
 }
  
 // Spectrum member functions
@@ -46,41 +38,43 @@ void Spectrum::make_ENERG_arrs(bool logscale)
 
 	if(logscale == true)
 	{
-		float logdE = log( _E_max/_E_min ) / _num_E_bins;
-		for(int i=0; i<=_num_E_bins;i++)
+		float logdE = log( E_max/E_min ) / num_E_bins;
+		for(int i=0; i< num_E_bins; i++)
 		{
-			ENERG_LO.push_back( _E_min + exp(logdE*i) );
-			ENERG_HI.push_back( _E_min + exp(logdE*(i+1)) );
-			ENERG_MID.push_back( (ENERG_LO[i] + ENERG_HI[i]) /2 );
+			ENERG_LO.push_back( E_min + exp(logdE*i) );
+			ENERG_HI.push_back( E_min + exp(logdE*(i+1)) );
+			ENERG_MID.push_back( (ENERG_LO.at(i) + ENERG_HI.at(i)) /2 );
 		}
 	}
 	else
 	{
-		float dE = (_E_max - _E_min) / _num_E_bins;
-		for(int i=0; i<_num_E_bins;i++)
+		float dE = (E_max - E_min) / num_E_bins;
+		for(int i=0; i<num_E_bins;i++)
 		{
-			ENERG_LO.push_back( _E_min + (dE*i) );
-			ENERG_HI.push_back( _E_min + (dE*(i+1)) );
-			ENERG_MID.push_back( (ENERG_LO[i] + ENERG_HI[i]) /2 );
+			ENERG_LO.push_back( E_min + (dE*i) );
+			ENERG_HI.push_back( E_min + (dE*(i+1)) );
+			ENERG_MID.push_back( (ENERG_LO.at(i) + ENERG_HI.at(i)) /2 );
 		}		
 	}
 }
 // Zero out the spectrum (this also serves to set the length of the vector)
 void Spectrum::zero_spectrum()
 {
-	for(int i=0; i<=_num_E_bins; i++)
+	for(int i=0; i<num_E_bins; i++)
 	{
-		spectrum.push_back(0);
+		spectrum_dE.push_back(0.);
 	}
 }
-void Spectrum::add_component(float *comp_rate)
+
+std::vector<float> Spectrum::get_ENERG_MID()
 {
-	for(int i=0; i<=_num_E_bins;i++)
-	{
-		spectrum[i] += comp_rate[i];
-		spectrum_sum+= comp_rate[i];
-	}
+	return ENERG_MID;
 }
+
+// void Spectrum::set_redshift(float z)
+// {
+// 	_z = z;
+// }
 
 // void Spectrum::add_fluctuations()
 // {
@@ -90,4 +84,22 @@ void Spectrum::add_component(float *comp_rate)
 // void Spectrum::write_to_FITS()
 // {
 
+// }
+
+// void Spectrum::add_component(float *comp_rate)
+// {
+// 	for(int i=0; i<=num_E_bins;i++)
+// 	{
+// 		spectrum_dE.at(i) += comp_rate.at(i);
+// 		spectrum_sum+= comp_rate.at(i);
+// 	}
+// }
+
+// void Spectrum::add_to_spec_sum(float val)
+// {
+// 	spectrum_sum += val;
+// }
+// void Spectrum::add_to_spec_dE(float val, int index)
+// {
+// 	spectrum_dE[index] += val;
 // }

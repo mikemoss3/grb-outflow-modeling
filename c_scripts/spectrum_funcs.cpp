@@ -24,23 +24,20 @@ This file defines all the functions necessary to read in emission data from a gi
 using namespace std;
 
 // Calls function to calculate the thermal spectrum rate for each energy bin
-void make_thermal_spec(double spectrum_sum[], double spectrum_dE[], float ta[], float Temp[], double Flux[], float delt[], int num_lines, float Tmin, float Tmax, float z, float Emin, float Emax, int num_en_bins, bool sum_only, bool nuFnu)
+void make_thermal_spec(Spectrum * spectrum, float ta[], float Temp[], double Flux[], float delt[], int num_lines, float Tmin, float Tmax, bool nuFnu)
 {
-	
+	float z = (*spectrum).z;
 	// For each emission event, calculate the emitted spectrum
 	for(int i=0;i<num_lines;i++)
-	{
-		// Ensure the sum is set to zero.
-		spectrum_sum[i] = 0.;
-		
+	{		
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
 		if ( ta[i]*(1+z) <= Tmax and (ta[i]+delt[i])*(1+z) >= Tmin )
 		{
 			// Call function to calculate thermal spectrum rate
-			calc_thermal_spec(spectrum_sum[i], spectrum_dE,Temp[i],Flux[i],z,Emin,Emax,num_en_bins,sum_only,nuFnu);
-		}
-		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum. 
+			calc_thermal_spec(spectrum, Temp[i],Flux[i], nuFnu);
+			}
+		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum.
 	}
 }
 // Read in emission data for thermal emission
@@ -75,52 +72,47 @@ void read_in_thermal_emission_data(std::string file_name, float te[], float ta[]
 	file_spec_data.close();
 }
 // Calculate the thermal spectrum from the given temperature and flux of the emission
-void calc_thermal_spec(double &spectrum_sum, double spectrum_dE[], float temp, double flux, float z, float Emin, float Emax, int num_en_bins, bool sum_only, bool nuFnu)
+void calc_thermal_spec(Spectrum * spectrum, float temp, double flux, bool nuFnu)
 {
-	// Put temperature in the observer frame
-	float temp_obs = temp/(1+z);
-
-	// Make energy axis
-	float energy_axis[num_en_bins+1];
-	make_en_axis(energy_axis,Emin,Emax,num_en_bins+1);
-
 	// Calculate the normalization
 	float norm=0; // Set normalization to zero
 	float Emin_bol = 0.01; // Minimum energy of the Bolometric band
 	float Emax_bol = 1e5; // Maximum energy of the Bolometric band
-	int norm_num_bin=20*log(Emax_bol/Emin_bol); // Number of energy bins to use to calculate normalization
+	int norm_num_bin=40*log(Emax_bol/Emin_bol); // Number of energy bins to use to calculate normalization
 	float norm_energy_axis[norm_num_bin+1]; // Initialize energy axis for the normalization, add one extra in order to use Left-Riemann-Sum
 	make_en_axis(norm_energy_axis,Emin_bol,Emax_bol,norm_num_bin+1); // Make energy axis
 
 	float en_curr; // Current energy to evaluate the addition to the normalization
 	// For each energy bin along the normalization energy axis, calculate the addition to the normalization and add it. 
-	for(int i=0;i <= norm_num_bin; i++)
+	for(int i=0;i < norm_num_bin; i++)
 	{
 		en_curr = norm_energy_axis[i]; // Set the current energy
 		// Calculate the contribution according to a Left-Riemann-Sum
-		norm += (norm_energy_axis[i+1]-en_curr) * en_curr * thermal_spectrum(en_curr,temp_obs);
+		norm += (norm_energy_axis[i+1]-en_curr) * en_curr * thermal_spectrum(en_curr,temp);
 	}
 
 	// Calculate the rate of the thermal spectrum
 	double tmp_val=0; // Temporary value to store spectrum contributions
 	// For each energy bin along the energy axis
-	for(int i=0; i <= num_en_bins; i++)
+	for(int i=0; i < (*spectrum).num_E_bins; i++)
 	{
-		en_curr = energy_axis[i]; // Set the current energy
+		en_curr = (*spectrum).ENERG_MID[i]; // Set the current energy
 		
 		// Check whether it was specified to calculate the energy density spectrum (nuFnu==true) or the photon spectrum (false)
 		// The current temp and energy bin define the count rate, the normalization found above is applied.
 		// This must still be multiplied by the flux of the source.
 		if(nuFnu == true)
-			{tmp_val = flux * pow(en_curr,2) * thermal_spectrum(en_curr, temp_obs) / norm;}
+			{tmp_val = flux * pow(en_curr,2) * thermal_spectrum(en_curr, temp) / norm;}
 		else
-			{tmp_val = flux * thermal_spectrum(en_curr,temp_obs) / norm;}
+			{tmp_val = flux * thermal_spectrum(en_curr,temp) / norm;}
 		
+	
 		// Add the contribution to the total spectrum according to a Left-Riemann-Sum
-		spectrum_sum += (energy_axis[i+1] - en_curr) * tmp_val;
+		(*spectrum).spectrum_sum += ((*spectrum).ENERG_HI[i] - (*spectrum).ENERG_LO[i]) * tmp_val;
 		// Check if the spectrum rate per energy bin is requested and store it if so. 
-		if(sum_only == false){spectrum_dE[i] += tmp_val;}
-	}	
+		(*spectrum).spectrum_dE[i] += tmp_val;
+
+	}
 }
 // Thermal spectrum function form based on a modified Planck function. 
 // The modification comes in the form of setting the default for alpha = 0.4, which accounts for the observation of multiple black bodies simultaneously
@@ -129,16 +121,13 @@ double thermal_spectrum(float energy, float temp, float alpha)
 	return pow(energy/(kb_kev*temp),1+alpha)/(exp(energy/(kb_kev*temp))-1);
 }
 
-
 // Calls function to calculate the synchrotron spectrum rate for each energy bin
-void make_synch_spec(double spectrum_sum[], double spectrum_dE[], float ta[], float Esyn[], double e_diss[], float delt[], float tau[], float relvel[], int num_lines, float Tmin, float Tmax, float z, float Emin, float Emax, int num_en_bins, bool sum_only, bool nuFnu)
+void make_synch_spec(Spectrum * spectrum, float ta[], float Esyn[], double e_diss[], float delt[], float tau[], float relvel[], int num_lines, float Tmin, float Tmax, bool nuFnu)
 {
+	float z = (*spectrum).z;
 	// For each emission event, calculate the emitted spectrum
 	for(int i=0;i<num_lines;i++)
 	{
-		// Ensure the sum is set to zero.
-		spectrum_sum[i] = 0.;
-
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
 		if ( ta[i]*(1+z) <= Tmax and (ta[i]+delt[i])*(1+z) >= Tmin )
@@ -148,7 +137,7 @@ void make_synch_spec(double spectrum_sum[], double spectrum_dE[], float ta[], fl
 			if ( relvel[i] > 0.1 and tau[i] < 1)
 			{
 				// Call function to calculate thermal spectrum rate
-				calc_synch_spec(spectrum_sum[i],spectrum_dE,Esyn[i],e_diss[i],delt[i],z,Emin,Emax,num_en_bins,sum_only,nuFnu);	
+				calc_synch_spec(spectrum,Esyn[i],e_diss[i],delt[i],nuFnu);	
 			}
 			
 		}
@@ -197,17 +186,8 @@ void read_in_synch_emission_data(std::string file_name, float te[], float ta[], 
 	file_spec_data.close();
 }
 // Calculate the synchrotron spectrum from the synchrotron energy and flux of the emission
-void calc_synch_spec(double &spectrum_sum, double spectrum_dE[], float Esyn, double e_diss, float delt, float z, float Emin, float Emax, int num_en_bins, bool sum_only, bool nuFnu)
+void calc_synch_spec(Spectrum * spectrum, float Esyn, double e_diss, float delt, bool nuFnu)
 {
-
-	// Find the synchrotron energy in the observer frame
-	float Esyn_obs = Esyn/(1+z);
-	// Find the time interval of the emission in the observer frame
-	float delt_obs = delt*(1+z);
-
-	// Make energy axis
-	float energy_axis[num_en_bins+1];
-	make_en_axis(energy_axis,Emin,Emax,num_en_bins+1);
 
 	// Calculate the normalization
 	float norm=0; // Set normalization to zero
@@ -219,34 +199,34 @@ void calc_synch_spec(double &spectrum_sum, double spectrum_dE[], float Esyn, dou
 
 	float en_curr; // Current energy to evaluate the addition to the normalization
 	// For each energy bin along the normalization energy axis, calculate the addition to the normalization and add it. 
-	for(int i=0;i <= norm_num_bin; i++)
+	for(int i=0;i < norm_num_bin; i++)
 	{
 		en_curr = norm_energy_axis[i]; // Set the current energy
 		// Calculate the contribution according to a Left-Riemann-Sum
-		norm += (norm_energy_axis[i+1]-en_curr) * en_curr * synch_spectrum(en_curr,Esyn_obs);
+		norm += (norm_energy_axis[i+1]-en_curr) * en_curr * synch_spectrum(en_curr,Esyn);
 	}
 
 	// Calculate the rate of the thermal spectrum
 	double tmp_val=0; // Temporary value to store spectrum contributions
 	// For each energy bin along the energy axis
-	for(int i=0; i <= num_en_bins; i++)
+	for(int i=0; i < (*spectrum).num_E_bins; i++)
 	{
-		float en_curr = energy_axis[i]; // Set the current energy
+		float en_curr = (*spectrum).ENERG_MID[i]; // Set the current energy
 
 		// Check whether it was specified to calculate the energy density spectrum (nuFnu==true) or the photon spectrum (false)
 		// The current temp and energy bin define the count rate, the normalization found above is applied.
 		// This must still be multiplied by the energy dissipated during the emission event.
-		// The energy dissipated can be turned into Flux by dividing the energy dissipated by the observed emission duration (delt_obs).
+		// The energy dissipated can be turned into Flux by dividing the energy dissipated by the observed emission duration (delt).
 		if(nuFnu == true)
-			{tmp_val = e_diss * pow(en_curr,2)* synch_spectrum(en_curr,Esyn_obs) / norm / delt_obs;}
+			{tmp_val = e_diss * pow(en_curr,2)* synch_spectrum(en_curr,Esyn) / norm / delt;}
 		else
-			{tmp_val = e_diss * synch_spectrum(en_curr,Esyn_obs) / norm / delt_obs;}
+			{tmp_val = e_diss * synch_spectrum(en_curr,Esyn) / norm / delt;}
 
 		// Add the contribution to the total spectrum according to a Left-Riemann-Sum
-		spectrum_sum += (energy_axis[i+1] - en_curr) * tmp_val;
+		(*spectrum).spectrum_sum += ((*spectrum).ENERG_HI[i] - (*spectrum).ENERG_LO[i]) * tmp_val;
 
 		// Check if the spectrum rate per energy bin is requested and store it if so. 
-		if(sum_only == false){spectrum_dE[i] += tmp_val;}
+		(*spectrum).spectrum_dE[i] += tmp_val;
 	}
 
 }
@@ -256,7 +236,6 @@ double synch_spectrum(float energy, float Esyn, float alpha, float beta)
 {
 	return (1/Esyn) * band(energy,Esyn,alpha,beta);
 }
-
 
 // Band spectrum function form (Band et. al., 1993)
 // Defaults alpha = -1, beta = -2.5
@@ -284,7 +263,7 @@ int make_en_axis(float energy_axis[], float Emin, float Emax, int num_en_bins)
 	float log_dE = (log_Emax - log_Emin) / num_en_bins;
 
 	// For each bin, calculate the energy axis
-	for(int i=0;i<=num_en_bins;i++)
+	for(int i=0;i<num_en_bins;i++)
 	{
 		energy_axis[i] = pow( 10, log_Emin + (i*log_dE));
 	}

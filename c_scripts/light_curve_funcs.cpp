@@ -49,22 +49,27 @@ void make_thermal_LC(double light_curve_rate[], double light_curve_time[], char 
 	// Read in emission data and store parameters
 	read_in_thermal_emission_data(filename, te, ta, delt, Temp, Flux, Rphot);
 	
-	// Initialize arrays to store the spectrum sum for each emission event and the spectrum rate per energy bin 
-	double spectrum_sum[num_lines];
-	double spectrum_dE[num_en_bins]; // This is actually unused because we indicate to only find the spectrum sum (second to last argument in make_thermal spec)
+	// Make spectrum class
+	Spectrum spectrum;
+	spectrum.E_min = Emin;
+	spectrum.E_max = Emax;
+	spectrum.num_E_bins = num_en_bins;
+	spectrum.z = z;
+	// Fill in the energy vector
+	spectrum.make_ENERG_arrs(true);
+	// Zero out the spectrum (this also serves to set the length of the vector)
+	spectrum.zero_spectrum();
+	spectrum.spectrum_sum=0;
+
 	// For each time bin, calculate the photon rate.
 	for(int i=0; i<time_length;i++)
 	{
+		spectrum.spectrum_sum = 0.; // Reset summation
 		// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 
-		make_thermal_spec(spectrum_sum,spectrum_dE,ta,Temp,Flux,delt,num_lines,light_curve_time[i],light_curve_time[i+1],z,Emin,Emax,num_en_bins,true,false);
-
+		make_thermal_spec( &spectrum, ta, Temp, Flux, delt, num_lines, light_curve_time[i],light_curve_time[i+1], false);
+		
 		// Ensure that the light curve rate is set to zero before adding values to it.
-		light_curve_rate[i] = 0;
-		// For each emission event, add the spectrum sum to the light curve rate
-		for(int j=0; j<=num_lines; j++)
-		{
-			light_curve_rate[i] += spectrum_sum[j];
-		}
+		light_curve_rate[i] = spectrum.spectrum_sum;
 
 		// Convert units from erg / s to keV / s
 		light_curve_rate[i] *= erg_to_kev;
@@ -107,22 +112,28 @@ void make_synch_LC(double light_curve_rate[], double light_curve_time[], char * 
 	// Read in emission data and store parameters
 	read_in_synch_emission_data(filename, te, ta, asyn, Beq, gammae, Esyn, gammar, e_diss, delt, tau, relvel);
 
-	// Initialize arrays to store the spectrum sum for each emission event and the spectrum rate per energy bin 
-	double spectrum_sum[num_lines];
-	double spectrum_dE[num_en_bins];// This is actually unused because we indicate to only find the spectrum sum (second to last argument in make_thermal spec)
+	// Make spectrum class
+	Spectrum spectrum;
+	spectrum.E_min = Emin;
+	spectrum.E_max = Emax;
+	spectrum.num_E_bins = num_en_bins;
+	spectrum.z = z;
+	// Fill in the energy vector
+	spectrum.make_ENERG_arrs(true);
+	// Zero out the spectrum (this also serves to set the length of the vector)
+	spectrum.zero_spectrum();
+	spectrum.spectrum_sum=0;
+
 	// For each time bin, calculate the photon rate.
 	for(int i=0; i<time_length;i++)
 	{
+		spectrum.spectrum_sum = 0.; // Reset summation
+		
 		// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 
-		make_synch_spec(spectrum_sum,spectrum_dE,ta,Esyn,e_diss,delt,tau,relvel,num_lines,light_curve_time[i],light_curve_time[i+1],z,Emin,Emax,num_en_bins,true,false);
+		make_synch_spec(&spectrum, ta, Esyn, e_diss, delt, tau, relvel, num_lines, light_curve_time[i],light_curve_time[i+1], false);
 
 		// Ensure that the light curve rate is set to zero before adding values to it.
-		light_curve_rate[i] = 0;
-		// For each emission event, add the spectrum sum to the light curve rate
-		for(int j=0; j<=num_lines; j++)
-		{
-			light_curve_rate[i] += spectrum_sum[j];
-		}
+		light_curve_rate[i] = spectrum.spectrum_sum;
 		
 		// Convert units from erg / s to keV / s
 		light_curve_rate[i] *= erg_to_kev;

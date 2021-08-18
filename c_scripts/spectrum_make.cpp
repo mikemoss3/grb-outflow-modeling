@@ -18,6 +18,7 @@ This script calls methods from spectrum_funcs.cpp to calculate the spectrum of t
 
 // Import Custom Libraries
 #include "spectrum_funcs.hpp"
+#include "Spectrum.hpp"
 #include "cosmology.hpp"
 
 using namespace std;
@@ -78,10 +79,21 @@ int main(int argc, char *argv[])
 	while ( getline( file_spec_data, line_spec_data) ){num_lines++;}
 	// Close files and free memory 
 	file_spec_data.close(); 
+
+
+	// Make spectrum class
+	Spectrum spectrum;
+	spectrum.E_min = Emin;
+	spectrum.E_max = Emax;
+	spectrum.num_E_bins = num_en_bins;
+	spectrum.z = z;
+
+	// Fill in the energy vector
+	spectrum.make_ENERG_arrs(true);
+	// Zero out the spectrum (this also serves to set the length of the vector)
+	spectrum.zero_spectrum();
+	spectrum.spectrum_sum=0;
 		
-	// Initialize arrays to store the spectrum sum for each emission event and the spectrum rate per energy bin 
-	double spectrum_sum[num_lines];
-	double spectrum_dE[num_en_bins];
 	// If the spectrum type is thermal: 
 	if ( strcmp(spec_type,"thermal") == 0 )
 	{
@@ -97,7 +109,7 @@ int main(int argc, char *argv[])
 		read_in_thermal_emission_data(filename, te, ta, delt, Temp, Flux, Rphot);
 
 		// Use the emission event data to create a spectrum within the defined energy range
-		make_thermal_spec(spectrum_sum,spectrum_dE,ta,Temp,Flux,delt,num_lines,Tmin,Tmax,z,Emin,Emax,num_en_bins,sum_only,nuFnu);
+		make_thermal_spec(&spectrum, ta, Temp, Flux, delt, num_lines, Tmin, Tmax, nuFnu);
 	}
 	// Else, if the spectrum type is synchrotron
 	else if ( strcmp(spec_type,"synchrotron") == 0 )
@@ -119,23 +131,14 @@ int main(int argc, char *argv[])
 		read_in_synch_emission_data(filename, te, ta, asyn, Beq, gammae, Esyn, gammar, e_diss, delt, tau, relvel);
 
 		// Use the emission event data to create a spectrum within the defined energy range
-		make_synch_spec(spectrum_sum,spectrum_dE,ta,Esyn,e_diss,delt,tau,relvel,num_lines,Tmin,Tmax,z,Emin,Emax,num_en_bins,sum_only,nuFnu);
+		make_synch_spec(&spectrum, ta, Esyn, e_diss, delt, tau, relvel, num_lines, Tmin, Tmax, nuFnu);
 	}
 
-
-	// Read the spectrum sum out to a file.
-	int i = 0;
-	double spectrum_sum_total = 0; // We calculated the spectrum sum per emission event, but we want to take the sum of all these
-	// For each emission event, add the event sum to the total sum
-	while ( i < num_lines)
-	{
-		spectrum_sum_total += spectrum_sum[i];
-		i++;
-	}
+	// Write the spectrum sum out to a file.
 	// Open a file and write the total sum to file
 	ofstream spec_sum_file;
 	spec_sum_file.open("./sim_results/spectrum_total.txt");
-	spec_sum_file << spectrum_sum_total;
+	spec_sum_file << spectrum.spectrum_sum;
 	spec_sum_file.close(); // Close file
 	
 	// If the spectrum rate per energy bin was calculated, print it to file as well
@@ -143,16 +146,13 @@ int main(int argc, char *argv[])
 	{
 		ofstream spec_dE_file;
 		spec_dE_file.open("./sim_results/spectrum_points.txt");
-		i=0;
-		// Make energy axis to write to file along with the spectrum rates
-		float energy_axis[num_en_bins]; 
-		make_en_axis(energy_axis,Emin,Emax,num_en_bins); // This function is defined in spectrum_funcs.cpp
+		int i=0;
 		// For each energy bin, write the energy bin value and the spectrum rate to file.
 		while ( i < num_en_bins)
 		{
-			spec_dE_file << energy_axis[i];
+			spec_dE_file << spectrum.ENERG_MID[i];
 			spec_dE_file << " ";
-			spec_dE_file << spectrum_dE[i];
+			spec_dE_file << spectrum.spectrum_dE[i];
 			spec_dE_file << "\n";		
 			i++;
 		}

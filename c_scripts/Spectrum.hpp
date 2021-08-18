@@ -20,7 +20,6 @@ Header file for the Spectrum.hpp class
 #include <sstream>
 
 // Import Custom Libraries
-// #include "spectrum_funcs.hpp"
 
 using namespace std;
 
@@ -29,26 +28,31 @@ class Spectrum
 {
 public:
 	// Spectrum constructor
-	Spectrum(float E_min=15., float E_max=200., int num_E_bins=80.);
+	Spectrum();
+
+	float E_min;
+	float E_max;
+	int num_E_bins;
+	float z;
 
 	// Spectrum member functions
 	void make_ENERG_arrs(bool logscale = true);
 	void add_component(float *comp_rate);
+	void zero_spectrum();
+	std::vector<float> get_ENERG_MID();
+	// void set_redshift(float z);
 	// void add_fluctuations();
 	// void write_to_FITS();
+	// void add_to_spec_sum(float val);
+	// void add_to_spec_dE(float val, int index);
 
-private:
-	float _E_min;
-	float _E_max;
-	int _num_E_bins;
-
-	float spectrum_sum;
-	std::vector<float> spectrum;
+	double spectrum_sum;
+	std::vector<double> spectrum_dE;
 	std::vector<float> ENERG_LO;
 	std::vector<float> ENERG_MID;
 	std::vector<float> ENERG_HI;
 
-	void zero_spectrum();
+// private:
 
 };
 

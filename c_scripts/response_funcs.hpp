@@ -18,21 +18,18 @@ This header file initializes all the functions necessary to create a custom resp
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include "fitsio.h"
 
 // Import Custom Libraries
+#include "Response.hpp"
+#include "Spectrum.hpp"
 #include "spectrum_funcs.hpp"
 
 using namespace std;
 
 // Define response function shape
-// Identity matrix, any source spectrum will be perfectly observed
-void make_rsp_identity(float rsp[], float E_src[], float E_obs [], int num_en_bins);
-// Decrease as 1/DeltaE^alpha from E_true
-void make_rsp_overDeltaE(float rsp[], float E_src[], float E_obs [], int num_en_bins, float alpha=2);
-// Define the Gaussian PDF 
-double gauss(float x, float mu, float sigma);
-// Decrease as a Gaussian from E_true
-void make_rsp_gauss(float **rsp, float E_src[], float E_obs [], int num_en_bins);
+// Fold a spectrum with a response matrix
+int make_folded_spectrum(Spectrum *folded_spectrum, Response response, Spectrum source_spectrum);
 
 
 #endif 
