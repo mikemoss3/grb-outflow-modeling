@@ -23,12 +23,14 @@ The light curve calculation is done in light_curve_funcs.cpp and the spectrum ca
 #include "cosmology.hpp"
 #include "Spectrum.hpp"
 #include "LightCurve.hpp"
+#include "Response.hpp"
 
 using namespace std;
 
 // LightCurve constructor
 LightCurve::LightCurve(float energ_min, float energ_max, int num_energ_bins, float tmin, float tmax, float dt, float z)
 {
+	// Assign input variables to class member variables
 	this->energ_min = energ_min;
 	this->energ_max = energ_max;
 	this->num_energ_bins = num_energ_bins;
@@ -36,7 +38,11 @@ LightCurve::LightCurve(float energ_min, float energ_max, int num_energ_bins, flo
 	this->tmax = tmax;
 	this->dt = dt;
 	this->z = z;
+	// Make time axis
 	make_time_axis(tmin, tmax, dt);
+
+	// Set response as NULL
+	p_instrument_response = NULL;
 }
 // Make time axis
 void LightCurve::make_time_axis(float tmin, float tmax, float dt)
@@ -66,31 +72,69 @@ void LightCurve::ZeroLightCurve()
 	}
 }
 
+// Set the light curve rates to zero
+void LightCurve::set_instrument_response(Response* instrument_response)
+{
+	this->p_instrument_response = instrument_response;
+}
+
 // Add thermal component light curve
 void LightCurve::AddThermalLightCurve(std::string file_name)
 {	
 	// Make spectrum class
-	Spectrum spectrum = Spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax, z);
-
+	Spectrum spectrum = Spectrum(energ_min, energ_max, num_energ_bins, 0, 0, z);
+	
 	// Load emission data
 	spectrum.ReadThermalEmissionData(file_name);
 
-	// For each time bin, calculate the photon rate.
-	for(int i=0; i<num_time_bins-1;++i)
+	if(p_instrument_response != NULL)
 	{
-		spectrum.spectrum_sum = 0.; // Reset summation
-		// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 
-		spectrum.MakeThermalSpec(lc_time.at(i), lc_time.at(i+1) );
-		
-		// Ensure that the light curve rate is set to zero before adding values to it.
-		lc_rate.at(i) = spectrum.spectrum_sum;
+		// Initialize folded spectrum
+		Spectrum folded_spectrum = Spectrum((*p_instrument_response).chan_energ_min, (*p_instrument_response).chan_energ_max, (*p_instrument_response).num_chans, tmin, tmax, spectrum.z);	
 
-		// Convert units from erg / s to keV / s
-		lc_rate.at(i) *= erg_to_kev;
-		// Normalize by the time bin size 
-		lc_rate.at(i) /= (lc_time.at(1)-lc_time.at(0));
-		// Apply distance corrections
-		lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
+		// For each time bin, calculate the photon rate.
+		for(int i=0; i<num_time_bins-1;++i)
+		{
+			spectrum.ZeroSpectrum(); // Reset spectrum
+			folded_spectrum.ZeroSpectrum(); // Reset spectrum
+
+			// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 
+			spectrum.MakeThermalSpec(lc_time.at(i), lc_time.at(i+1) );
+
+			// If response exists, convolve the spectrum and use the convolved spectrum sum:
+			(*p_instrument_response).ConvolveSpectrum(&folded_spectrum, spectrum);
+			
+			// Ensure that the light curve rate is set to zero before adding values to it.
+			lc_rate.at(i) += folded_spectrum.spectrum_sum;
+
+			// Convert units from erg / s to keV / s
+			lc_rate.at(i) *= erg_to_kev;
+			// Normalize by the time bin size 
+			lc_rate.at(i) /= (lc_time.at(1)-lc_time.at(0));
+			// Apply distance corrections
+			lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
+		}
+	}
+	else
+	{
+		// For each time bin, calculate the photon rate.
+		for(int i=0; i<num_time_bins-1;++i)
+		{
+			spectrum.ZeroSpectrum(); // Reset spectrum
+
+			// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 
+			spectrum.MakeThermalSpec(lc_time.at(i), lc_time.at(i+1) );
+			
+			// Ensure that the light curve rate is set to zero before adding values to it.
+			lc_rate.at(i) += spectrum.spectrum_sum;
+
+			// Convert units from erg / s to keV / s
+			lc_rate.at(i) *= erg_to_kev;
+			// Normalize by the time bin size 
+			lc_rate.at(i) /= (lc_time.at(1)-lc_time.at(0));
+			// Apply distance corrections
+			lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
+		}
 	}
 }
 
@@ -99,26 +143,57 @@ void LightCurve::AddSynchLightCurve(std::string file_name)
 {
 	// Make spectrum class
 	Spectrum spectrum = Spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax, z);
-	
+
 	// Load emission data 
 	spectrum.ReadSynchEmissionData(file_name);
-	
-	// For each time bin, calculate the photon rate.
-	for(int i=0; i<num_time_bins-1;++i)
+
+	// Initialize temporary spectrum sum variable
+	if(p_instrument_response != NULL)
 	{
-		spectrum.spectrum_sum = 0.; // Reset summation
-		// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 		
-		spectrum.MakeSynchSpec(lc_time.at(i), lc_time.at(i+1));
+		// Initialize folded spectrum
+		Spectrum folded_spectrum = Spectrum((*p_instrument_response).chan_energ_min, (*p_instrument_response).chan_energ_max, (*p_instrument_response).num_chans, tmin, tmax, spectrum.z);	
 
-		// Ensure that the light curve rate is set to zero before adding values to it.
-		lc_rate.at(i) = spectrum.spectrum_sum;
+		// For each time bin, calculate the photon rate.
+		for(int i=0; i<num_time_bins-1;++i)
+		{
+			spectrum.ZeroSpectrum(); // Reset spectrum
+			folded_spectrum.ZeroSpectrum(); // Reset spectrum
 
-		// Convert units from erg / s to keV / s
-		lc_rate.at(i) *= erg_to_kev;
-		// Normalize by the time bin size 
-		lc_rate.at(i) /= (lc_time.at(1)-lc_time.at(0));
-		// Apply distance corrections
-		lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
+			// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 		
+			spectrum.MakeSynchSpec(lc_time.at(i), lc_time.at(i+1));
+
+			// If response exists, convolve the spectrum and use the convolved spectrum sum:
+			(*p_instrument_response).ConvolveSpectrum(&folded_spectrum, spectrum);
+
+			// Ensure that the light curve rate is set to zero before adding values to it.
+			lc_rate.at(i) += folded_spectrum.spectrum_sum;
+
+			// Convert units from erg / s to keV / s
+			lc_rate.at(i) *= erg_to_kev;
+			// Normalize by the time bin size 
+			lc_rate.at(i) /= (lc_time.at(1)-lc_time.at(0));
+			// Apply distance corrections
+			lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
+		}
+	}
+	else
+	{
+		// For each time bin, calculate the photon rate.
+		for(int i=0; i<num_time_bins-1;++i)
+		{
+			spectrum.ZeroSpectrum(); // Reset spectrum
+			// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 		
+			spectrum.MakeSynchSpec(lc_time.at(i), lc_time.at(i+1));
+			// Ensure that the light curve rate is set to zero before adding values to it.
+			lc_rate.at(i) += spectrum.spectrum_sum;
+
+			// Convert units from erg / s to keV / s
+			lc_rate.at(i) *= erg_to_kev;
+			// Normalize by the time bin size 
+			lc_rate.at(i) /= (lc_time.at(1)-lc_time.at(0));
+			// Apply distance corrections
+			lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
+		}
 	}
 }
 

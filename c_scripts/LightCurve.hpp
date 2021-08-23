@@ -21,6 +21,7 @@ Header file for light_curve.cpp class
 
 // Import Custom Libraries
 #include "Spectrum.hpp"
+#include "Response.hpp"
 
 using namespace std;
 
@@ -39,6 +40,7 @@ public:
 	float tmax;
 	float dt;
 	float z;
+	Response *p_instrument_response;
 
 	std::vector<double> lc_rate;
 	std::vector<float> lc_time;
@@ -49,6 +51,9 @@ public:
 	void make_time_axis(float dt);
 	// Set the light curve rates to zero
 	void ZeroLightCurve();
+
+	// Set response instrument matrix of the observation
+	void set_instrument_response(Response* instrument_response);
 
 	// Add thermal component light curve
 	void AddThermalLightCurve(std::string file_name);

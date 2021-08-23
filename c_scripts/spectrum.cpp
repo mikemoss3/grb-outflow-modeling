@@ -76,7 +76,7 @@ void Spectrum::make_energ_axes(float energ_min, float energ_max, float num_energ
 			energ_mid.push_back( energ_min + ( (2*i+1)/2) );
 		}		
 	}
-	std::cout << "Spectrum has been set back to zeros." << "\n";
+	// std::cout << "Spectrum has been set back to zeros." << "\n";
 	ZeroSpectrum();
 	spectrum_sum = 0;
 }
@@ -87,16 +87,53 @@ void Spectrum::make_energ_axes(bool logscale)
 // Zero out the spectrum (this also serves to set the length of the vector)
 void Spectrum::ZeroSpectrum()
 {
-	for(int i=0; i < num_energ_bins; i++)
+	if(spectrum_rate.size()>0)
 	{
-		spectrum_rate.push_back(0.);
+		for(int i=0; i < num_energ_bins; i++)
+		{
+			spectrum_rate.at(i) = 0;
+		}
+
+	}
+	else
+	{
+		for(int i=0; i < num_energ_bins; i++)
+		{
+			spectrum_rate.push_back(0.);
+		}
+
 	}
 	spectrum_sum = 0.;
+}
+
+void Spectrum::_reset_emission_event_data()
+{
+	// Initialize arrays to store thermal emission event data 
+	te = std::vector<float> ();
+	ta = std::vector<float> ();
+	delt = std::vector<float> ();
+	temp = std::vector<float> ();
+	flux = std::vector<double> ();
+	rphot = std::vector<float> ();
+	// Initialize arrays to store Synchrotron emission event data 
+	// te = std::vector<float> ();
+	// ta = std::vector<float> ();
+	asyn = std::vector<float> ();
+	beq = std::vector<float> ();
+	gammae = std::vector<float> ();
+	esyn = std::vector<float> ();
+	gammar = std::vector<float> ();
+	e_diss = std::vector<double> ();
+	// delt = std::vector<float> ();
+	tau = std::vector<float> ();
+	relvel = std::vector<float> ();
 }
 
 // Add thermal component spectrum to total spectrum
 void Spectrum::AddThermComp(std::string file_name, float tmin, float tmax)
 {
+	// Will need to reset the emission event data when adding new emission components
+	_reset_emission_event_data();
 
 	// Read in emission event data and store parameters
 	ReadThermalEmissionData(file_name);
@@ -138,20 +175,22 @@ void Spectrum::ReadThermalEmissionData(std::string file_name)
 	file_spec_data.close();
 }
 // Calls function to calculate the thermal spectrum rate for each energy bin
-void Spectrum::MakeThermalSpec(float t_min, float t_max)
+void Spectrum::MakeThermalSpec(float tmin, float tmax)
 {
 	// For each emission event, calculate the emitted spectrum
 	for(int i=0;i<num_emission_events;++i)
-	{		
+	{
 		// We only want to take the emission that occurs between the specified tmin and tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with tmin and tmax, calculate its contribution.
-		if ( ta.at(i)*(1+z) <= tmax and (ta.at(i)+delt.at(i))*(1+z) >= tmin )
+		
+		if ( ta.at(i) <= tmax and (ta.at(i)+delt.at(i)) >= tmin )
 		{
 			// Call function to calculate thermal spectrum rate
 			CalcThermalContribution(temp.at(i),flux.at(i));
-			}
+			}		
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum.
 	}
+
 }
 
 // Calculate the thermal spectrum from the given temperature and flux of the emission
@@ -183,14 +222,20 @@ void Spectrum::CalcThermalContribution(float temp, double flux)
 		
 		// The current temp and energy bin define the count rate, the normalization found above is applied.
 		// This must still be multiplied by the flux of the source.
-		tmp_val = flux * ThermalSpec(en_curr,temp) / norm;
+		// Also, if the current energy bin is > 2 MeV, then thermal radiation can be ignored.
+		if(en_curr < 2*pow(10,3))
+		{
+			tmp_val = flux * ThermalSpec(en_curr,temp) / norm;
+		}
+		else{tmp_val=0;}
 
 		// Add the contribution to the total spectrum according to a Left-Riemann-Sum
 		spectrum_sum += (energ_hi.at(i) - energ_lo.at(i)) * tmp_val;
 		// Check if the spectrum rate per energy bin is requested and store it if so. 
-		spectrum_rate[i] += tmp_val;
+		spectrum_rate.at(i) += tmp_val;
 
 	}
+
 }
 // Thermal spectrum function form based on a modified Planck function. 
 double Spectrum::ThermalSpec(float energy, float temp, float alpha)
@@ -201,7 +246,9 @@ double Spectrum::ThermalSpec(float energy, float temp, float alpha)
 // Add Synchrotron component spectrum to total spectrum
 void Spectrum::AddSynchComp(std::string file_name, float tmin, float tmax)
 {
-
+	// Will need to reset the emission event data when adding new emission components
+	_reset_emission_event_data();
+	
 	// Read in emission event data and store parameters
 	ReadSynchEmissionData(file_name);
 
@@ -259,7 +306,7 @@ void Spectrum::MakeSynchSpec(float tmin, float tmax)
 	{
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
-		if ( ta.at(i)*(1+z) <= tmax and (ta.at(i)+delt.at(i))*(1+z) >= tmin )
+		if ( ta.at(i) <= tmax and (ta.at(i)+delt.at(i)) >= tmin )
 		{
 			// The emission will only be observable if the relativistic velocity is great than the local sound speed v_s/c = 0.1
 			// And if the wind is transparent to the radiation
@@ -277,10 +324,10 @@ void Spectrum::MakeSynchSpec(float tmin, float tmax)
 void Spectrum::CalcSynchContribution(float esyn, double e_diss, float delt)
 {
 	// Calculate the normalization
-	float norm=0; // Set normalization to zero
+	float norm = 0; // Set normalization to zero
 	float e_min_bol = 0.01; // Minimum energy of the Bolometric band
 	float e_max_bol = 1e5; // Maximum energy of the Bolometric band
-	int norm_num_bin=20*log(e_max_bol/e_min_bol); // Number of energy bins to use to calculate normalization
+	int norm_num_bin= 20*log(e_max_bol/e_min_bol); // Number of energy bins to use to calculate normalization
 	std::vector<float> norm_energy_axis(norm_num_bin+1); // Make vector to store energy axis (initialized to zero's) 
 	make_en_axis(norm_energy_axis,e_min_bol,e_max_bol,norm_num_bin+1); // Make energy axis
 

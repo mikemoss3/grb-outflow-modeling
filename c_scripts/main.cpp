@@ -23,67 +23,57 @@ Main function to create and use Spectra, Light Curves, and Response functions
 
 using namespace std;
 
-int ConvolveSpectrum(Spectrum *folded_spectrum, const Spectrum & source_spectrum, const Response & response);
-
-
 int main(int argc, char const *argv[])
 {
-	Response response = Response();
+	Response instrument_response = Response();
 	std::string resp_file_name = "/Users/mjmoss/Research/instr-rsp-investigate/example-instr-files/sw00883832000b_1speak.rsp";
-	response.LoadRespFromFile(resp_file_name);
+	instrument_response.LoadRespFromFile(resp_file_name);
 
-	Spectrum spectrum = Spectrum(response.phot_energ_min, response.phot_energ_max, response.num_phot_bins, 0, 20, 1);
-	std::string file_name = "../sim_results/ordlor_spectrum_synch.txt";
 	float tmin = 0;
 	float tmax = 20;
-	spectrum.AddSynchComp(file_name, tmin, tmax);
+	float dt = 0.1;
+	float z = 1;
 
-	Spectrum folded_spectrum = Spectrum(response.chan_energ_min, response.chan_energ_max, response.num_chans, 0, 20, spectrum.z);
+	float Emin = 8;
+	float Emax = 40000;
+	float num_E_bins = 100;
+
+	// float Emin = instrument_response.phot_energ_min;
+	// float Emax = instrument_response.phot_energ_max;
+	// float num_E_bins = instrument_response.num_phot_bins;	
+
+	Spectrum source_spectrum_tot = Spectrum(Emin, Emax, num_E_bins, tmin, tmax, z);
+	Spectrum source_spectrum_therm = Spectrum(Emin, Emax, num_E_bins, tmin, tmax, z);
+	Spectrum source_spectrum_synch = Spectrum(Emin, Emax, num_E_bins, tmin, tmax, z);
 	
-	ConvolveSpectrum(&folded_spectrum, spectrum, response);
+	std::string therm_emission_file_name = "../sim_results/ordlor_spectrum_therm.txt";
+	std::string synch_emission_file_name = "../sim_results/ordlor_spectrum_synch.txt";
 	
-	/*
-	spectrum.WriteToTXT("testsourcespec.txt");
-	unfolded_spectrum.WriteToTXT("testobsspec.txt");
-	*/
-	// LightCurve lightcurve = LightCurve();
-	// lightcurve.AddSynchLightCurve("../sim_results/ordlor_spectrum_synch.txt");
-	// lightcurve.WriteToTXT("test_lc.txt");
+	// source_spectrum_tot.AddThermComp(therm_emission_file_name, tmin, tmax);
+	// source_spectrum_tot.AddSynchComp(synch_emission_file_name, tmin, tmax);
+	// source_spectrum_therm.AddThermComp(therm_emission_file_name, tmin, tmax);
+	// source_spectrum_synch.AddSynchComp(synch_emission_file_name, tmin, tmax);
 
-	return 0;
-}
-
-// Fold a spectrum with a response matrix
-int ConvolveSpectrum(Spectrum * folded_spectrum, const Spectrum & source_spectrum, const Response & response)
-{
-	// Fill in the energy vector
-	(*folded_spectrum).energ_lo = response.chan_energ_lo;
-	(*folded_spectrum).energ_mid = response.chan_energ_mid;
-	(*folded_spectrum).energ_hi = response.chan_energ_hi;
-
-	// Check if the number of source photon energy bins is the same as the number of
-	// response photon energy bins 
-	if(source_spectrum.num_energ_bins != response.num_phot_bins)
-	{
-		std::cout << "Source spectrum and Response Matrix do not have same number of photon bins.\n";
-		return 1;
-	}
-
-	/* Convolve source spectrum with instrument response matrix */
-	double tmp_sum; // Keeps track of matrix multiplication sum 
-	// For each instrument energy channel
-	for( int i=0; i < response.num_chans; i++)
-	{
-		tmp_sum = 0; // Set sum to zero
-		// For for each photon energy bin
-		for( int j=0 ; j < source_spectrum.num_energ_bins; j++)
-		{
-			tmp_sum += response.prob_matrix.at(j).at(i) * source_spectrum.spectrum_rate.at(j);
-		}
-		
-		// Write the summation to the corresponding energy channel of the folded spectrum 
-		(*folded_spectrum).spectrum_rate.at(i) = tmp_sum;
-	}
-
+	// source_spectrum_tot.WriteToTXT("source_spectrum_tot.txt");
+	// source_spectrum_therm.WriteToTXT("source_spectrum_therm.txt");
+	// source_spectrum_synch.WriteToTXT("source_spectrum_synch.txt");
+	
+	LightCurve lightcurve_tot = LightCurve(Emin, Emax, num_E_bins, tmin , tmax, dt, z);
+	LightCurve lightcurve_therm = LightCurve(Emin, Emax, num_E_bins, tmin , tmax, dt, z);
+	LightCurve lightcurve_synch = LightCurve(Emin, Emax, num_E_bins, tmin , tmax, dt, z);
+	
+	// lightcurve_tot.set_instrument_response(&instrument_response);
+	// lightcurve_therm.set_instrument_response(&instrument_response);
+	// lightcurve_synch.set_instrument_response(&instrument_response);
+	
+	lightcurve_tot.AddThermalLightCurve(therm_emission_file_name);
+	lightcurve_tot.AddSynchLightCurve(synch_emission_file_name);
+	lightcurve_therm.AddThermalLightCurve(therm_emission_file_name);
+	lightcurve_synch.AddSynchLightCurve(synch_emission_file_name);
+	
+	lightcurve_tot.WriteToTXT("test_tot.txt");
+	lightcurve_therm.WriteToTXT("test_therm.txt");
+	lightcurve_synch.WriteToTXT("test_synch.txt");
+	
 	return 0;
 }

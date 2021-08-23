@@ -21,6 +21,7 @@ Header file for the Response.hpp class
 #include "fitsio.h"
 
 // Import Custom Libraries
+#include "Spectrum.hpp"
 
 using namespace std;
 
@@ -67,6 +68,8 @@ public:
 	void Identity();
 	void OverDeltaE(float alpha);
 	int LoadRespFromFile(std::string file_name);
+
+	int ConvolveSpectrum(Spectrum * folded_spectrum, const Spectrum & source_spectrum);
 
 	void WriteToFits(std::string out_file_name[]);
 

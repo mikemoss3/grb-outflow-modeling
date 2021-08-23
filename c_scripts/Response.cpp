@@ -337,3 +337,41 @@ int Response::LoadRespFromFile(std::string file_name)
 
 	return status;
 }
+
+// Fold a spectrum with a response matrix
+int Response::ConvolveSpectrum(Spectrum * folded_spectrum, const Spectrum & source_spectrum)
+{
+	// Fill in the energy vector
+	(*folded_spectrum).energ_lo = chan_energ_lo;
+	(*folded_spectrum).energ_mid = chan_energ_mid;
+	(*folded_spectrum).energ_hi = chan_energ_hi;
+
+	// Check if the number of source photon energy bins is the same as the number of
+	// response photon energy bins 
+	if(source_spectrum.num_energ_bins != num_phot_bins)
+	{
+		std::cout << "Source spectrum and Response Matrix do not have same number of photon bins.\n";
+		return 1;
+	}
+
+	/* Convolve source spectrum with instrument response matrix */
+	double tmp_col_sum = 0; // Keeps track of matrix multiplication sum 
+	// For each instrument energy channel
+	for( int i=0; i < num_chans; i++)
+	{
+		tmp_col_sum = 0; // Reset column sum to zero
+
+		// For for each photon energy bin
+		for( int j=0 ; j < source_spectrum.num_energ_bins; j++)
+		{
+			tmp_col_sum += prob_matrix.at(j).at(i) * source_spectrum.spectrum_rate.at(j);
+		}
+		
+		// Write the summation to the corresponding energy channel of the folded spectrum 
+		(*folded_spectrum).spectrum_rate.at(i) = tmp_col_sum;
+		// Increase spectrum sum 
+		(*folded_spectrum).spectrum_sum += tmp_col_sum;
+	}
+
+	return 0;
+}

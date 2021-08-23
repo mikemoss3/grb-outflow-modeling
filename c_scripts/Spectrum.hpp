@@ -115,6 +115,9 @@ private:
 	std::vector<float> tau;
 	std::vector<float> relvel;
 
+	// Will need to reset the emission event data when adding new emission components
+	void _reset_emission_event_data();
+
 };
 
 #endif 
