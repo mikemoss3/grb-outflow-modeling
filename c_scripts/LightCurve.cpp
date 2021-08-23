@@ -20,82 +20,129 @@ The light curve calculation is done in light_curve_funcs.cpp and the spectrum ca
 #include <sstream>
 
 // Import Custom Libraries
-#include "spectrum_funcs.hpp"
-#include "light_curve_funcs.hpp"
+#include "cosmology.hpp"
+#include "Spectrum.hpp"
+#include "LightCurve.hpp"
 
 using namespace std;
 
-int main(int argc, char *argv[])
+// LightCurve constructor
+LightCurve::LightCurve(float energ_min, float energ_max, int num_energ_bins, float tmin, float tmax, float dt, float z)
 {
-	// argv[1] = spectrum type, i.e., thermal, synchrotron, Compton
-	// argv[2] = file name containing emission data
-	// argv[3] , argv[4] = Tmin, Tmax. Specifies the time interval over which the spectrum will be calculated
-	// argv[5] , argv[6] = Emin, Emax. Specifies the energy interval over which the spectrum will be calculated
-	// argv[8] = z, the redshift of the source
+	this->energ_min = energ_min;
+	this->energ_max = energ_max;
+	this->num_energ_bins = num_energ_bins;
+	this->tmin = tmin;
+	this->tmax = tmax;
+	this->dt = dt;
+	this->z = z;
+	make_time_axis(tmin, tmax, dt);
+}
+// Make time axis
+void LightCurve::make_time_axis(float tmin, float tmax, float dt)
+{
+	this->tmin = tmin;
+	this->tmax = tmax;
+	this->dt = dt;
+	num_time_bins = (tmax-tmin)/dt;
 
-	// Check if all arguments were given. If more or less were given, print to screen a description of the inputs  
-	if (argc != 9)
+	for(int i=0; i<num_time_bins; ++i)
 	{
-		printf("All arguments must be specified: \n");
-		printf("argv[1] 		= spectrum type, i.e., thermal, synchrotron, Compton \n");
-		printf("argv[2] 		= file name containing emission data \n");
-		printf("argv[3] , argv[4] 	= Tmin, Tmax. Specifies the observer frame time interval over which the spectrum will be calculated \n");
-		printf("argv[5] 		= dt, Time resolution of the light curve. \n");
-		printf("argv[6] , argv[7] 	= Emin, Emax. Specifies the observer frame energy interval over which the spectrum will be calculated \n");
-		printf("argv[8] 		= z, the redshift of the source \n");
-		return 1;
+		lc_time.push_back(tmin+(dt*i));
 	}
 
-	// Assign the input arguments
-	char *spec_type = argv[1]; // Spectrum type
-	char *filename = argv[2]; // Emission data file name
+	std::cout << "Light curve has been set back to zeros." << "\n";
+	ZeroLightCurve();
+}
+void LightCurve::make_time_axis(float dt)
+{
+	make_time_axis(tmin, tmax, dt);
+}
+void LightCurve::ZeroLightCurve()
+{
+	for(int i=0; i<num_time_bins; ++i)
+	{
+		lc_rate.push_back(0.);
+	}
+}
 
-	float Tmin = atof(argv[3]); // Minimum time of the light curve 
-	float Tmax = atof(argv[4]); // Maximum time of the light curve 
-	float dt = atof(argv[5]); // Time resolution of the light curve 
+// Add thermal component light curve
+void LightCurve::AddThermalLightCurve(std::string file_name)
+{	
+	// Make spectrum class
+	Spectrum spectrum = Spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax, z);
+
+	// Load emission data
+	spectrum.ReadThermalEmissionData(file_name);
+
+	// For each time bin, calculate the photon rate.
+	for(int i=0; i<num_time_bins-1;++i)
+	{
+		spectrum.spectrum_sum = 0.; // Reset summation
+		// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 
+		spectrum.MakeThermalSpec(lc_time.at(i), lc_time.at(i+1) );
+		
+		// Ensure that the light curve rate is set to zero before adding values to it.
+		lc_rate.at(i) = spectrum.spectrum_sum;
+
+		// Convert units from erg / s to keV / s
+		lc_rate.at(i) *= erg_to_kev;
+		// Normalize by the time bin size 
+		lc_rate.at(i) /= (lc_time.at(1)-lc_time.at(0));
+		// Apply distance corrections
+		lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
+	}
+}
+
+// Add synchrotron component light curve
+void LightCurve::AddSynchLightCurve(std::string file_name)
+{
+	// Make spectrum class
+	Spectrum spectrum = Spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax, z);
 	
-	float Emin = atof(argv[6]); // Minimum energy of the spectrum used to create the light curve 
-	float Emax = atof(argv[7]); // Maximum energy of the spectrum used to create the light curve 
-
-	float z = atof(argv[8]); // Redshift to the source
-
-	// Find the number of time bins
-	int time_length = (Tmax-Tmin)/dt; 
-	// Create a time-axis for the light curve
-	double light_curve_time[time_length]; // Initialize the axis
-	for(int i=0; i<=time_length; i++)
+	// Load emission data 
+	spectrum.ReadSynchEmissionData(file_name);
+	
+	// For each time bin, calculate the photon rate.
+	for(int i=0; i<num_time_bins-1;++i)
 	{
-		light_curve_time[i] = Tmin+(i*dt);
-	}
+		spectrum.spectrum_sum = 0.; // Reset summation
+		// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 		
+		spectrum.MakeSynchSpec(lc_time.at(i), lc_time.at(i+1));
 
-	// Initialize light curve count rate array
-	double light_curve_rate[time_length];
-	// Depending on the spectrum type, send to a different light curve making function
-	// These two functions are defined in light_curve_funcs.cpp
-	if ( strcmp(spec_type,"thermal")==0 )
-	{
-		make_thermal_LC(light_curve_rate,light_curve_time,filename,time_length,z,Emin,Emax);
-	}
-	else if ( strcmp(spec_type,"synchrotron")==0 )
-	{
-		make_synch_LC(light_curve_rate,light_curve_time,filename,time_length,z,Emin,Emax);
+		// Ensure that the light curve rate is set to zero before adding values to it.
+		lc_rate.at(i) = spectrum.spectrum_sum;
 
+		// Convert units from erg / s to keV / s
+		lc_rate.at(i) *= erg_to_kev;
+		// Normalize by the time bin size 
+		lc_rate.at(i) /= (lc_time.at(1)-lc_time.at(0));
+		// Apply distance corrections
+		lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
 	}
+}
 
+
+// Write light curve to text files
+void LightCurve::WriteToTXT(std::string out_file_name)
+{
 	// Write the light curve to a text file
 	ofstream light_curve_file; // Construct file 
-	light_curve_file.open("./sim_results/light_curve_points.txt"); // Open text file with this name
+	light_curve_file.open(out_file_name); // Open text file with this name
 	int i=0;
 	// For each time bin, write the time and count rate to the file.
-	while ( i < time_length)
+	while ( i < num_time_bins)
 	{
-		light_curve_file << light_curve_time[i];
+		light_curve_file << lc_time.at(i);
 		light_curve_file << " ";
-		light_curve_file << light_curve_rate[i];
+		light_curve_file << lc_rate.at(i);
 		light_curve_file << "\n";		
 		i++;
 	}
 	light_curve_file.close(); // Close file
-	
-	return 0;
+}
+// Write light curve to FITS file
+void LightCurve::WriteToFITS(std::string out_file_name)
+{
+
 }

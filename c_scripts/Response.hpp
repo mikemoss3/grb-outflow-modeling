@@ -32,41 +32,43 @@ public:
 	Response();
 
 	// Response member variables 
-	float E_phot_min;
-	float E_phot_max;
+	float phot_energ_min;
+	float phot_energ_max;
 	int num_phot_bins;
 
-	float E_chan_min;
-	float E_chan_max;
+	float chan_energ_min;
+	float chan_energ_max;
 	int num_chans;
 
-	std::vector<float> ENERG_LO;
-	std::vector<float> ENERG_MID;
-	std::vector<float> ENERG_HI;
+	std::vector<float> phot_energ_lo;
+	std::vector<float> phot_energ_mid;
+	std::vector<float> phot_energ_hi;
 
-	std::vector<float> ECHAN_LO;
-	std::vector<float> ECHAN_MID;
-	std::vector<float> ECHAN_HI;
+	std::vector<float> chan_energ_lo;
+	std::vector<float> chan_energ_mid;
+	std::vector<float> chan_energ_hi;
 
-	std::vector<float> N_GRP;
-	std::vector<float> F_CHAN;
-	std::vector<float> N_CHAN;
+	std::vector<float> n_grp;
+	std::vector<float> f_chan;
+	std::vector<float> n_chan;
 
-	std::vector< vector<float> > MATRIX;
+	std::vector< vector<float> > prob_matrix;
 
 	// Response member functions
 
-	void set_ENERG(float E_phot_min, float E_phot_max, int num_phot_bins, bool logscale = true);
-	void set_ECHAN(float E_chan_min,float E_chan_max, int num_chans, bool logscale = true);
+	void set_phot_energ(float phot_energ_min, float phot_energ_max, int num_phot_bins, bool logscale = true);
+	void set_chan_energ(float chan_energ_min,float chan_energ_max, int num_chans, bool logscale = true);
 
-	void set_N_GRP();
-	void set_F_CHAN();
-	void set_N_CHAN();
+	void set_n_grp();
+	void set_f_chan();
+	void set_n_chan();
 
 	void make_empty_resp();
-	void identity();
-	void overDeltaE(float alpha);
-	int load_rsp_from_file(char file_name[]);
+	void Identity();
+	void OverDeltaE(float alpha);
+	int LoadRespFromFile(std::string file_name);
+
+	void WriteToFits(std::string out_file_name[]);
 
 
 // private:

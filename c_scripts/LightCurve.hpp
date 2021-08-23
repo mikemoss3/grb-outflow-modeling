@@ -20,19 +20,49 @@ Header file for light_curve.cpp class
 #include <sstream>
 
 // Import Custom Libraries
-#include "spectrum_funcs.hpp"
+#include "Spectrum.hpp"
 
 using namespace std;
 
 // Declare light curve class
-class Light_Curve
+class LightCurve
 {
-private:
-	int secret;
 public:
-	Light_Curve();
-	
-	void func();
+	// LightCurve constructor
+	LightCurve(float energ_min=50, float energ_max=300, int num_energ_bins=80, float tmin=0, float tmax=20, float dt=0.1, float z=1);
+
+	// LightCurve member variables 
+	float energ_min;
+	float energ_max;
+	int num_energ_bins;
+	float tmin;
+	float tmax;
+	float dt;
+	float z;
+
+	std::vector<double> lc_rate;
+	std::vector<float> lc_time;
+
+	// LightCurve member functions
+	// Make time axis
+	void make_time_axis(float tmin, float tmax, float dt);
+	void make_time_axis(float dt);
+	// Set the light curve rates to zero
+	void ZeroLightCurve();
+
+	// Add thermal component light curve
+	void AddThermalLightCurve(std::string file_name);
+	// Add synchrotron component light curve
+	void AddSynchLightCurve(std::string file_name);
+
+	// Write light curve to text files
+	void WriteToTXT(std::string out_file_name);
+	// Write light curve to FITS file
+	void WriteToFITS(std::string out_file_name);
+
+private:
+	int num_time_bins; 
+
 };
 
 #endif 

@@ -31,81 +31,90 @@ Response::Response()
  
 // Response member functions
 // Set photon energy axis 
-void Response::set_ENERG(float E_phot_min, float E_phot_max, int num_phot_bins, bool logscale)
+void Response::set_phot_energ(float phot_energ_min, float phot_energ_max, int num_phot_bins, bool logscale)
 {
+
+	this->phot_energ_min = phot_energ_min;
+	this->phot_energ_max = phot_energ_max;
+	this->num_phot_bins = num_phot_bins;
+
 	if(logscale == true)
 	{
-		float logdE = log( E_phot_max/E_phot_min ) / num_phot_bins;
+		float logdE = log( phot_energ_max/phot_energ_min ) / num_phot_bins;
 		for(int i=0; i<num_phot_bins;i++)
 		{
-			ENERG_LO.push_back( E_phot_min + exp(logdE*i) );
-			ENERG_HI.push_back( E_phot_min + exp(logdE*(i+1)) );
-			ENERG_MID.push_back( (ENERG_LO[i] + ENERG_HI[i]) /2 );
+			phot_energ_lo.push_back( phot_energ_min + exp(logdE*i) );
+			phot_energ_hi.push_back( phot_energ_min + exp(logdE*(i+1)) );
+			phot_energ_mid.push_back( (phot_energ_lo.at(i) + phot_energ_hi.at(i)) /2 );
 		}
 	}
 	else
 	{
-		float dE = (E_phot_max - E_phot_min) / num_phot_bins;
+		float dE = (phot_energ_max - phot_energ_min) / num_phot_bins;
 		for(int i=0; i<num_phot_bins;i++)
 		{
-			ENERG_LO.push_back( E_phot_min + (dE*i) );
-			ENERG_HI.push_back( E_phot_min + (dE*(i+1)) );
-			ENERG_MID.push_back( (ENERG_LO[i] + ENERG_HI[i]) /2 );
+			phot_energ_lo.push_back( phot_energ_min + (dE*i) );
+			phot_energ_hi.push_back( phot_energ_min + (dE*(i+1)) );
+			phot_energ_mid.push_back( (phot_energ_lo.at(i) + phot_energ_hi.at(i)) /2 );
 		}		
 	}
 	std::cout << "Response matrix has been reset to zeros." << "\n";
 	make_empty_resp();
-	set_N_GRP();
-	set_F_CHAN();
+	set_n_grp();
+	set_f_chan();
 
 }
 // Set instrument channel energy axis
-void Response::set_ECHAN(float E_chan_min, float E_chan_max, int num_chans, bool logscale)
+void Response::set_chan_energ(float chan_energ_min, float chan_energ_max, int num_chans, bool logscale)
 {
+	this->chan_energ_min = chan_energ_min;
+	this->chan_energ_max = chan_energ_max;
+	this->num_chans = num_chans;
+
 	if(logscale == true)
 	{
-		float logdE = log( E_chan_max/E_chan_min ) / num_chans;
+		float logdE = log( chan_energ_min/chan_energ_min ) / num_chans;
 		for(int i=0; i<num_chans;i++)
 		{
-			ENERG_LO.push_back( E_chan_min + exp(logdE*i) );
-			ENERG_HI.push_back( E_chan_min + exp(logdE*(i+1)) );
-			ENERG_MID.push_back( (ENERG_LO[i] + ENERG_HI[i]) /2 );
+			chan_energ_lo.push_back( chan_energ_min + exp(logdE*i) );
+			chan_energ_hi.push_back( chan_energ_min + exp(logdE*(i+1)) );
+			chan_energ_mid.push_back( (chan_energ_lo.at(i) + chan_energ_lo.at(i)) /2 );
 		}
 	}
 	else
 	{
-		float dE = (E_chan_max - E_chan_min) / num_chans;
+		float dE = (chan_energ_min - chan_energ_min) / num_chans;
 		for(int i=0; i<num_chans;i++)
 		{
-			ECHAN_LO.push_back( E_chan_min + (dE*i) );
-			ECHAN_HI.push_back( E_chan_min + (dE*(i+1)) );
-			ECHAN_MID.push_back( (ECHAN_LO[i] + ECHAN_HI[i]) /2 );
+			chan_energ_lo.push_back( chan_energ_min + (dE*i) );
+			chan_energ_hi.push_back( chan_energ_min + (dE*(i+1)) );
+			chan_energ_mid.push_back( (chan_energ_lo.at(i) + chan_energ_lo.at(i)) /2 );
 		}		
 	}
 	std::cout << "Response matrix has been reset to zeros." << "\n";
 	make_empty_resp();
-	set_N_CHAN();
+	set_n_chan();
 }
 
-void Response::set_N_GRP()
+void Response::set_n_grp()
 {
 	for(int i=0; i<num_phot_bins; i++)
 	{
-		N_GRP.push_back(1);
+		n_grp.push_back(1);
 	}
 }
-void Response::set_F_CHAN()
+void Response::set_f_chan()
 {
 	for(int i=0; i<num_phot_bins; i++)
 	{
-		F_CHAN.push_back(0);
+		f_chan.push_back(0);
 	}
 }
-void Response::set_N_CHAN()
+void Response::set_n_chan()
 {
 	for(int i=0; i<num_phot_bins; i++)
 	{
-		N_CHAN.push_back(num_chans);
+		n_chan.push_back(num_chans);
 	}
 }
 
@@ -114,58 +123,62 @@ void Response::make_empty_resp()
 {
 	for(int i=0; i<num_phot_bins; i++)
 	{
-		std::vector<float> tmp_vec;
+		std::vector<float> tmp_vec(num_chans);
 		for(int j=0; j<num_chans; j++)
 		{
-			tmp_vec.push_back(0.);
+			tmp_vec.at(j) = 0.;
 		}
-		MATRIX.push_back(tmp_vec);
+		prob_matrix.push_back(tmp_vec);
 	}
 }
 // Make identity matrix
-void Response::identity()
+void Response::Identity()
 {
 	for(int i=0; i<num_phot_bins; i++)
 	{
-		std::vector<float> tmp_vec;
+		std::vector<float> tmp_vec(num_chans);
 		for(int j=0; j<num_chans; j++)
 		{
 			if(i==j)
 			{
-				tmp_vec.push_back(1);
+				tmp_vec.at(i) = 1;
+			}
+			else
+			{
+				tmp_vec.at(j) = 0;
 			}
 		}
-		MATRIX.push_back(tmp_vec);
+		prob_matrix.push_back(tmp_vec);
 	}
 }
 
 // Decrease as 1/DeltaE^alpha from E_true
-void Response::overDeltaE(float alpha)
+void Response::OverDeltaE(float alpha)
 {
 	float col_sum; // Used for normalizing the column
 	float tmp_val;
 	for(int i=0; i<num_phot_bins; i++)
 	{
 		col_sum = 0;
-		std::vector<float> tmp_vec;
+		std::vector<float> tmp_vec(num_chans);
 		for(int j=0; j<num_chans; j++)
 		{
-			tmp_val = 1/(1+pow(abs( ECHAN_MID[j] - ENERG_MID[i]),alpha));
-			tmp_vec.push_back(tmp_val);
+			tmp_val = 1/(1+pow(abs( chan_energ_mid.at(j) - phot_energ_mid.at(i)),alpha));
+			tmp_vec.at(j) = tmp_val;
 			col_sum += tmp_val; 
 		}
 		// Normalize the 
 		for(int j=0; j<num_chans; j++)
 		{
-			tmp_vec[j] /= col_sum;
+			tmp_vec.at(j) /= col_sum;
 		}
-		MATRIX.push_back(tmp_vec);
+		prob_matrix.push_back(tmp_vec);
 	}
 
 }
 
 // Load response matrix from file
-int Response::load_rsp_from_file(char file_name[])
+int Response::LoadRespFromFile(std::string file_name)
 {
 	// Declare all variable types 
 	fitsfile *fptr; // FITS file object 
@@ -177,7 +190,11 @@ int Response::load_rsp_from_file(char file_name[])
 	int response_ihdu, ebounds_ihdu;
 
 	// Open FITS file
-	fits_open_file(&fptr, file_name, READONLY, &status);
+	int n = file_name.length() + 1;
+	char dumn_char_str[n];
+	strcpy(dumn_char_str, file_name.c_str());
+	// dumn_char_str = file_name;
+	fits_open_file(&fptr, dumn_char_str, READONLY, &status);
 
 	// Get number of HDUs 
 	fits_get_num_hdus(fptr, &num_hdus, &status);
@@ -210,31 +227,31 @@ int Response::load_rsp_from_file(char file_name[])
 
 	// Temporary variables to store element values
 	// float tmp_CHAN=0.;
-	float tmp_ECHAN_LO=0.;
-	float tmp_ECHAN_HI=0.;
+	float tmp_chan_energ_lo=0.;
+	float tmp_chan_energ_hi=0.;
 
 	// Column names :
 	// char colname_CHAN[] = "CHANNEL";
-	char colname_ECHAN_LO[] = "E_MIN";
-	char colname_ECHAN_HI[] = "E_MAX";
+	char colname_chan_energ_lo[] = "E_MIN";
+	char colname_chan_energ_hi[] = "E_MAX";
 
 	/* Read rows of channel data*/
 	for (irow=1; irow<=number_chans; irow++) 
 	{
-		// Select ECHAN_LO column
-		fits_get_colnum(fptr, CASEINSEN, colname_ECHAN_LO, &colnum, &status);
+		// Select chan_energ_lo column
+		fits_get_colnum(fptr, CASEINSEN, colname_chan_energ_lo, &colnum, &status);
 		// Read column data at row i
-		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_ECHAN_LO, &anynull, &status);
+		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_chan_energ_lo, &anynull, &status);
 		// Store column data in appropriate vector
-		ECHAN_LO.push_back(tmp_ECHAN_LO);
+		chan_energ_lo.push_back(tmp_chan_energ_lo);
 
-		// ECHAN_HI
-		fits_get_colnum(fptr, CASEINSEN, colname_ECHAN_HI, &colnum, &status);
-		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_ECHAN_HI, &anynull, &status);
-		ECHAN_HI.push_back(tmp_ECHAN_HI);
+		// chan_energ_hi
+		fits_get_colnum(fptr, CASEINSEN, colname_chan_energ_hi, &colnum, &status);
+		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_chan_energ_hi, &anynull, &status);
+		chan_energ_hi.push_back(tmp_chan_energ_hi);
 
 		// Calculate the center of the bin
-		ECHAN_MID.push_back( (tmp_ECHAN_LO+tmp_ECHAN_HI)/2 );
+		chan_energ_mid.push_back( (tmp_chan_energ_lo+tmp_chan_energ_hi)/2 );
 	}
 
 	/* Read response matrix  */
@@ -245,68 +262,68 @@ int Response::load_rsp_from_file(char file_name[])
 	fits_get_num_rows(fptr, &num_rows, &status);
 
 	// Temporary variables to store element values
-	float tmp_ENERG_LO=0.;
-	float tmp_ENERG_HI=0.;
-	float tmp_N_GRP=0.;
-	float tmp_F_CHAN=0.;
-	float tmp_N_CHAN=0.;
-	float tmp_MATRIX[number_chans];
+	float tmp_phot_energ_lo=0.;
+	float tmp_phot_energ_hi=0.;
+	float tmp_n_grp=0.;
+	float tmp_f_chan=0.;
+	float tmp_n_chan=0.;
+	float tmp_prob_matrix[number_chans];
 
 	// Column names :
-	char colname_ENERG_LO[] = "ENERG_LO";
-	char colname_ENERG_HI[] = "ENERG_HI";
-	char colname_N_GRP[] = "N_GRP";
-	char colname_F_CHAN[] = "F_CHAN";
-	char colname_N_CHAN[] = "N_CHAN";
-	char colname_MATRIX[] = "MATRIX";
+	char colname_phot_energ_lo[] = "ENERG_LO";
+	char colname_phot_energ_hi[] = "ENERG_HI";
+	char colname_n_grp[] = "N_GRP";
+	char colname_f_chan[] = "F_CHAN";
+	char colname_n_chan[] = "N_CHAN";
+	char colname_prob_matrix[] = "MATRIX";
 
 	/* Read rows of spectrum data*/
 	for (irow=1; irow<=num_rows; irow++) 
 	{
-		// Select ENERG_LO Column
-		fits_get_colnum(fptr, CASEINSEN, colname_ENERG_LO, &colnum, &status);
+		// Select phot_energ_lo Column
+		fits_get_colnum(fptr, CASEINSEN, colname_phot_energ_lo, &colnum, &status);
 		// Read column data at row i
-		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_ENERG_LO, &anynull, &status);
+		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_phot_energ_lo, &anynull, &status);
 		// Store column data in appropriate vector
-		ENERG_LO.push_back(tmp_ENERG_LO);
+		phot_energ_lo.push_back(tmp_phot_energ_lo);
 
-		// ENERG_HI
-		fits_get_colnum(fptr, CASEINSEN, colname_ENERG_HI, &colnum, &status);
-		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_ENERG_HI, &anynull, &status);
-		ENERG_HI.push_back(tmp_ENERG_HI);
+		// phot_energ_hi
+		fits_get_colnum(fptr, CASEINSEN, colname_phot_energ_hi, &colnum, &status);
+		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_phot_energ_hi, &anynull, &status);
+		phot_energ_hi.push_back(tmp_phot_energ_hi);
 
 		// Calculate ENERG_MID
-		ENERG_MID.push_back( (tmp_ENERG_LO+tmp_ENERG_HI)/2 );
+		phot_energ_mid.push_back( (tmp_phot_energ_lo+tmp_phot_energ_hi)/2 );
 
 		// N_GRP
-		fits_get_colnum(fptr, CASEINSEN, colname_N_GRP, &colnum, &status);
-		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_N_GRP, &anynull, &status);
-		N_GRP.push_back(tmp_N_GRP);
+		fits_get_colnum(fptr, CASEINSEN, colname_n_grp, &colnum, &status);
+		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_n_grp, &anynull, &status);
+		n_grp.push_back(tmp_n_grp);
 
 		// F_CHAN
-		fits_get_colnum(fptr, CASEINSEN, colname_F_CHAN, &colnum, &status);
-		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_F_CHAN, &anynull, &status);
-		F_CHAN.push_back(tmp_F_CHAN);
+		fits_get_colnum(fptr, CASEINSEN, colname_f_chan, &colnum, &status);
+		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_f_chan, &anynull, &status);
+		f_chan.push_back(tmp_f_chan);
 
 		// N_CHAN
-		fits_get_colnum(fptr, CASEINSEN, colname_N_CHAN, &colnum, &status);
-		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_N_CHAN, &anynull, &status);
-		N_CHAN.push_back(tmp_N_CHAN);
+		fits_get_colnum(fptr, CASEINSEN, colname_n_chan, &colnum, &status);
+		fits_read_col(fptr, TFLOAT, colnum, irow, 1, 1, &nulldouble, &tmp_n_chan, &anynull, &status);
+		n_chan.push_back(tmp_n_chan);
 
 		// MATRIX
-		fits_get_colnum(fptr, CASEINSEN, colname_MATRIX, &colnum, &status);
-		fits_read_col(fptr, TFLOAT, colnum, irow, 1, number_chans, &nulldouble, &tmp_MATRIX, &anynull, &status);
-		std::vector<float> tmp_vec(tmp_MATRIX, tmp_MATRIX + number_chans );
-		MATRIX.push_back(tmp_vec);
+		fits_get_colnum(fptr, CASEINSEN, colname_prob_matrix, &colnum, &status);
+		fits_read_col(fptr, TFLOAT, colnum, irow, 1, number_chans, &nulldouble, &tmp_prob_matrix, &anynull, &status);
+		std::vector<float> tmp_vec(tmp_prob_matrix, tmp_prob_matrix + number_chans );
+		prob_matrix.push_back(tmp_vec);
 
 	}
 
-	E_phot_min = ENERG_LO.at(0);
-	E_phot_max = ENERG_HI.back();
+	phot_energ_min = phot_energ_lo.at(0);
+	phot_energ_max = phot_energ_hi.back();
 	num_phot_bins = num_rows;
 
-	E_chan_min = ECHAN_LO.at(0);
-	E_chan_max = ECHAN_HI.back();
+	chan_energ_min = chan_energ_lo.at(0);
+	chan_energ_max = chan_energ_hi.back();
 	num_chans = number_chans;
 
 	fits_close_file(fptr, &status);
