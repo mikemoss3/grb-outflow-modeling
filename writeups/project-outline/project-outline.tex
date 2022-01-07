@@ -1,4 +1,4 @@
-\documentclass[linenumbers]{aastex631}
+\documentclass[linenumbers,twocolumn]{aastex631}
 
 % Packages
 \usepackage[utf8]{inputenc}
@@ -7,15 +7,20 @@
 \usepackage{amssymb}
 \usepackage{enumitem}
 \usepackage{ulem}
+% \usepackage{hyperref}
 
 % Editing commands
 \newcommand{\mm}[1]{{\textcolor{purple}{\bf #1}}}
 
-% Make upright subscripts in Mathmode.
+% Make upright subscripts and superscripts in Mathmode.
 \def\subinrm#1{\sb{\mathrm{#1}}}
 {\catcode`\_=13 \global\let_=\subinrm}
 \mathcode`_="8000
+\def\supinrm#1{\sp{\mathrm{#1}}}
+{\catcode`\^=13 \global\let^=\supinrm}
+\mathcode`^="8000
 \def\upsubscripts{\catcode`\_=12 } \def\normalsubscripts{\catcode`\_=8 }
+\def\upsupscripts{\catcode`\^=12 } \def\normalsupscripts{\catcode`\^=7 }
 
 \newcommand{\vdag}{(v)^\dagger}
 \newcommand\aastex{AAS\TeX}
@@ -32,7 +37,9 @@
 
 \author{Michael Moss}
 \affiliation{The Department of Physics, The George Washington University, 725 21st NW, Washington, DC 20052, USA}
-\affiliation{NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
+\affiliation{Astrophysics Science Division, NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
+\affiliation{Sorbonne Universit\'e, CNRS, UMR 7095, Institut d'Astrophysique de Paris, 98 bis Arago, 75014 Paris, France}
+
 
 \correspondingauthor{Michael Moss}
 \email{mikejmoss3@gmail.com}
@@ -47,40 +54,59 @@ Abs
 \section{Introduction} \label{sec:intro}
 \section{Jet Dynamics} \label{sec:jet dynamics}
 
-Input parameters for jet dynamics in Table \ref{tab: jet dynamic params}
-\begin{deluxetable*}{llll}
-\tablecaption{ List of parameters used in the jet dynamic simulations, their variable names and default values in the code, as well as a description of each. \label{tab: jet dynamic params}}
-\tablewidth{0pt}
-\tablehead{
-\colhead{Parameter symbol} & \colhead{Variable Name (in code)} & \colhead{Default Value} &  \colhead{Description}
-}
-\decimalcolnumbers
-\startdata
-N & numshells & 5000 & Number of shells in the jet. \\
-$\Delta$t$_e$ & dte & 0.002 s & Time between shell launching. \\
-$\alpha_e$ & alpha_e & 1/3 & Fraction of energy which goes into the electrons. \\
-$\alpha_m$ & alpha_m & 1/3 & Fraction of energy which goes into the magnetic field. \\
-$\xi$ & ksi & 0.001 & Fraction of electron which are accelerated. \\
-$\mu$ & mu & 1.74 & Index of the fluctuation spectrum. \\
-$\dot{E}_{iso}$ & E_dot_iso & $10^{53}$ erg/s & Isotropic energy injection rate. \\
-t$_b$ & tb & 0 s & Break out time. \\
-$\theta$ & theta & 0.1 & Opening angle of the jet. \\
-r$_{open}$ & r_open & $10^6$ & Opening radius of the jet. \\
-r$_{sat}$ & r_sat & $10^8$ & Saturation radius. \\
-$\epsilon_{th}$ & eps_th & 0.03 & Fraction of injected energy turned in thermal. \\
-$\sigma$ & sigma & 0.1 & The magnetization. \\
-entry1 & entry2 & entry3 & entry4 \\
-\enddata
-\end{deluxetable*}
+Input parameters for the jet dynamics simulations are listed in Table \ref{tab: jet dynamic params}. In this section we provide context for the input parameters and derive some relevant parameter from the input parameters. Following this, we derive the calculated emission parameters (for example, the temperature of the black body). The parameter space of the code can be limited in two ways, either using parameters extracted from fits to real GRB spectra, which we call option (a), or by creating an library of spectra using reasonable values for each parameter, which we call option (b). If the value of the parameter cannot be constrained by observations, then option (a) and (b) are equivalent.
 
-We derive two energies from the above input parameters,
+The duration of GRB prompt emission is not well defined. Some GRBs may last only a fraction of a second while others last hundreds of seconds. Additionally, the observed duration does not directly indicate the duration of the wind or central engine, it only provides a hard upper limit. From the observed duration of a GRB, e.g., T$_{90,obs}$, we are able to limit the possible duration of the wind, 
 
 \begin{align}
-	\dot{E}_{kin} &= \frac{\dot{E}_{iso}}{1+\sigma} \\
-	\dot{E}_{th} &= \dot{E}_{iso} * \epsilon_{th}
+	t_w = \frac{\text{T}_{90,obs}}{1+z} * f_w
 \end{align}
 
-where $\dot{E}_{kin}$ is the amount of the injected energy in the form of kinetic and $\dot{E}_{th}$ is the amount of the injected energy in thermal.
+where $z$ is the redshift of the source and $f_w$ is some fraction used to account for the fact that $t_w < $T$_{90,obs}$. We do know the exact value of $f_w$, but we can use a few values, e.g. 0.75, 0.85, 1). If we do not use observations to define the wind in our simulation, we can use various durations ranging from 0.1 sec to 10 sec.
+
+The time resolution of our simulations will be limited by the ejection time between the shells.
+
+The number of shells in the jet can defined by the total duration of the wind, $t_w$, and the ejection time between shells, $\Delta t_{ej}$, 
+
+\begin{align}
+	N = \frac{t_w}{\Delta t_{ej}}
+\end{align}
+
+The magnetization in the jet is an important parameter which dictates the acceleration and emission processes possible in the jet. If $\sigma=0$, the jet is in a purely fireball model, meaning the acceleration of the jet is purely thermal and that there can be no magnetic reconnection because there is no magnetic flux in the jet. If on the other hand, $\sigma \geq 1$, the magnetic fields in the jet are strong enough to suppress internal shocks and magnetic reconnection events are expected. In the case of a passive magnetic field that is carried by the outflow without contributing to its acceleration \citep{2001A&A...369..694S} the passive magnetization is given
+
+\begin{align}
+	\sigma_{passive} = \frac{1-\epsilon_{th}}{\epsilon_{th}}
+\end{align} 
+
+corresponding to a pure and complete thermal acceleration (and indicating no magnetic acceleration). If there is any magnetic acceleration $\sigma < \sigma_{passive}$.
+
+Similar implications can be obtained from $\epsilon_{th}$, when $\epsilon_{th}$ we are in a pure fireball model and the upper limit can be defined as $\epsilon_{th}<\frac{1}{1+\sigma}$.
+
+Using observations of GRB prompt emission we can define a value of the injected energy, $\dot{E}$. We can use the observed isotropic injected energy rate of the non-thermal component in the gamma-ray regime, $\dot{E}_{\gamma,NT,iso}$, to define the injected energy rate in the jet, 
+
+\begin{align}
+	\dot{E} = (1+\sigma)\frac{\dot{E}_{\gamma,NT,iso}}{f_{rad}\epsilon_e}
+\end{align}
+
+where $f_{rad}$ is the efficiency of the non-thermal acceleration process, e.g., for internal shocks $f_{rad}$ is determined by the Lorentz factor of two colliding shells, but is typically around a few percent. Instead of using the observed values for a particular value, we can simulate the wind using injection energies ranging from $10^{50}$ to $10^{54}$ erg. 
+
+We can derive the various energies before acceleration
+
+\begin{align}
+	\dot{E}^{init}_{th} &= \epsilon_{th}\dot{E} \\
+	\dot{E}^{init}_{mag} &= (1-\epsilon_{th})\dot{E} \\
+	\dot{E}^{init}_{kin} &= 0
+\end{align}
+
+and energies after acceleration
+
+\begin{align}
+	\dot{E}^{final}_{th} &= 0 \\ 
+	\dot{E}^{final}_{mag} &= \frac{\sigma}{1+\sigma}\dot{E} \\
+	\dot{E}^{final}_{kin} &= \frac{\dot{E}}{1+\sigma}
+\end{align}
+
+where $\dot{E}_{th}$, $\dot{E}_{mag}$, $\dot{E}_{kin}$ are the amounts of energy in the form of thermal, magnetic, and kinetic, respectively. We note $\dot{E} = (1-\cos\theta_j)\dot{E}_{iso}$.
 
 
 \subsection{Shell Distribution}
@@ -126,7 +152,67 @@ where $\beta_i = \sqrt(1 - \Gamma^{-2})$ Notice that these are in units of $R/c$
 
 The status of a shell indicates whether it is currently active or not. An active shell is one that is currently propagating through the jet. An inactive shell is one that has not been launched yet or alternatively has already collided. 
 
-\subsection{Thermal Shell Dynamics and Emission}
+
+% \begin{deluxetable*}{llll}
+% \tablecaption{ List of parameters used in the jet dynamic simulations, their variable names and default values in the code, as well as a description of each. \label{tab: jet dynamic params}}
+% \tablewidth{0pt}
+% \tablehead{
+% \colhead{Parameter symbol} & \colhead{Variable Name (in code)} & \colhead{Default Value} &  \colhead{Description}
+% }
+% \decimalcolnumbers
+% \startdata
+% N & numshells & 5000 & Number of shells in the jet. \\
+% $\Delta$t$_e$ & dte & 0.002 s & Time between shell launching. \\
+% $\alpha_e$ & alpha$\_$e & 1/3 & Fraction of energy which goes into the electrons. \\
+% $\alpha_m$ & alpha$\_$m & 1 & Between 0.1 - 1, fraction of the dissipated energy \\
+% & & & which goes into magnetic fluctuations.\\
+% $\alpha_b$ & alpha$\_$b & 1/3 & Fraction of energy which goes into the magnetic field. \\
+% $\zeta$ & zeta & 0.001 & Fraction of electron which are accelerated. \\
+% $\mu$ & mu & 1.74 & Index of the fluctuation spectrum. \\
+% $\dot{E}_{iso}$ & E$\_$dot$\_$iso & $10^{53}$ erg/s & Isotropic energy injection rate. \\
+% t$_b$ & tb & 0 s & Break out time. \\
+% $\theta$ & theta & 0.1 rad & Opening angle of the jet. \\
+% r$_{open}$ & r$\_$open & $10^6$ cm & Opening radius of the jet. \\
+% r$_{sat}$ & r$\_$sat & $10^8$ cm & Saturation radius. \\
+% $\epsilon_{th}$ & eps$\_$th & 0.03 & Fraction of injected energy turned in thermal. \\
+% $\sigma$ & sigma & 0.1 & The magnetization of the outflow. \\
+% Lorentz Distribution & LorentzDist & ``step'' & Describes which Lorentz distribution \\
+% & & & to use for the shells. \\
+% Lorentz Dist. Param File & ShellDistParamsFile & ``Default'' & File that contains the parameters to create the\\
+% & & & distribution of jet shells. \\
+% entry1 & entry2 & entry3 & entry4 \\
+% \enddata
+% \end{deluxetable*}
+
+\begin{deluxetable*}{llll}
+\tablecaption{List of input parameters used in the jet dynamic simulations, the typical values or expression and a description of each is provided. The parameter space of the code can be limited in two ways, either using parameters extracted from fits to real GRB spectra, which we call option (a), or by creating an library of spectra using reasonable values for each parameter, which we call option (b). If the value of the parameter cannot be constrained by observations, then option (a) and (b) are equivalent.\label{tab: jet dynamic params}}
+\tablewidth{0pt}
+\tablehead{
+\colhead{Parameter symbol} & \colhead{Typical Values} &  &  \colhead{Description} \\ 
+& (a) & (b) &
+}
+\startdata
+$t_w$ & $\frac{\text{obs duration}}{1+z}*(0.75, 0.85, 1)$ sec & (0.1, 0.3, 1, 3, 10) sec & Duration of the wind. \\
+$\Delta t_{ej}$ & ($10^{-2}$, $10^{-3}$) sec & & Time Resolution of the simulation, or \\
+& & & time between the ejection of each shell. \\
+$\Gamma_{min}$ & (50, 100, 200) & & Minimum Lorentz factor for any shell. \\
+$\Gamma_{max}$ & (2, 4, 6)*$\Gamma_{min}$ & & Maximum Lorentz factor for any shell. \\
+$f_{\Gamma}$ & (0.2, 0.4, 0.6, 0.8) & & Fraction of shells which have $\Gamma_{max}$. \\
+$\sigma$ & (0, $10^{-2}$, $10^{-1}$) & & Magnetization of the jet. \\
+$\epsilon_e$ & (0.1, 1/3) &  & Fraction of energy stored in electrons. \\
+$\epsilon_B$ & ($10^{-4}$, $10^{-3}$, $10^{-2}$, $10^{-1}$) & & Fraction of energy stored in the magnetic field. \\
+$\epsilon_{Th}$ & ($10^{-3}$, $10^{-2}$, $10^{-1}$, 1) & & Fraction of energy stored as Thermal energy. \\
+$\dot{E}$ & $(1+\sigma)*\frac{\dot{E}_{\gamma,NT,iso}}{f_{rad}\epsilon_e}$ erg/s & ($10^{50}$,$10^{51}$,$10^{52}$,$10^{53}$,$10^{54}$) erg/s & Injected energy rate. \\
+$\zeta$ & ($10^{-3}$, 3*$10^{-3}$, $10^{-2}$, 3*$10^{-2}$) & & Fraction of electrons which are accelerated. \\
+$p$ & (2.2, 2.5, 2.8, 3.4) &  & Power law index of electron distribution. \\
+$\theta_j$ & 0.1 rad &  & Opening angle of the jet. \\
+$l$ & $10^{6}$ cm & & Opening radius of the jet. \\
+\enddata
+\end{deluxetable*}
+
+
+\subsection{Emission Output Parameters}
+\subsubsection{Thermal Shell Dynamics and Emission}
 
 Once we have assigned the initial Radius, Lorentz factor, Mass, and emission time of each shell, we can begin to calculate the dynamics of the shells. We calculate when the shells will cross their respective photospheres and we calculate when/where collisions between the shells will occur. 
 
@@ -151,18 +237,19 @@ For all thermal emission events, the arrival time of the photons and duration of
 Following the prescription from \citet{2013A&A...551A.124H}.
 
 \begin{align}
-	& \Phi = \theta^{-2/3} (R_{phot}*c)^{-2/3} (R_{open})^{2/3} \Gamma^{2/3} \\
-	& T0 = \left(\frac{\dot{E}_{th}^2 \theta^2}{4\pi a c R_{open}^2} \right)^{1/4} \text{ K} \\ 
-	& T_{phot,obs} = T0*\Phi*(1+z) \text{ K} \\
-	& L_{phot} = \frac{\theta^2 \dot{E}_{th} \Phi }{4} \text{ erg/s}
+	\Phi &= \theta^{-2/3} (R_{phot}*c)^{-2/3} (R_{open})^{2/3} \Gamma^{2/3}\\
+	&\approx \dot{E}_{iso}^{-2/3} \Gamma^{8/3} \\
+	T0 &= \left(\frac{\dot{E}_{th}^2 \theta^2}{4\pi a c R_{open}^2} \right)^{1/4} \text{ K} \\ 
+	T_{phot,obs} &= T0*\Phi*(1+z) \text{ K} \\
+	L_{phot} &= \frac{\theta^2 \dot{E}_{th} \Phi }{4} \text{ erg/s}
 \end{align}
 
 where $a$ is the radiation constant. 
 
-Output data for thermal emission in Table \ref{tab: thermal data output}
+Output parameters calculated from the model for thermal emission in Table \ref{tab: thermal data output}
 
 \begin{deluxetable*}{ll}
-\tablecaption{Output data for thermal emission \label{tab: thermal data output}}
+\tablecaption{Output parameters calculated from the model for thermal emission \label{tab: thermal data output}}
 \tablewidth{0pt}
 \tablehead{
 \colhead{Parameter} & \colhead{Description}
@@ -179,7 +266,7 @@ $R_{phot,i}$ & Radius of the photosphere for shell $i$. \\
 \end{deluxetable*}
 
 
-\subsection{Internal Shock Shell Dynamics and Emission}
+\subsubsection{Internal Shock Shell Dynamics and Emission}
 
 When considering the collisions between shells, we take each pair of adjacent active shells (shells which have already been launched) and calculate the time till they collide (see Appendix A). Selecting the minimum time until collision, $t_{coll,min}$, we move all shells according to $R_{new,i} = R_{old,i} + ()\beta_i * t_{coll,min})$. The two shells that collide will have an initial average Lorentz factor given by
 
@@ -208,7 +295,7 @@ The average energy dissipated per proton in a shock is given by
 
 \begin{align}
 	\epsilon &= (\Gamma_{int} - 1) m_p c^2 \\
-	& \text{ where } \Gamma_{int} = \frac{1}{2}\left[\left(\frac{\Gamma_1/\Gamma_2}{den}\right)^{1/2} + \left(\frac{\Gamma_2/\Gamma_1}{den}\right)^{1/2}\right]
+	& \text{ where } \Gamma_{int} = \frac{1}{2}\left[\left(\frac{\Gamma_1}{\Gamma_2}\right)^{1/2} + \left(\frac{\Gamma_2}{\Gamma_1}\right)^{1/2}\right]
 \end{align}
 
 where $\Gamma_{int}$ is the Lorentz factor for internal motions in the shocked material.
@@ -222,10 +309,10 @@ The comoving proton number density is given by
 which allows us to calculate the equipartition magnetic field 
 
 \begin{align}
-	B_{eq} \approx (8\pi \alpha_B n \epsilon)^{1/2} \text{ (erg/cm$^3$)}^{1/2}
+	B_{eq} \approx (8\pi \epsilon_B n \epsilon)^{1/2} \text{ (erg/cm$^3$)}^{1/2}
 \end{align}
 
-where $\alpha_B\lesssim1$. 
+where $\epsilon_B\lesssim1$. 
 
 The typical synchrotron energy of the emitting electrons is given by
 
@@ -304,7 +391,7 @@ The fraction of electrons which remain to emit synchrotron emission is simply
 Lastly, the energy dissipated in a collision between two shells is given by
 
 \begin{align}
-	e = min(M_1,M_2) c^2 (\Gamma_1 + \Gamma_2 - 2*\Gamma_r) * \alpha_e * \alpha_{syn} \text{ erg}
+	e = min(M_1,M_2) c^2 (\Gamma_1 + \Gamma_2 - 2*\Gamma_r) * \epsilon_e * \alpha_{syn} \text{ erg}
 \end{align}
 
 Where we use the smaller mass of the two colliding shells.
@@ -325,13 +412,13 @@ The transparency of the wind to the emitted photons is
 
 where $m_i$ and $r_i$ are the mass and radius of shell $i$. The sum over indices $i$ larger than $i_{shock}$, which corresponds to the colliding shells. 
 
-Output data for synchrotron emission in Table \ref{tab: synchrotron data output}
+Output parameters calculated from the model for synchrotron emission in Table \ref{tab: synchrotron data output}
 
 \begin{deluxetable*}{ll}
-\tablecaption{Output data for synchrotron emission \label{tab: synchrotron data output}}
+\tablecaption{Output parameters calculated from the model for synchrotron emission \label{tab: synchrotron data output}}
 \tablewidth{0pt}
 \tablehead{
-\colhead{Col1} & \colhead{Col2}
+\colhead{Parameter} & \colhead{Description}
 }
 \decimalcolnumbers
 \startdata
@@ -352,9 +439,26 @@ $v_{rel,i}$ & Relative collision speed between the slow and fast shells of the $
 
 \section{Spectrum Generation} \label{sec:spectrum}
 \subsection{Thermal Spectrum}
+
 \subsection{Synchrotron Spectrum}
 
+Similar to how the thermal spectrum is created, the non-thermal spectrum generated from the GRB prompt emission simulations for a particular time-interval is created from the summation of spectra created by each emission event which occurred within time-interval.
+
+The spectrum used for each emission event is therefor an important consideration. A simple first step is to assume a Broken Power Law (BPL) where the low and high energy power law indices are given by $\alpha=-1$ and $\beta\leq-2.5$. The value of alpha is an active discussion within the field and ranges between -0.6 to -1.5. The peak energy of the distribution can be determined by synchrotron energy calculated in the simulation, $E_{synch}$.
+
+Alternatively, if we assume that synchrotron emission is produced by internal shocks events in the jet, we can use a standard definition of the synchrotron spectrum \citep{1998ApJ...497L..17S}. The variable parameters in this definition are the minimum Lorentz factor of the electron population and the cyclotron Lorentz factor, $\Gamma_m$ and $\Gamma_c$, respectively. These can be defined in terms of the parameters used in our simulations.
+
+\begin{align}
+	\Gamma_m &= \frac{p-2}{p-1} \frac{\epsilon_e}{\zeta} \frac{m_p}{m_e} \left(\frac{\epsilon}{c^2}\right) \\
+	\Gamma_c &= \frac{const}{B^2 t'_{dyn}} \Rightarrow \frac{R}{\Gamma c}
+\end{align}
+
+where $\epsilon/c^2 = (\Gamma_{int} -1)$. These Lorentz factors can be directly turned to frequencies, $\nu_m$ and $\nu_c$, respectively. 
+
+
 \section{Light Curve Generation} \label{sec:light curve}
+
+The light curve of a simulated GRB is generated by taking the sum of all counts in the spectra created for each time bin of the light curve. 
 
 
 % \begin{figure}[!ht]
@@ -385,6 +489,7 @@ $v_{rel,i}$ & Relative collision speed between the slow and fast shells of the $
 
 
 \begin{appendix}
+
 \section{Shell Collision Time and Radius}
 
 Consider two shells traveling along the same axis. We will label the radius, Lorentz factor,  more rapid shell with $r$ and the slower shell with $s$
@@ -450,6 +555,89 @@ Let us assume shell 1 and 2 have Lorentz factors $\Gamma_1=100$ and $\Gamma_2=40
 	t_{coll} &\approx 42.6 \text{ seconds}\\
 	R_{coll} &= 1.2*10^{12} \text{ cm}
 \end{align}
+
+
+\section{Simulation Time Considerations}
+
+In this section we make rough estimates of the times required to run all simulations required for a particular parameter space. Each single simulation requires $\sim$ 5 seconds to run.
+
+\subsection{Using observations to help constrain the parameter space}
+
+Using the non-thermal component observed GRB prompt emission spectra, we can help limit the parameter space we must explore during a simulation. 
+
+\begin{align}
+	& [t_w] &&\times [\Gamma(t)] &&\times [\zeta]  \\
+	& [3] &&\times [3\times3\times4] &&\times [3] = 432 \text{ simulations}
+	& 432 \text{ simulations} \times 5 \text{ sec} \sim 36 \text{minutes}
+\end{align}
+
+this will need to be done for every time bin used, because $\dot{E}^k_{iso}$ must be changed depending on the observed brightness.
+
+If the thermal component is not observed, this part of the simulation can be removed. If the thermal component is observed, the brightness can be used to constrain the value of $\epsilon*(1+\sigma)\leq1$.
+
+\subsection{Creating a library}
+
+To create a library that can be applied to any GRB prompt emission, the parameter space will be much more broad. 
+
+\begin{align}
+	[t_w] \times &[\sigma] \times &&[\dot{E}] \times&&[\Gamma(t)] \times&&[\zeta] \times&&[\epsilon_{th}] \times&&[\epsilon_{e}] \times&&[\epsilon_{B}] \\ 
+	[5] \times &[3] \times &&[5] \times&&[3\times3\times4] \times&&[4] \times&&[4] \times&&[2] \times&&[4] = 345,600 \text{ simulations} \\
+\end{align}
+
+\begin{align}
+	345,600 \text{ simulations} \times 5 \text{ sec} \sim 20 \text{ days}
+\end{align}
+
+This is obviously not feasible.
+
+\section{Custom Classes/Libraries}
+
+Below is a list of the classes and libraries created for the GRB prompt emission simulation code.
+
+\begin{deluxetable*}{ll}
+\tablecaption{ Custom classes and libraries created for the GRB prompt emission simulation code. \label{tab: custom packages}}
+\tablewidth{0pt}
+\tablehead{
+\colhead{Library Name} & \colhead{Description}
+}
+\startdata
+cosmology.cpp & Defines useful cosmology constants and functions used throughout the code. \\
+utilfuncs.cpp & Defines useful utility functions used throughout the code. \\
+Spectrum.cpp & Defines all necessary variables and functions that pertain to a spectrum object. \\
+LightCurve.cpp & ``'' light curve object. \\
+TTEs.cpp & ``'' Time Tagged Event object. \\
+Response.cpp & ``'' Response object. \\
+FitStats.cpp & Calculates and stores fit statistics values during fitting. Includes read/write methods. \\
+ShellDist.cpp & Defines the functions used to calculate the Lorentz for each shell in the wind. \\
+ModelParams.cpp & Stores the model parameters currently being used. Includes read/write methods. \\
+SynthGRB.cpp & Contains the necessary scripts to simulate GRB prompt emission. Calculates the spectra and light curves. \\
+SynthGRBLibrary.cpp & Creates multiple SynthGRB's based on user defined parameter space to create a library. \\
+ObsGRB.cpp & Contains methods to store and manipulate observed GRB data. \\
+DataAnalysis.cpp & Contains all methods used for data manipulation and fitting. \\
+\enddata
+\end{deluxetable*}
+
+\section{Packages Used}
+
+In Table \ref{tab: standard packages} I list the standard C++ and Python packages used.
+
+\begin{deluxetable*}{ll}
+\tablecaption{A list of the standard C++ packages used in the simulation code and Python packages used for plotting. \label{tab: standard packages}}
+\tablewidth{0pt}
+\tablehead{
+\colhead{C++ Package Name} & \colhead{Python Package Name}
+}
+\startdata
+cmath & matplotlib.pyplot \\
+cstdio & numpy \\
+cstring & os \\
+iostream & scipy.integrate (to calculate luminosity distance) \\
+fstream & \\
+vector & \\
+sstream & \\
+\enddata
+\end{deluxetable*}
+
 
 \end{appendix}
 

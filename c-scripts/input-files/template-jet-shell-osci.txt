@@ -1,0 +1,5 @@
+median 
+amp 
+freq 
+decay 
+fluctuations
