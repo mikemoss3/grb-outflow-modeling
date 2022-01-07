@@ -1,1 +1,0 @@
-TimeObs (s) 	TimeJet (s) 	Rcoll (cm) 	DSGamma 	DSMass (g) 	UPGamma 	UPMass (g) 	Gammaf 	tau
