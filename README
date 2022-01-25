@@ -2,18 +2,27 @@ Author: Mike Moss
 Contact: mikejmoss3@gmail.com
 
 
-This purpose of this project is to investigate GRB prompt emission by simulating internal jet dynamics and calculating the emitted spectrum using theoretical descriptions of the acceleration mechanisms and emission processes occurring within the jet.
+This purpose of this project is to investigate GRB prompt emission by using theoretical descriptions of the acceleration mechanisms and emission processes occurring within the jet to simulate the internal and external jet dynamics in order to calculate the emitted spectra and light curves.
 
 Directory Descriptions:
-sim_results/ -- contains the most recent results produced by a prompt jet simulation
-writeups/ -- useful write-ups and derivations are stored here
+c-scripts/ -- contains all files for simulations (a description of how to use the code is below)
+instr-files/ -- useful instrument response matrix files are be stored here  
+writeups/ -- various write-ups and derivations are stored here
 
-Script Descriptions:
-main.py -- used to initiate a prompt jet class instance and simulate its evolution. 
-promptjet.py -- defines the prompt jet class and defines the physics of the evolution
-shelldists.py -- defines various Lorentz distributions for the shells in a prompt jet. 
-emission.py -- contains relevant functions for constructing the spectra and light curves produced by  prompt jet simulation
-makeplots.py -- script to create all plots specified by the user. The plots are created from the data files most recently stored in sim_results/
-utils.py -- contains various functions useful for several scripts
-cosmologicalconstants.py -- contains all established constants (e.g., speed of light) is cgs units. Acts as global variable space. 
 
+Code Description:
+main.cpp -- The desired simulation and outputs can be obtained by editing and running main.cpp
+SynthGRB.cpp -- Main script for simulating jet dynamics and spectra/light curve generation methods
+ObsGRB.cpp -- Main script to handle observed GRB data
+DataAnalysis.cpp -- Main for data analysis between simulated and observed GRBs 
+
+cosmology.cpp -- Defines useful cosmological constants
+utilfuncs.cpp -- Defines useful common utility functions used by many scripts throughout the code
+
+ShellDist.cpp -- Contains the definition of the class object and respective methods for ShellDistribtuon (used by SynthGRB.cpp)
+Spectrum.cpp -- Contains the definition of the class object and respective methods for Spectra
+LightCurve.cpp -- Contains the definition of the class object and respective methods for Light Curves
+Response.cpp -- Contains the definition of the class object and respective methods for Response Matrices
+TTEs.cpp -- Contains the definition of the class object and respective methods for Time Tagged Event data
+ModelParams.cpp -- Contains the definition of the class object and respective methods for ModelParams (used by DataAnalysis.cpp)
+FitStats.cpp -- Contains the definition of the class object and respective methods for FitStatics (use by DataAnalysis.cpp)
