@@ -1,12 +1,13 @@
-10 
-0.002 
+10
+0.02
 0.33
 0.33 
 1e-3 
-1e53 
+1e52
 0.1 
 1e6
 0.03 
 0.1 
-step 
+2.5
+step
 ./input-files/jet-shells-step.txt

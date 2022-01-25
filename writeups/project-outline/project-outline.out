@@ -10,8 +10,9 @@
 \BOOKMARK [1][-]{section.4}{Light Curve Generation}{}% 10
 \BOOKMARK [1][-]{appendix.A}{Shell Collision Time and Radius}{}% 11
 \BOOKMARK [2][-]{subsection.A.1}{Typical Values}{appendix.A}% 12
-\BOOKMARK [1][-]{appendix.B}{Simulation Time Considerations}{}% 13
-\BOOKMARK [2][-]{subsection.B.1}{Using observations to help constrain the parameter space}{appendix.B}% 14
-\BOOKMARK [2][-]{subsection.B.2}{Creating a library}{appendix.B}% 15
-\BOOKMARK [1][-]{appendix.C}{Custom Classes/Libraries}{}% 16
-\BOOKMARK [1][-]{appendix.D}{Packages Used}{}% 17
+\BOOKMARK [1][-]{appendix.B}{Derivations of Gamma_r and Gamma_int}{}% 13
+\BOOKMARK [1][-]{appendix.C}{Simulation Time Considerations}{}% 14
+\BOOKMARK [2][-]{subsection.C.1}{Using observations to help constrain the parameter space}{appendix.C}% 15
+\BOOKMARK [2][-]{subsection.C.2}{Creating a library}{appendix.C}% 16
+\BOOKMARK [1][-]{appendix.D}{Custom Classes/Libraries}{}% 17
+\BOOKMARK [1][-]{appendix.E}{Packages Used}{}% 18

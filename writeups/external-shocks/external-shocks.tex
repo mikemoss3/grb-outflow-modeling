@@ -1,0 +1,378 @@
+\documentclass[linenumbers,twocolumn]{aastex631}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{ulem}
+% \usepackage{hyperref}
+
+% Editing commands
+\newcommand{\mm}[1]{{\textcolor{purple}{\bf #1}}}
+
+% Make upright subscripts and superscripts in Mathmode.
+\def\subinrm#1{\sb{\mathrm{#1}}}
+{\catcode`\_=13 \global\let_=\subinrm}
+\mathcode`_="8000
+\def\supinrm#1{\sp{\mathrm{#1}}}
+{\catcode`\^=13 \global\let^=\supinrm}
+\mathcode`^="8000
+\def\upsubscripts{\catcode`\_=12 } \def\normalsubscripts{\catcode`\_=8 }
+\def\upsupscripts{\catcode`\^=12 } \def\normalsupscripts{\catcode`\^=7 }
+
+\newcommand{\vdag}{(v)^\dagger}
+\newcommand\aastex{AAS\TeX}
+\newcommand\latex{La\TeX}
+
+% Title
+\shorttitle{GRB Prompt Emission Simulation}
+\shortauthors{Michael Moss}
+
+\begin{document}
+
+\upsubscripts
+\upsupscripts
+\title{GRB Jet Simulations: External Shock Considerations}
+
+\author{Michael Moss}
+\affiliation{The Department of Physics, The George Washington University, 725 21st NW, Washington, DC 20052, USA}
+\affiliation{Astrophysics Science Division, NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
+\affiliation{Sorbonne Universit\'e, CNRS, UMR 7095, Institut d'Astrophysique de Paris, 98 bis Arago, 75014 Paris, France}
+
+
+\correspondingauthor{Michael Moss}
+\email{mikejmoss3@gmail.com}
+
+
+\keywords{Gamma-Ray Bursts (629)}
+
+\section{Circum-Burst Medium} \label{sec: circum-burst medium}
+
+The circum-burst medium is determined by the properties and behavior of the GRB progenitor. A naive assumption would be to let the circum-burst medium be similar to the interstellar medium, a constant density medium. Alternatively, a Wolf-Rayet star may be assumed as the progenitor to the GRB in question. Wolf-Rayet stars are believed to have strong winds emanating from the surface of the star, injecting particles into the circum-stellar medium. 
+
+For either assumption, the circum-burst medium will only begin at the progenitor's stellar surface, we can use the approximate radius of a Wolf-Rayet star, i.e., $ R_{ext,0} \sim R_{\odot} = 6.9\times10^{10}$ cm.  
+
+The general definition of the density profile can be given as, 
+
+\begin{align}
+	\rho(r) = \frac{\rho_0}{r^k}
+\end{align}
+
+Where $\rho_0$ is the normalization of the density and $k$ describes the profile of the density. The density profiles are both defined in more detail below.
+
+\subsection{Constant Density Medium}
+
+To specify a constant density medium, we set $k=0$. In this way, the density will remain equal to the value of $\rho_0$. If we let $\rho_0 = m_pn_0$ where $n_0\sim 1$ cm$^{-3}$ is the particle density. The circum-burst medium is given by,
+
+\begin{align}
+	\rho(r) &= m_pn_0\\
+	&= 1.67\times10^{-24} \text{ g cm}^{-3}
+\end{align}
+
+\subsection{Wind Density Medium}
+
+In the case of the wind-blown medium, we set $k=2$. If we assume a stellar wind mass-loss rate $\dot{M}_w$ and a terminal velocity $v_{\infty}$ we can write the normalization of the density as $\rho_{0} =  \dot{M}_w A_{*} / 4\pi v_{\infty}$ where $A_{*}$ is a factor to adjust the stellar mass-loss rate and usually takes a value near unity. If we assume the values $\dot{M}_w = 10^{-5} M_{\odot}$ yr$^{-1}$ and $v_{\infty} = 1000$ km s$^{-1}$, the circum-burst density can be expressed as
+
+\begin{align}
+	\rho(r) &= \frac{\dot{M}_{w}}{v_{\infty}}\frac{A_{*}}{4\pi r^2}\\
+	&= \frac{5\times10^{11} A_{*}}{r^2} \text{ g cm}^{-3} \\
+	\rho(R_{ext,0}) &\approx 1.5\times10^{-9}\text{ g cm}^{-3}
+\end{align}
+
+\section{External Shocks}
+
+To represent the forward and reverse shocks and the discontinuity between them, we implement a two-shell model. The two shells will share the lorentz factor $\Gamma_{ext}$ and have a total mass $M_{ext} = M_{FS} + M_{RS}$, where $M_{FS}$ and $M_{RS}$ are the masses of the forward shock shell and reverse shock shell, respectively. Two processes will affect this discontinuity: (i) it will sweep up mass from the external medium (i.e., the forward shock) and (ii) an internal shell ejected by the compact object will collide with the discontinuity from behind (i.e., the reverse shock).
+
+\subsection{The Forward Shock (FS)}
+
+Forward shocks will occur when a mass $m_{ex}$ is swept up by the discontinuity as it collides with the circum-burst medium. We can define $m_{ex}$ as a fraction $q$ of a the un-boosted mass $M_{ext}$, 
+
+\begin{align}
+	m_{ex} = q\frac{M_{ext}}{\Gamma_{ext}}
+\end{align}
+
+where $q<<1$ and is on the order of $10^{-2}$. We can write the explicit integral form,
+
+\begin{align} \label{eq: mex}
+	m_{ex} = q\frac{M_{ext}}{\Gamma_{ext}} &= \int_{R_1}^{R_2} 4\pi r^2 \rho(r) dr \\
+	&= \int_{R_1}^{R_2} 4\pi r^2 \frac{\rho_0}{r^k} dr
+\end{align}
+
+where $\rho(r)$ is the density of the external medium (see discussion in section \ref{sec: circum-burst medium}). 
+
+\subsubsection{FS Dynamics}
+
+We can calculate the radius at which a mass $m_{swept}$ will be swept up by a shell over a distance $R = (R_2 - R_1)$. The explicit integral can be evaluated by specifying the density profile of the circum-burst medium. If we assume a constant density (i.e., $k=0$), 
+
+\begin{align}
+	m_{swept} &= \int_{R_1}^{R_2} 4\pi r^2 \frac{\rho_0}{r^0} dr \\ 
+	&= 4\pi \rho_0 \int_{R_1}^{R_2} r^2  dr \\
+	&= \frac{4}{3}\pi \rho_0 (R_2^3 - R_1^3)\\
+	R_2^3 &=  \frac{3}{4\pi} \frac{m_{swept}}{\rho_0} + R_1^3\\
+	(R_2 - R_1) &= \left(\frac{3}{4\pi} \frac{m_{swept}}{\rho_0} + R_1^3\right)^{1/3} - R_1
+\end{align}
+
+Alternatively, if we assume a wind medium (i.e., $k=2$),
+
+\begin{align}
+	m_{swept} &= \int_{R_1}^{R_2} 4\pi r^2 \frac{\rho_0}{r^2} dr \\
+	&= 4\pi \rho_0 \int_{R_1}^{R_2} dr \\
+	&= 4\pi \rho_0 (R_2 - R_1) \\
+	(R_2 - R_1) &= \frac{m_{swept}}{4 \pi \rho_0}
+\end{align}
+
+Using the velocity of the external shock we can calculate how long it will take to sweep up a mass $m_{ex}$,
+
+\begin{align}
+	t_{sweep} &= \frac{ (R_2 - R_1) }{\beta c}\\
+	t_{sweep,const} &= \frac{1}{\beta c} \left(\left(\frac{3}{4\pi} \frac{m_{swept}}{\rho_0} + R_1^3\right)^{1/3} - R_1\right)\\
+	t_{sweep,wind} &= \frac{1}{\beta c} \left(\frac{m_{swept}}{4 \pi \rho_0}\right)
+\end{align}
+
+By conserving energy momentum, we obtain the resulting Lorentz factor obtain from a forward shock collision,
+
+\begin{align}\label{eq: gamma_ext}
+\Gamma'_{ext} = \left[\frac{(M_{RS} + M_{FS}\Gamma_{FS,int})\Gamma_{ext}^2 + m_{ex}\Gamma_{ext}}{(M_{RS} + M_{FS}\Gamma_{FS,int}) + 2m_{ex}\Gamma_{ext}}\right]^{1/2}
+\end{align}
+
+and also the resulting internal Lorentz factor of the forward shock,
+
+\begin{align}
+\Gamma'_{FS,int} = \frac{(M_{RS} + M_{FS}\Gamma_{FS,int})\Gamma_{ext} + m_{ex} - M_{RS} \Gamma'_{ext}}{(M_{FS} + m_{ex})\Gamma'_{ext}}
+\end{align}
+
+The value of $\Gamma'_{FS,int} \sim \Gamma_{ext}$. It should be noted that we assume here that the material in the burst environment is at rest.
+
+\subsubsection{FS Emission}
+
+The average energy dissipated per proton in a shock between two layers can be prescribed as, 
+
+\begin{align}
+e_{int} &= (\Gamma_{FS,int} - 1)m_pc^2\\
+e_* &= \frac{e_{int}}{m_p}
+\end{align}
+
+Which can be used to calculate the typical Lorentz factor of an electron in the shocked region (see $\Gamma_e$ Prescription),
+
+\begin{align} \label{eq: gamma_e}
+	\Gamma_e = \Gamma_m = \frac{p-2}{p-1} \frac{\epsilon_e}{\zeta_{FS}} \frac{m_p}{m_e} \frac{e_*}{c^2}
+\end{align}
+
+
+where $p$ is the power law index of the electron distribution, $\epsilon_e$ is the fraction of energy in electrons, and $\zeta_{FS}$ is the fraction of the electron population which is accelerated (taken to be $\lesssim 1$ in the forward shock). 
+
+Assuming the equipartition, the magnetic field in the forward shock region is given by,
+
+\begin{align}
+B_{eq} = (8\pi \epsilon_b \rho e_*)^{1/2}
+\end{align}
+
+Using $\Gamma_{ext}$, $B_{eq}$, and $\Gamma_e$ we can calculate the typical energy of an electron in the shock (in the observer frame),
+
+\begin{align}
+	E_{syn} &= \Gamma_{ext} B_{eq} \Gamma_{e}^2 \frac{hq_e}{2\pi m_e c}\\
+	E_{syn} &\approx 50 \frac{\Gamma_{ext}}{300} \frac{B_{eq}}{1000\text{ G}} \left(\frac{\Gamma_e}{100}\right)^{2}\text{ eV}
+\end{align}
+
+We can calculate the fraction of energy going in to Synchrotron, $\alpha_{synch}$ or Inverse Compton electrons, $\alpha_{IC}$,
+
+\begin{align}
+	\alpha_{IC} &= \frac{\tau_* \Gamma_e^2 / w}{1+ \tau_* \Gamma_e^2 / w}\\
+	\alpha_{synch} &= 1-\alpha_{IC}
+\end{align} 
+
+where $w$ indicates whether the electrons are in the Thompson regime ($w<1$) or the Klein-Nishina limit ($w>>1$),
+
+\begin{align}
+	w = \frac{\Gamma_e}{\Gamma_{ext}} \frac{E_{syn}}{m_e c^2}
+\end{align}
+
+When $w<1$ we set $w$ to unity in the relation for $\alpha_{IC}$. $\tau_*\Gamma_e^2$ is the Compton parameter, where
+
+\begin{align} \label{eq: tau}
+	\tau_* = \frac{\kappa_T M_*}{4 \pi R_*^2}
+\end{align}
+
+is the optical depth of a shell with mass $M_*$ and at a radius $R_*$. 
+
+\mm{Why can I not simply evaluate $\tau_*$ from above? Why is $M_*$ not the same as the mass of a shell colliding?}
+
+We can estimate $M_*$ as
+
+\begin{align} \label{eq: mstar}
+	M_* = \frac{t_{syn}}{1+\tau_*\Gamma_e^2}\dot{M}_{shock}
+\end{align}
+
+where
+
+\begin{align} \label{eq: tsyn}
+	t_{syn} = 6\left(\frac{\Gamma_e}{100}\right)^{-1} \left(\frac{B_{eq}}{1000\text{ G}}\right)^{-2} \text{ s}
+\end{align}
+
+is the time for an synchrotron electron with Lorentz factor of $\Gamma_e$ in a magnetic field of strength $B_{eq}$ to efficiently radiate (in the comoving shock frame). $\dot{M}_{shock}$ is the mass flow rate across the shock (in the comoving shock frame) and can be estimated as 
+
+\begin{align} \label{eq: mshock}
+	\dot{M}_{shock} \approx \frac{\bar{M}}{\bar{\Gamma}}
+\end{align}
+
+From Eq. \ref{eq: tau}, \ref{eq: mstar}, \ref{eq: tsyn}, and \ref{eq: mshock} we obtain an explicit expression for the Compton parameter,
+
+\begin{align}
+	\tau_* \Gamma_e (1+\tau_* \Gamma_e) = \frac{300 \kappa_T}{2 \pi} \frac{\Gamma_e}{R_*^2} \left(\frac{B_{eq}}{1000\text{ G}}\right)^{-2} \frac{\dot{E}_{kin}}{\bar{\Gamma}^2 c^2}
+\end{align}
+
+The dissipated energy in a forward shock collision is calculated as
+
+\begin{align}
+	E_{diss} = & \epsilon_e \alpha_{synch}c^2\times \\ &( (M_{RS} + M_{FS}\Gamma_{FS,int})\Gamma_{ext}\\ &+ m_{ex}\\ &- (M_{RS} + m_{ex} + M_{FS}\Gamma_{FS,int})\Gamma'_{ext} )\\
+	L_{diss} & = \frac{E_{diss}}{t_{var}} = \frac{E_{diss}}{(R_{FS}/2c^2\Gamma^{'2}_{ext})}
+\end{align}
+
+\mm{Should I use $\Gamma'_{int}$ and $\Gamma_{int}$ for $E_{diss}$? }
+
+where $R_{FS}$ is the radius at which the forward shock occurs. 
+
+\subsubsection{FS Spectrum}
+
+From the above physical parameters we can calculate the emission of the forward shock. We assume the synchrotron emission is the dominant emission process in the forward shock. The synchrotron spectrum can be approximated by a broken power law of the form,
+
+\[ N(E) =
+	\begin{cases}
+		\frac{1}{E_{syn}}*\left(\frac{E}{100 \text{ keV}}\right)^\alpha & E\leq E_{syn} \\
+		\frac{1}{E_{syn}}*\left(\frac{E}{100 \text{ keV}}\right)^{\alpha-\beta}\left(\frac{E}{100\text{ keV}}\right)^\beta & E > E_{syn} \\
+	\end{cases}
+\]
+
+In order to replicate the shape of the synchrotron count spectrum, the value of $\beta$ for is given by $\beta = -\frac{p}{2} - 1$, where $p$ is the power law index of the electron population. On the other hand, the value of $\alpha$ depend on whether the synchrotron emission is in the fast-cooling or slow-cooling regime (i.e., efficient or inefficient radiation). In the fast-cooling regime $\alpha=-1.5$ and in the slow cooling regime $\alpha=-(p+1)/2$.
+
+We must calculate the frequency which corresponds to the minimum Lorentz factor of the electron population, $\nu_m$, and the cyclotron frequency, $\nu_c$, in order to determine if the synchrotron emission is in the fast-cooling ($\nu_c < \nu_m$) or slow-cooling ($\nu_m < \nu_c$) regime. The minimum Lorentz factor of the electron population is also the typical Lorentz factor, $\Gamma_e$, which we calculated in Eq. \ref{eq: gamma_e}. From this we find $\nu_e$ in the source frame 
+
+\begin{align}
+	\nu_e = B_{eq} \Gamma_{e}^2 \frac{q_e}{2\pi m_e c}\\ 
+\end{align}
+
+The cyclotron frequency is given by
+
+\begin{align}
+	\nu_c = \frac{q_e B_{eq}}{2 \pi m_e}
+\end{align}
+
+The FS is expected to be in the slow-cooling regime for the majority of its emission. Only if the density of the external medium is extremely high, perhaps close to the star in a wind-density medium, is the FS expected to be in the fast-cooling regime.
+
+\subsection{The Reverse Shock (RS)}
+
+The reverse shock shares many of the same considerations as the forward shock described above, yet a difference arises in their micro-physical parameters at the shock front discontinuity. The reverse shock is due to internal shells catching up and ramming the shock front from behind, because of this it is assumed the reverse shock region shares the same micro-physical parameters as the jet.
+
+\subsubsection{RS Dynamics}
+
+We calculate the time until a collision between the leading shell of the internal ejecta and the shock front as,
+
+\begin{align}
+	t_{RS,coll} = \frac{(R_{RS} - R_{ej})}{c(\beta_{ej} - \beta_{RS})}
+\end{align}
+
+where $R_{RS}$ and $R_{ej}$ are the radii of the reverse shock and the ejecta shell, respectively. We can use the relation $\beta \approx 1 - \frac{1}{2\Gamma^2}$ to calculate $\beta_{ej}$ and $\beta_{RS}$ using Lorentz factor of the leading shell and reverse shock, respectively.
+
+When the two shells collide we can calculate resulting Lorentz factor of the two shells, 
+
+\begin{align}
+	\Gamma'_{ext} = \sqrt{\Gamma_{ext}\Gamma_{ej}}\left(\frac{(M_{RS} + M_{FS}\Gamma_{FS,int})\Gamma_{ext} + m_{ej}\Gamma_{ej}}{(M_{RS} + M_{FS}\Gamma_{FS,int})\Gamma_{ej} + m_{ej}\Gamma_{ext}}\right)^{1/2}
+\end{align}
+
+and also the resulting internal Lorentz factor,
+
+\begin{align}
+	\Gamma'_{RS,int} = \frac{1}{2} \left[\left(\frac{\Gamma_{ext}}{\Gamma_{ej}}\right)^{1/2} + \left(\frac{\Gamma_{ej}}{\Gamma_{ext}}\right)^{1/2} \right]
+\end{align}
+
+\subsubsection{RS Emission}
+
+Using the resulting Lorentz factors, we can calculate the energy dissipated per proton as a result of the collision, 
+
+\begin{align}
+	e_{int} &= (\Gamma'_{RS,int} - 1) m_p c^2 \\
+	e_* &= \frac{e_{int}}{m_p}
+\end{align}
+
+Similar to Eq. \ref{eq: gamma_e}, we can calculate $\Gamma_e$ in the Reverse shock,
+
+\begin{align} \label{eq: gamma_e}
+	\Gamma_e = \Gamma_m = \frac{p-2}{p-1} \frac{\epsilon_e}{\zeta_{RS}} \frac{m_p}{m_e} \frac{e_*}{c^2}
+\end{align}
+
+In this case $\zeta$ is no longer taken to be close to unity and is instead similar to the value found within the jet medium, i.e., $\zeta \approx 10^{-2}$, this is needed to produce radiation in the MeV regime. A small value of $\zeta$ indicates that only a small number of electrons are accelerated, this in turn allows the electrons to be accelerated to higher energies, because the energy is being distributed over a smaller number of electrons. When the electrons cool, they produce radiation in the MeV regime.
+
+The prescriptions for $B_{eq}$, $E_{syn}$, and $\alpha_{syn}$ are the same for both the FS and RS. The only difference between the two is the comoving density. The density of in the reverse shock is the density of the internal jet medium which can be expressed as
+
+\begin{align}
+	\rho(R)_{RS} = \frac{\dot{E}_{kin}}{4\pi R^2 \Gamma_{ext}^2 c^3}
+\end{align}
+
+The total dissipated energy of a reverse shock collision can be calculated as 
+
+\begin{align}
+	E_{diss} &= \epsilon_e \alpha_{synch} c^2 \times \\
+	&((M_{RS} + M_{FS}\Gamma_{FS,int})*\Gamma_{ext}\\ 
+	&+ m_{ej}\Gamma_{ej}\\ 
+	&- (M_{RS} + m_{ej} + M_{FS}\Gamma_{FS,int})\Gamma'_{ext})\\
+	L_{diss} & = \frac{E_{diss}}{t_{var}} = \frac{E_{diss}}{(R_{RS}/2c^2\Gamma_{ext}^{'2})}
+\end{align}
+
+\subsubsection{RS Spectrum}
+
+Similar to the FS, the RS is assumed to be the result of synchrotron emission. The RS is expected to be solely in the fast-cooling regime.
+
+
+% \begin{figure}[!ht]
+%     \centering
+%     \includegraphics[width=0.65\textwidth]{figures/example.png}
+%     \caption{}
+%     \label{fig: example fig}
+% \end{figure}
+
+% \begin{deluxetable*}{ll}
+% \tablecaption{ \label{tab: example table}}
+% \tablewidth{0pt}
+% \tablehead{
+% \colhead{Col1} & \colhead{Col2}
+% }
+% \decimalcolnumbers
+% \startdata
+% entry1 & entry2 \\
+% \enddata
+% \end{deluxetable*}
+
+\newpage
+\bibliographystyle{aasjournal}
+\bibliography{bibliograpy-list}
+
+\begin{appendix}
+
+\section{Lorentz Factor After First Collision}
+
+Here we calculate the expected Lorentz factor of the FS after the first external shock collision event. We assume the outermost shell has a Lorentz factor $\Gamma=100$ and an internal Lorentz factor of $\Gamma_{int}=1$ before the collision.
+
+In our code, we reduce numerical instabilities by treating the mass of each shell as a fraction of the average shell mass where
+
+\begin{align}
+	M_i &= \frac{\dot{E}_{iso}*\Delta t_{ej,i}}{\Gamma_i*c^2}\\
+	&\Rightarrow \frac{M_s}{M_{ave}} = \frac{\Gamma_{ave}}{\Gamma_s}
+\end{align}
+
+By using this prescription, we can write the masses of the FS and RS shells as $M_{FS} = M_{RS} = 1$. If we use Eq. \ref{eq: mex} with $q=0.01$ we find the mass of the external medium swept up to be $m_{ex} = 10^{-4}$. Using Eq. \ref{eq: gamma_ext}, we can calculate the resulting Lorentz factor after the first external shock collision,
+
+\begin{align}
+	\Gamma'_{ext} &= \left(\frac{(M_{RS} + M_{FS}\Gamma_{int})\Gamma^2 + m_{ex}\Gamma_{ext})}{(M_{RS}+M_{FS}\Gamma_{int}) + 2m_{ex}\Gamma_{ext}}\right)\\
+	&= \left(\frac{(1 + 1)100^2 + 10^{-4})}{(1+1) + 2\times10^{-4}}\right)\\
+	&\approx \left(\frac{2\times100^2}{2}\right)\\
+	&\approx (10^4)^{1/2} \\
+	\Gamma'_{ext} &\approx 10^2
+\end{align}
+
+\end{appendix}
+
+
+
+\end{document}

@@ -43,7 +43,7 @@ DataAnalysis.o: DataAnalysis.cpp DataAnalysis.hpp FitStats.hpp SynthGRBLibrary.h
 
 main.o: main.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp SynthGRBLibrary.hpp SynthGRBLibrary.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
 
-testbench.o: main.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp SynthGRBLibrary.hpp SynthGRBLibrary.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
+testbench.o: testbench.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp SynthGRBLibrary.hpp SynthGRBLibrary.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
 # testbench.o: testbench.cpp ShellDist.hpp cosmology.hpp
 
 # Define cleaning methods

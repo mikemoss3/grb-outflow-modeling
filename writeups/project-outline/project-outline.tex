@@ -557,6 +557,74 @@ Let us assume shell 1 and 2 have Lorentz factors $\Gamma_1=100$ and $\Gamma_2=40
 \end{align}
 
 
+\section[Derivations of Gamma_r and Gamma_int]{Derivations of $\Gamma_r$ and $\Gamma_{int}$}
+
+In a collision between two relativistic shells with Lorentz factors $\Gamma_1 and \Gamma_2$, and masses M$_1$ and M$_2$, we can calculate the resulting Lorentz factor of the bulk motion of the merged shells, $\Gamma_r$ and the internal motion of the particles, $\Gamma_{int}$. We can find these quantities by adding the four-momentum of each shell. Since the shells are moving radially in the jet, we only need to consider one axis of propagation in the four vector. If we consider the frame of the resulting merged shell we can write the system as
+
+\begin{align}
+	\begin{pmatrix}
+	\beta_1\Gamma_1 M_1 c^2\\
+	\Gamma_1 M_1 c^2
+	\end{pmatrix}
+	+
+	\begin{pmatrix}
+	\beta_2\Gamma_2 M_2 c^2 \\
+	\Gamma_2 M_2 c^2
+	\end{pmatrix}
+	=
+	\begin{pmatrix}
+	\Gamma_r & \beta_r\Gamma_r\\
+	\beta_r\Gamma_r & \Gamma_r
+	\end{pmatrix}
+	\begin{pmatrix}
+	0 \\
+	\Gamma_{int}(M_1 + M_2) c^2
+	\end{pmatrix}
+\end{align}
+
+This system of equations leads to the relations
+
+\begin{align}
+	\Gamma_r \Gamma_i &= \frac{\Gamma_1M_1 + \Gamma_2M_2}{M_1+M_2} \label{eq: gamrgami 1}\\
+	\Gamma_r\beta_r\Gamma_{int}(M_1+M_2) &= \Gamma_1\beta_1M_1+\Gamma_2\beta_2M_2 \label{eq: gamrgami 2}
+\end{align}
+
+Using Eq. \ref{eq: gamrgami 2} and substituting in Eq. \ref{eq: gamrgami 1} we obtian
+
+\begin{align}
+	\Gamma_r\beta_r\Gamma_{int}(M_1+M_2) &= \Gamma_1\beta_1M_1+\Gamma_2\beta_2M_2 \\
+	\beta_r(M_1+M_2) \frac{\Gamma_1M_1 + \Gamma_2M_2}{M_1+M_2} &= \Gamma_1\beta_1M_1+\Gamma_2\beta_2M_2 \\
+	\beta_r (\Gamma_1M_1 + \Gamma_2M_2) &= \Gamma_1\beta_1M_1+\Gamma_2\beta_2M_2 \\
+	\beta_r &= \frac{\Gamma_1\beta_1M_1+\Gamma_2\beta_2M_2}{\Gamma_1M_1 + \Gamma_2M_2}
+\end{align}
+
+By making the assumption that $\Gamma_1, \Gamma_2 >> 1$, we can approximate $\beta \approx 1-\frac{1}{2\Gamma^2}$
+
+\begin{align}
+	\beta_r \approx 1-\frac{1}{2\Gamma_r^2} &= \frac{\Gamma_1\beta_1M_1+\Gamma_2\beta_2M_2}{\Gamma_1M_1 + \Gamma_2M_2} \\
+	\frac{1}{2\Gamma_r^2} &= 1 - \frac{\Gamma_1\beta_1M_1+\Gamma_2\beta_2M_2}{\Gamma_1M_1 + \Gamma_2M_2} \\ 
+	&= \frac{\Gamma_1M_1 + \Gamma_2M_2 - \Gamma_1\beta_1M_1 - \Gamma_2\beta_2M_2 }{\Gamma_1M_1 + \Gamma_2M_2} \\
+	&= \frac{\Gamma_1M_1 + \Gamma_2M_2 - \Gamma_1(1-\frac{1}{2\Gamma_1^2})M_1 - \Gamma_2(1-\frac{1}{2\Gamma_2^2})M_2 }{\Gamma_1M_1 + \Gamma_2M_2} \\
+	\frac{1}{2\Gamma_r^2} &= \frac{\frac{M_1}{2\Gamma_1} - \frac{M_2}{2\Gamma_2}}{\Gamma_1M_1 + \Gamma_2M_2} \\
+	2\Gamma_r^2 &= \frac{\Gamma_1M_1 + \Gamma_2M_2}{\frac{M_1}{2\Gamma_1} - \frac{M_2}{2\Gamma_2}} \\
+	&= \frac{\Gamma_1M_1 + \Gamma_2M_2}{\frac{1}{2\Gamma_1\Gamma_2}(\Gamma_2M_1 - \Gamma_1M_2)} \\
+	\Gamma_r &= \sqrt{\Gamma_1\Gamma_2\frac{\Gamma_1M_1 + \Gamma_2M_2}{\Gamma_2M_1 - \Gamma_1M_2}} \\
+\end{align}
+
+We can assume that shock events occur when two shells of approximately equal mass collide, $M_1 \approx M_2 = M$. This simplifies the above expression to
+
+\begin{align}
+	\Gamma_r \approx \sqrt{\Gamma_1\Gamma_2}
+\end{align}
+
+To find $\Gamma_{int}$ we return to Eq. \ref{eq: gamrgami 1} and continue to use the assumption $M_1 \approx M_2 = M$, 
+
+\begin{align}
+	\Gamma_{int} &= \frac{\Gamma_1M_1 + \Gamma_2M_2}{\Gamma_r(M_1+M_2)}\\
+	\Gamma_{int} &= \frac{M(\Gamma_1 + \Gamma_2)}{2M\Gamma_r}\\
+	\Gamma_{int} &= \frac{1}{2}\left[ \left(\frac{\Gamma_1}{\Gamma_2}\right)^{1/2} + \left(\frac{\Gamma_2}{\Gamma_1}\right)^{1/2}\right]\\
+\end{align}
+
 \section{Simulation Time Considerations}
 
 In this section we make rough estimates of the times required to run all simulations required for a particular parameter space. Each single simulation requires $\sim$ 5 seconds to run.

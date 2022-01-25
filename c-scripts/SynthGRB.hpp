@@ -37,7 +37,7 @@ class SynthGRB
 public:
 	// SynthGRB constructor
 	SynthGRB();
-	SynthGRB(float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, std::string LorentzDist, std::string ShellDistParamsFile);
+	SynthGRB(float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile);
 	SynthGRB(ModelParams * input_model_params);
 
 	// GRB member variables 
@@ -60,6 +60,7 @@ public:
 	// float r_open; // cm, Opening radius of the jet
 	// float eps_th; // Fraction of energy in the outflow in the form of thermal energy 
 	// float sigma; // Magnetization of the outflow 
+	// float p; // Power law index of the electron population 
 	// std::string LorentzDist; // Distribution of the jet shells
 	// std::string ShellDistParamsFile; // File that contains the parameters to create the distribution of jet shells
 	ModelParams * p_model_params; // Stores all model parameters	
@@ -74,6 +75,7 @@ public:
 	
 	float gamma_bar; // Average Lorentz factor of all jet shells 
 	float m_bar; // Average mass of each shell
+	double m_tot; // Average mass of each shell
 
 	// Initialize jet based on current jet parameters and shell distribution
 	void InitializeJet();
@@ -107,13 +109,20 @@ public:
 	// Thermal spectrum function form based on a modified Planck function. 
 	double ThermalSpec(float energy, float temp, float alpha=0.4);
 
-	// Calls function to calculate the synchrotron spectrum rate for each energy bin
-	void MakeSynchSpec(Spectrum * synch_spectrum, float tmin, float tmax);
+	// Calls function to calculate the internal shock spectrum rate for each energy bin
+	void MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax, float alpha = -0.7, float beta = -3.5);
+
+	// Calls function to calculate the external shock spectrum rate for each energy bin
+	void MakeExtShockSpec(Spectrum * extsh_spectrum, float tmin, float tmax);
+	// Calls function to calculate the forward shock spectrum rate for each energy bin
+	void MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax, float alpha = -0.7, float beta = -3.5);
+	// Calls function to calculate the reverse shock spectrum rate for each energy bin
+	void MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax, float alpha = -1.5, float beta = -3.5);
+
 	// Calculate the synchrotron spectrum from the synchrotron energy and flux of the emission
-	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt);
+	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt, float alpha = -0.7, float beta = -3.5);
 	// Synchrotron spectrum function form,
-	double SynchSpec(float energy, double Esyn, float alpha = -1., float beta = -2.5);
-	
+	double SynchSpec(float energy, double Esyn, float alpha = -0.7, float beta = -3.5);
 	// Make the source light curve using the emission data
 	void make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt);
 
@@ -151,30 +160,40 @@ private:
 	std::vector<float> r_phot; // cm, radii of photosphere 
 
 	// Initialize arrays to store Synchrotron emission event data 
-	std::vector<double> te_synch; // sec, Time of emission (in the rest frame of the jet), is also equal to the time a shell crosses the photosphere
-	std::vector<double> ta_synch; // sec, Time when the emission arrives at the observer (in the observer frame)
-	std::vector<double> delt_synch; // sec, Width of the emission (in observer frame)
-	std::vector<float> asyn; // Fraction of the energy in electrons which goes into synchrotron (as opposed to Inverse Compton)
-	std::vector<double> beq; // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
-	std::vector<float> gamma_e; // Lorentz factor of the electron population
-	std::vector<double> esyn; // erg, Synchrotron energy emitted by accelerated electron
-	std::vector<float> gamma_r; // Approximation of the combined Lorentz factor of the colliding shells
-	std::vector<double> e_diss; // erg, Dissipated energy during the collision 
+	std::vector<double> te_is; // sec, Time of emission (in the rest frame of the jet), is also equal to the time a shell crosses the photosphere
+	std::vector<double> ta_is; // sec, Time when the emission arrives at the observer (in the observer frame)
+	std::vector<double> delt_is; // sec, Width of the emission (in observer frame)
+	std::vector<double> beq_is; // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
+	std::vector<float> gamma_e_is; // Lorentz factor of the electron population
+	std::vector<double> esyn_is; // erg, Synchrotron energy emitted by accelerated electron
+	std::vector<float> gamma_r_is; // Approximation of the combined Lorentz factor of the colliding shells
+	std::vector<double> e_diss_is; // erg, Dissipated energy during the collision 
+	std::vector<float> asyn_is; // Fraction of the energy in electrons which goes into synchrotron (as opposed to Inverse Compton)
 	std::vector<float> tau; // Optical depth at the location of the collision
 	std::vector<float> relvel; // Relative velocity between the two shells
 
 	// Initialize arrays to store external shock emission data
-	std::vector<float> FS_te; // sec, Time of emission (in the rest frame of the jet)
-	std::vector<float> FS_ta; // sec, Time when the emission arrives at the observer (in the observer rest frame)
-	std::vector<float> FS_delt; // sec, duration of the emission (in the observer frame)
-	std::vector<float> FS_gamma_r; // Combined Lorentz factor after collision
-	std::vector<double> FS_e_diss; // Energy dissipated in a FS
+	std::vector<float> te_fs; // sec, Time of emission (in the rest frame of the jet)
+	std::vector<float> ta_fs; // sec, Time when the emission arrives at the observer (in the observer rest frame)
+	std::vector<float> delt_fs; // sec, duration of the emission (in the observer frame)
+	std::vector<double> beq_fs; // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
+	std::vector<float> gamma_e_fs; // Lorentz factor of the electron population
+	std::vector<double> esyn_fs; // erg, Synchrotron energy emitted by the accelerated electrons in the FS
+	std::vector<float> gamma_r_fs; // Combined Lorentz factor after collision
+	std::vector<double> e_diss_fs; // Energy dissipated in a FS	
+	// std::vector<double> eps_fs; // Internal energy dissipated in a collision 
+	// std::vector<double> rho_fs; // g cm^-3, Density of the collision region
 	
-	std::vector<float> RS_te; // sec, Time of emission (in the rest frame of the jet)
-	std::vector<float> RS_ta; // sec, Time when the emission arrives at the observer (in the observer rest frame)
-	std::vector<float> RS_delt; // sec, duration of the emission (in the observer frame)
-	std::vector<float> RS_gamma_r; // Combined Lorentz factor after collision
-	std::vector<double> RS_e_diss; // Energy dissipated in a RS
+	std::vector<float> te_rs; // sec, Time of emission (in the rest frame of the jet)
+	std::vector<float> ta_rs; // sec, Time when the emission arrives at the observer (in the observer rest frame)
+	std::vector<float> delt_rs; // sec, duration of the emission (in the observer frame)
+	std::vector<double> beq_rs; // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
+	std::vector<float> gamma_e_rs; // Lorentz factor of the electron population
+	std::vector<double> esyn_rs; // erg, Synchrotron energy emitted by the accelerated electrons in the RS	
+	std::vector<float> gamma_r_rs; // Combined Lorentz factor after collision
+	std::vector<double> e_diss_rs; // Energy dissipated in a RS
+	// std::vector<double> eps_rs; // Internal energy dissipated in a collision 
+	// std::vector<double> rho_rs; // g cm^-3, Density of the collision region
 
 
 };

@@ -38,9 +38,9 @@ double beta(float gamma)
     /*Method to calculate the beta factor from Lorentz factor (gamma), where beta == v/c */
 
     // Approximation 
-    return 1.-1./(2.*pow(gamma,2.));
+    // return 1.-1./(2.*pow(gamma,2.));
     // Exact
-    // return sqrt(1. - 1./pow(gamma,2));
+    return sqrt(1. - 1./pow(gamma,2.));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -206,14 +206,14 @@ double BPL(float energy, double * param_list)
     float beta = param_list[2];
 
     // If the energy is below the peak energy
-    if (energy <= e0)
+    if (energy < e0)
     {
-        return pow(energy/100.,alpha);
+        return pow(energy/100., alpha);
     }
     // If the energy is above the peak energy
     else
     {
-        return pow(energy/100.,beta);
+        return pow(e0/100., alpha-beta)*pow(energy/100., beta);
     }
 }
 
@@ -246,4 +246,18 @@ double Band(float energy, double * param_list)
     {
         return pow((alpha-beta)*e0/100.,alpha-beta) * exp(beta-alpha) * pow(energy/100.,beta);
     }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Broadened Blackbody
+double BB(float energy, double * param_list)
+{
+    // param_list[0] = temp, temperature of the black body
+    // param_list[1] = alpha, low energy power law slope of the black body
+
+    float temp = param_list[0];
+    float alpha = param_list[1];
+
+    return pow(energy/(kb_kev*temp),1.+alpha)/(exp(energy/(kb_kev*temp)) - 1.);
 }

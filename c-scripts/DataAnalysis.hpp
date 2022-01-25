@@ -68,7 +68,7 @@ public:
 
 	// Set the initial parameter set
 	void set_init_params(ModelParams * p_input_init_params);
-	void set_init_params(float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, std::string LorentzDist, std::string ShellDistParamsFile);
+	void set_init_params(float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile);
 	// Set parameter space 
 	void set_param_space(
 		std::vector<float> eps_e_vec, 
@@ -78,7 +78,8 @@ public:
 		std::vector<float> theta_vec, 
 		std::vector<float> r_open_vec, 
 		std::vector<float> eps_th_vec, 
-		std::vector<float> sigma_vec);
+		std::vector<float> sigma_vec,
+		std::vector<float> p_vec);
 	void set_param_space(float * param_space);
 
 

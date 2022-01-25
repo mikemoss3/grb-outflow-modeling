@@ -35,17 +35,69 @@ int main(int argc, char const *argv[])
 {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/* Testing SynthGRB default Light Curve and Spectrum making */
-	/*
-	SynthGRB test_grb = SynthGRB();
+	/* Quick make a spectrum */
 
-	float energ_min = 0.1;
-	float energ_max = 1e5;
-	float num_energ_bins = 90;
+	if(argv[1]!=NULL)
+	{
+		if( strcmp(argv[1], "quickplot")==0 )
+		{
+
+			float tmin = stof(argv[2]);
+			float tmax = stof(argv[3]);
+
+			float energ_min = 0.01;
+			float energ_max = 1e6;
+			float num_energ_bins = 10.*log10(energ_max/energ_min);
+
+			SynthGRB synth_grb = SynthGRB();
+			synth_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
+			synth_grb.SimulateJetDynamics();
+			synth_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax);
+			synth_grb.WriteSpectrumToTXT("data-file-dir/quickplot_spectrum.txt");
+
+			/*
+			// Thermal Component
+			Spectrum * p_source_spectrum_therm = new Spectrum(energ_min, energ_max, num_energ_bins);
+			synth_grb.MakeThermalSpec(p_source_spectrum_therm, tlo, thi);
+			(*p_source_spectrum_therm).WriteToTXT("data-file-dir/quickplot_spectrum_TH.txt");
+
+			// Internal Shock Component
+			Spectrum * p_source_spectrum_synch = new Spectrum(energ_min, energ_max, num_energ_bins);
+			synth_grb.MakeSynchSpec(p_source_spectrum_synch, tlo, thi);
+			(*p_source_spectrum_synch).WriteToTXT("data-file-dir/quickplot_spectrum_IS.txt");
+
+			// Forward Shock Component
+			Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
+			synth_grb.MakeFSSpec(p_source_spectrum_fs, tlo, thi);
+			(*p_source_spectrum_fs).WriteToTXT("data-file-dir/quickplot_spectrum_FS.txt");
+
+			// Reverse Shock Component
+			Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
+			synth_grb.MakeRSSpec(p_source_spectrum_rs, tlo, thi);
+			(*p_source_spectrum_rs).WriteToTXT("data-file-dir/quickplot_spectrum_RS.txt");
+			*/
+
+			return 0; 
+		}
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/* Testing SynthGRB default Light Curve and Spectrum making */
+	
+	
+	float energ_min = 1e-9;
+	float energ_max = 1e6;
+	float num_energ_bins = 200;
 
 	float tmin = 0;
-	float tmax = 30;
+	float tmax = 20;
 	float dt = 0.1;
+
+	SynthGRB test_grb = SynthGRB();
+	test_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
+
+	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();
 	test_grb.write_out_jet_params("./data-file-dir/");
@@ -59,15 +111,23 @@ int main(int argc, char const *argv[])
 	test_grb.MakeThermalSpec(p_source_spectrum_therm, tlo, thi);
 	(*p_source_spectrum_therm).WriteToTXT("data-file-dir/test_spec_therm.txt");
 
-	Spectrum * p_source_spectrum_synch = new Spectrum(energ_min, energ_max, num_energ_bins);
-	test_grb.MakeSynchSpec(p_source_spectrum_synch, tlo, thi);
-	(*p_source_spectrum_synch).WriteToTXT("data-file-dir/test_spec_synch.txt");
+	Spectrum * p_source_spectrum_is = new Spectrum(energ_min, energ_max, num_energ_bins);
+	test_grb.MakeISSpec(p_source_spectrum_is, tlo, thi);
+	(*p_source_spectrum_is).WriteToTXT("data-file-dir/test_spec_is.txt");
 
-	test_grb.make_source_light_curve(8, 4e4, tlo, thi, dt);
+	Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
+	test_grb.MakeFSSpec(p_source_spectrum_fs, tlo, thi);
+	(*p_source_spectrum_fs).WriteToTXT("data-file-dir/test_spec_fs.txt");
+
+	Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
+	test_grb.MakeRSSpec(p_source_spectrum_rs, tlo, thi);
+	(*p_source_spectrum_rs).WriteToTXT("data-file-dir/test_spec_rs.txt");
+
+	test_grb.make_source_light_curve(8., 4e4, tlo, thi, dt);
 	test_grb.WriteLightCurveToTXT("data-file-dir/test_light_curve.txt");
 
 	return 0;
-	*/
+	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/* Testing SynthGRB spectrum making*/
@@ -85,11 +145,12 @@ int main(int argc, char const *argv[])
 	// float r_open = 1e6; 
 	// float eps_th = 0.03;
 	// float sigma = 0.1;
+	// float p = 2.5;
 	// std::string LorentzDist = "step";
 	// std::string ShellDistParamsFile = "Default";
 	// std::string ShellDistParamsFile = "./input-files/jet-shells-step.txt";
 
-	// SynthGRB * test_grb_time = new SynthGRB(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, LorentzDist, ShellDistParamsFile);
+	// SynthGRB * test_grb_time = new SynthGRB(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
 
 	// Or use a text file with specified jet parameters
 	std::string JetParamFile = "./input-files/jet-params.txt";
@@ -134,6 +195,7 @@ int main(int argc, char const *argv[])
 	std::vector<float> r_open_vec = {1e6};
 	std::vector<float> eps_th_vec = {0.03};
 	std::vector<float> sigma_vec = {0.1};
+	std::vector<float> p_vec = {2.2,2.5}
 	std::string LorentzDist = "step";
 	std::string ShellDistParamsFile = "Default";
 	float energ_min = 8.;
@@ -143,7 +205,7 @@ int main(int argc, char const *argv[])
 	float tmax = 30.;
 
 	SynthGRBLibrary synthgrblib = SynthGRBLibrary(dir_path_name);
-	synthgrblib.MakeLibrary(tw, dte, eps_e_vec, eps_b_vec, ksi_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec , LorentzDist, ShellDistParamsFile, energ_min, energ_max, num_energ_bins, tmin, tmax);
+	synthgrblib.MakeLibrary(tw, dte, eps_e_vec, eps_b_vec, ksi_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec , p_vec, LorentzDist, ShellDistParamsFile, energ_min, energ_max, num_energ_bins, tmin, tmax);
 	*/
 
 
@@ -163,6 +225,7 @@ int main(int argc, char const *argv[])
 	float r_open = 1e6;
 	float eps_th = 0.03;
 	float sigma = 0.1;
+	float p = 2.5; 
 	std::string LorentzDist = "step";
 	std::string ShellDistParamsFile = "Default";
 
@@ -175,6 +238,7 @@ int main(int argc, char const *argv[])
 	std::vector<float> r_open_vec = {1e6};
 	std::vector<float> eps_th_vec = {0.03};
 	std::vector<float> sigma_vec = {0.1};
+	std::vector<float> p_vec = {2.2,2.5};
 
 
 
@@ -188,7 +252,7 @@ int main(int argc, char const *argv[])
 	
 	// Make "observed" GRB data from a synthetic GRB and the given instrument response matrix 
 	// Initialize synthetic GRB pointer
-	SynthGRB * synth_obs_grb = new SynthGRB(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, LorentzDist, ShellDistParamsFile);
+	SynthGRB * synth_obs_grb = new SynthGRB(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
 	// Simulate the Jet Dynamics
 	(*synth_obs_grb).SimulateJetDynamics();
 	// Make spectrum from jet simulation
@@ -220,7 +284,7 @@ int main(int argc, char const *argv[])
 	// Set initial parameters for the fit
 	data_analysis.set_init_params(50, 0.1, 0.4, 0.4, 0.1, 1e52, 0.15, 1e6, 0.03, 0.1, "step", "Default");
 	// Define parameter space for the fitting algorithm to explore
-	data_analysis.set_param_space(eps_e_vec, eps_b_vec, zeta_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec);
+	data_analysis.set_param_space(eps_e_vec, eps_b_vec, zeta_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec, p_vec);
 
 	// Fit the synthetic observed spectrum and see if the input parameters are recovered by the fitting algorithm.
 	data_analysis.FitSpectrum_SynthGRB();
@@ -344,8 +408,9 @@ int main(int argc, char const *argv[])
 	std::vector<float> r_open_vec = {1e6};
 	std::vector<float> eps_th_vec = {0.03};
 	std::vector<float> sigma_vec = {0.1};
+	std::vector<float> p_vec = {2.2, 2.5};
 	// Define parameter space for the fitting algorithm to explore
-	data_analysis.set_param_space(eps_e_vec, eps_b_vec, zeta_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec);
+	data_analysis.set_param_space(eps_e_vec, eps_b_vec, zeta_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec, p_vec);
 
 	// Load observations and response into the data_analysis object
 	data_analysis.LoadSpecAndResp(p_folded_spectrum_1,&instrument_response_1);

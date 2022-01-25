@@ -43,5 +43,7 @@ double PL(float energy, float * alpha);
 double BPL(float energy, double * param_list);
 // Band spectrum function form (Band et. al., 1993)
 double Band(float energy, double * param_list);
+// Broadened Blackbody
+double BB(float energy, double * param_list);
 
 #endif 

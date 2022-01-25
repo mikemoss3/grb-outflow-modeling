@@ -18,7 +18,7 @@ Model parameter class which contains all the necessary methods to interface with
 // Import Custom Libraries
 #include "ModelParams.hpp"
 
-ModelParams::ModelParams( float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, std::string LorentzDist, std::string ShellDistParamsFile)
+ModelParams::ModelParams( float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile)
 {
 	// If no arguments are given, default values are assumed
 
@@ -33,6 +33,7 @@ ModelParams::ModelParams( float tw, float dte, float eps_e, float eps_b, float z
 	this->r_open = r_open; // cm, Opening radius of the jet
 	this->eps_th = eps_th; // Fraction of energy in the outflow in the form of thermal energy 
 	this->sigma = sigma; // Magnetization of the outflow 
+	this->p = p; // Power law index of the electron population 
 	this->LorentzDist = LorentzDist; // Distribution of the jet shells
 	this->ShellDistParamsFile = ShellDistParamsFile; // File that contains the parameters to create the distribution of jet shells. If Default is used, default params are passed
 
@@ -50,7 +51,8 @@ void ModelParams::set_param_space(
 		std::vector<float> theta_vec, 
 		std::vector<float> r_open_vec, 
 		std::vector<float> eps_th_vec, 
-		std::vector<float> sigma_vec)
+		std::vector<float> sigma_vec,
+		std::vector<float> p_vec)
 {
 	this->eps_e_vec = eps_e_vec;
 	this->eps_b_vec = eps_b_vec;
@@ -60,6 +62,7 @@ void ModelParams::set_param_space(
 	this->r_open_vec = r_open_vec;
 	this->eps_th_vec = eps_th_vec;
 	this->sigma_vec = sigma_vec;
+	this->p_vec = p_vec;
 	this->LorentzDist = LorentzDist;
 	this->ShellDistParamsFile = ShellDistParamsFile;
 }
@@ -80,6 +83,7 @@ void ModelParams::copy(ModelParams * p_model_params_in)
 	this->r_open = (*p_model_params_in).r_open;
 	this->eps_th = (*p_model_params_in).eps_th;
 	this->sigma = (*p_model_params_in).sigma;
+	this->p = (*p_model_params_in).p;
 	this->LorentzDist = (*p_model_params_in).LorentzDist;
 	this->ShellDistParamsFile = (*p_model_params_in).ShellDistParamsFile;
 
@@ -115,6 +119,8 @@ void ModelParams::LoadFromTXT(std::string filename)
 		this->eps_th = stof(line_model_params);
 		getline( file_model_param, line_model_params);
 		this->sigma = stof(line_model_params);
+		getline( file_model_param, line_model_params);
+		this->p = stof(line_model_params);
 		getline( file_model_param, line_model_params);
 		this->LorentzDist = line_model_params;
 		getline( file_model_param, line_model_params);
@@ -155,6 +161,7 @@ void ModelParams::WriteToTXT(std::string filename)
 	out_file << "r_open = " << this->r_open << "\n";
 	out_file << "eps_th = " << this->eps_th << "\n";
 	out_file << "sigma = " << this->sigma << "\n";
+	out_file << "p = " << this->p << "\n";
 	out_file << "LorentzDist = " << this->LorentzDist << "\n";
 	out_file << "ShellDistParamsFile = " << this->ShellDistParamsFile << "\n";
 
@@ -176,6 +183,7 @@ void ModelParams::PrintAllParams()
 	std::cout << "r_open = " << this->r_open << "\n";
 	std::cout << "eps_th = " << this->eps_th << "\n";
 	std::cout << "sigma = " << this->sigma << "\n";
+	std::cout << "p = " << this->p << "\n";
 	std::cout << "LorentzDist = " << this->LorentzDist << "\n";
 	std::cout << "ShellDistParamsFile = " << this->ShellDistParamsFile << "\n\n";
 }

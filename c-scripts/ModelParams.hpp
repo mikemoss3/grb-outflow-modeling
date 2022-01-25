@@ -29,7 +29,7 @@ class ModelParams
 {
 public:
 	// ModelParams constructor
-	ModelParams(float tw = 10.0, float dte = 0.002, float alpha_e = 1./3, float alpha_b = 1./3, float zeta = 1e-3, double E_dot_iso = 1e53, float theta = 0.1, float r_open = 1e6, float eps_th = 0.03, float sigma = 0.1, std::string LorentzDist = "step", std::string ShellDistParamsFile = "Default");
+	ModelParams(float tw = 10.0, float dte = 0.002, float alpha_e = 1./3, float alpha_b = 1./3, float zeta = 1e-3, double E_dot_iso = 1e53, float theta = 0.1, float r_open = 1e6, float eps_th = 0.03, float sigma = 0.1, float p = 2.5, std::string LorentzDist = "step", std::string ShellDistParamsFile = "Default");
 
 	// ModelParams member variables
 	// jet parameters:
@@ -43,6 +43,7 @@ public:
 	float r_open; // cm, Opening radius of the jet
 	float eps_th; // Fraction of energy in the outflow in the form of thermal energy 
 	float sigma; // Magnetization of the outflow 
+	float p; // Power law index of the electron population 
 	std::string LorentzDist; // Distribution of the jet shells
 	std::string ShellDistParamsFile; // File that contains the parameters to create the distribution of jet shells
 
@@ -59,6 +60,7 @@ public:
 	std::vector<float> r_open_vec;
 	std::vector<float> eps_th_vec;
 	std::vector<float> sigma_vec;
+	std::vector<float> p_vec;
 
 	// Set parameter space
 	void set_param_space(
@@ -69,7 +71,8 @@ public:
 		std::vector<float> theta_vec, 
 		std::vector<float> r_open_vec, 
 		std::vector<float> eps_th_vec, 
-		std::vector<float> sigma_vec);
+		std::vector<float> sigma_vec,
+		std::vector<float> p_vec);
 	
 	// Copy a ModelParams object
 	void copy(ModelParams * p_model_params_in);

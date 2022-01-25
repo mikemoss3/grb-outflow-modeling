@@ -18,6 +18,8 @@ This file defines useful function for cosmological calculations
 // Reference self-header
 #include "cosmology.hpp"
 
+using namespace std;
+
 // Luminosity distance function
 double lum_dist(float z)
 {

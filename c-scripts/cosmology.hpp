@@ -51,8 +51,8 @@ const double erg_to_kev = 6.242*pow(10.,8.);
 const double erg_to_ev = 6.242*pow(10.,11.);
 
 // Bolometric energy bounds
-const float E_bol_min = 0.01; // keV
-const float E_bol_max = 1e5; // keV
+const float E_bol_min = 1e-12; // keV
+const float E_bol_max = 1e10; // keV
 
 // Luminosity distance function
 double lum_dist(float z);

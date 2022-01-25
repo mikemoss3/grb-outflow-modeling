@@ -43,7 +43,8 @@ void SynthGRBLibrary::set_SynthGRB_lib_dir(std::string path_name)
 void SynthGRBLibrary::MakeLibrary(float tw, float dte, 
 	std::vector<float> eps_e_vec, std::vector<float> eps_b_vec, 
 	std::vector<float> zeta_vec, std::vector<double> E_dot_iso_vec, 
-	std::vector<float> theta_vec, std::vector<float> r_open_vec, std::vector<float> eps_th_vec, std::vector<float> sigma_vec, 
+	std::vector<float> theta_vec, std::vector<float> r_open_vec, 
+	std::vector<float> eps_th_vec, std::vector<float> sigma_vec, std::vector<float> p_vec,
 	std::string LorentzDist, std::string ShellDistParamsFile,
 	float energ_min, float energ_max, int num_energ_bins, float tmin, float tmax)
 {
@@ -91,38 +92,43 @@ void SynthGRBLibrary::MakeLibrary(float tw, float dte,
 							{
 								for(size_t i11=0; i11< sigma_vec.size(); ++i11)
 								{
-									/*
-									SynthGRB * template_grb = new SynthGRB();
-									(*template_grb).tw = tw;
-									(*template_grb).dte = dte;
-									(*template_grb).eps_e = eps_e_vec.at(i1);
-									(*template_grb).eps_b = eps_b_vec.at(i3);
-									(*template_grb).zeta = zeta_vec.at(i4);
-									(*template_grb).E_dot_iso = E_dot_iso_vec.at(i6);
-									(*template_grb).theta = theta_vec.at(i7);
-									(*template_grb).r_open = r_open_vec.at(i8);
-									(*template_grb).eps_th = eps_th_vec.at(i10);
-									(*template_grb).sigma = sigma_vec.at(i11);
-									(*template_grb).LorentzDist = LorentzDist;
-									(*template_grb).ShellDistParamsFile = ShellDistParamsFile;
-									*/
-									SynthGRB * template_grb = new SynthGRB(tw,
-										dte,
-										eps_e_vec.at(i1),
-										eps_b_vec.at(i3),
-										zeta_vec.at(i4),
-										E_dot_iso_vec.at(i6),
-										theta_vec.at(i7),
-										r_open_vec.at(i8),
-										eps_th_vec.at(i10),
-										sigma_vec.at(i11),
-										LorentzDist,
-										ShellDistParamsFile);
-									
-									(*template_grb).SimulateJetDynamics();
-									(*template_grb).make_source_spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax);
-									synth_grb_list.at(iter) = (*template_grb);
-									iter+=1;
+									for(size_t i12=0; i12 < p_vec.size(); ++i12)
+									{
+										/*
+										SynthGRB * template_grb = new SynthGRB();
+										(*template_grb).tw = tw;
+										(*template_grb).dte = dte;
+										(*template_grb).eps_e = eps_e_vec.at(i1);
+										(*template_grb).eps_b = eps_b_vec.at(i3);
+										(*template_grb).zeta = zeta_vec.at(i4);
+										(*template_grb).E_dot_iso = E_dot_iso_vec.at(i6);
+										(*template_grb).theta = theta_vec.at(i7);
+										(*template_grb).r_open = r_open_vec.at(i8);
+										(*template_grb).eps_th = eps_th_vec.at(i10);
+										(*template_grb).sigma = sigma_vec.at(i11);
+										(*template_grb).LorentzDist = LorentzDist;
+										(*template_grb).ShellDistParamsFile = ShellDistParamsFile;
+										*/
+										SynthGRB * template_grb = new SynthGRB(tw,
+											dte,
+											eps_e_vec.at(i1),
+											eps_b_vec.at(i3),
+											zeta_vec.at(i4),
+											E_dot_iso_vec.at(i6),
+											theta_vec.at(i7),
+											r_open_vec.at(i8),
+											eps_th_vec.at(i10),
+											sigma_vec.at(i11),
+											p_vec.at(i12),
+											LorentzDist,
+											ShellDistParamsFile);
+										
+										(*template_grb).SimulateJetDynamics();
+										(*template_grb).make_source_spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax);
+										synth_grb_list.at(iter) = (*template_grb);
+										iter+=1;
+									}
+
 								}
 							}
 						}

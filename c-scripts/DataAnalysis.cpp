@@ -56,14 +56,14 @@ void DataAnalysis::set_init_params(ModelParams * p_input_init_params)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void DataAnalysis::set_init_params(float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, std::string LorentzDist, std::string ShellDistParamsFile)
+void DataAnalysis::set_init_params(float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile)
 {
 	/*
 	Set the initial parameters for the fitting algorithm to begin at.
 	Set each parameter separately, the input values will be used to construct a ModelParams object.
 	*/
 	this->flag_set_param_init = true;
-	this->p_curr_model_params = new ModelParams(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, LorentzDist, ShellDistParamsFile);
+	this->p_curr_model_params = new ModelParams(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,7 +76,8 @@ void DataAnalysis::set_param_space(
 		std::vector<float> theta_vec, 
 		std::vector<float> r_open_vec, 
 		std::vector<float> eps_th_vec, 
-		std::vector<float> sigma_vec)
+		std::vector<float> sigma_vec,
+		std::vector<float> p_vec)
 {
 	/*
 	Set the parameter space for the fitting algorithm to explore. The parameter space is specified by creating a list of value the fitting algorithm should use.
@@ -91,7 +92,8 @@ void DataAnalysis::set_param_space(
 	theta_vec, 
 	r_open_vec, 
 	eps_th_vec, 
-	sigma_vec);
+	sigma_vec,
+	p_vec);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
