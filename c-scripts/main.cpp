@@ -45,7 +45,7 @@ int main(int argc, char const *argv[])
 			float tmin = stof(argv[2]);
 			float tmax = stof(argv[3]);
 
-			float energ_min = 0.01;
+			float energ_min = 1e-5;
 			float energ_max = 1e6;
 			float num_energ_bins = 10.*log10(energ_max/energ_min);
 
@@ -91,7 +91,7 @@ int main(int argc, char const *argv[])
 	float num_energ_bins = 200;
 
 	float tmin = 0;
-	float tmax = 20;
+	float tmax = 10;
 	float dt = 0.1;
 
 	SynthGRB test_grb = SynthGRB();
@@ -124,6 +124,7 @@ int main(int argc, char const *argv[])
 	(*p_source_spectrum_rs).WriteToTXT("data-file-dir/test_spec_rs.txt");
 
 	test_grb.make_source_light_curve(8., 4e4, tlo, thi, dt);
+	// test_grb.make_source_light_curve(1e-9, 1e-2, tlo, thi, dt);
 	test_grb.WriteLightCurveToTXT("data-file-dir/test_light_curve.txt");
 
 	return 0;

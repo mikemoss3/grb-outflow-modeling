@@ -78,7 +78,7 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 
 ##############################################################################################################################
 
-def plot_spec(file_name, z=0, joined=False, label = None, ax=None, nuFnu=True, unc=False, Emin=None, Emax=None, save_pref=None,fontsize=14,fontweight='bold'):
+def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, nuFnu=True, unc=False, Emin=None, Emax=None, save_pref=None,fontsize=14,fontweight='bold'):
 	"""
 	Method to plot the input spectrum data files
 
@@ -113,26 +113,26 @@ def plot_spec(file_name, z=0, joined=False, label = None, ax=None, nuFnu=True, u
 		# Plot spectrum data
 		if nuFnu is True:
 			if unc is True:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label)
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,color=color)
 			else:
-				line, = ax.plot(spec_data['ENERG'],spec_data['RATE']*(spec_data['ENERG']**2),label=label)
+				line, = ax.plot(spec_data['ENERG'],spec_data['RATE']*(spec_data['ENERG']**2),label=label,color=color)
 		else:
 			if unc is True:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label)
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label,color=color)
 			else:
-				line = ax.plot(spec_data['ENERG'],spec_data['RATE'],label=label)
+				line = ax.plot(spec_data['ENERG'],spec_data['RATE'],label=label,color=color)
 	else:
 		# Plot spectrum data
 		if nuFnu is True:
 			if unc is True:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+")
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color)
 			else:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+")
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color)
 		else:
 			if unc is True:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label,fmt=" ",marker="+")
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label,fmt=" ",marker="+",color=color)
 			else:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],label=label,fmt=" ",marker="+")
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],label=label,fmt=" ",marker="+",color=color)
 
 	# Plot aesthetics
 	ax.set_xscale('log')
@@ -429,8 +429,8 @@ def plot_param_vs_ta(emission_comp,param,ax=None,z=0, y_factor=1, label=None, Tm
 	ax_time = ax_time[ind_start:ind_stop] 
 	ax_param = emission_comp[param][ind_start:ind_stop]
 
-	if label is None:
-		label = param
+	# if label is None:
+	# 	label = param
 
 	ax.scatter(ax_time,ax_param,label=label,c=color,marker=marker)
 
@@ -453,7 +453,7 @@ def plot_evo_therm(thermal_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=N
 
 	# Make plot instance if it doesn't exist
 	if ax is None:
-		fig, ax = plt.subplots(2,1,figsize=(5,8))
+		fig, ax = plt.subplots(2,1,figsize=(5,8),sharex=True)
 
 	# Plot temperature of the thermal component vs time (in observer frame)
 	kb_kev = 8.617*1e-8
@@ -590,219 +590,148 @@ def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=No
 
 ##############################################################################################################################
 
-def plot_evo_ext_shock(fs_data=None, rs_data=None, z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold'):
+def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".", z=0, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None):
 
-	fig, ax = plt.subplots(2,2,sharex=True,figsize=(12,8))
 
-	if( (fs_data is None) and (rs_data is None)):
-		print("Please provide either forward shock or reverse shock data.")
-		return
-	if(fs_data is not None):
-		# T_a vs T_e
-		plot_param_vs_ta(fs_data,'TE', ax=ax[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
-				fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=',',color="C1")
+	### First Plot ###
 
-		# T_a vs del T_a
-		
-		# T_a vs Gamma_r
+	# T_a vs B_eq
+	plot_param_vs_ta(shock_data,'BEQ', ax=ax0[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,label=label)
+
+	# T_a vs Gamma_r
+	if guidelines == True:
 		rhowindline = lambda t, t0, norm: norm*np.power(t/t0,-1./4.)
 		rhoconstline = lambda t, t0, norm: norm*np.power(t/t0,-3./8.)
 		tstart = 1e2
 		tstop = 1e8
 		tnum = 1e2
-		g_norm_wind = rhowindline(tstart,fs_data['TA'][np.argmax(fs_data['TA']>tstart)],fs_data['GAMMAR'][np.argmax(fs_data['TA']>tstart)])
-		g_norm_const = rhoconstline(tstart,fs_data['TA'][np.argmax(fs_data['TA']>tstart)],fs_data['GAMMAR'][np.argmax(fs_data['TA']>tstart)])
+		g_norm_wind = rhowindline(tstart,shock_data['TA'][np.argmax(shock_data['TA']>tstart)],shock_data['GAMMAR'][np.argmax(shock_data['TA']>tstart)])
+		g_norm_const = rhoconstline(tstart,shock_data['TA'][np.argmax(shock_data['TA']>tstart)],shock_data['GAMMAR'][np.argmax(shock_data['TA']>tstart)])
 		t = np.linspace(tstart,tstop,num=int(tnum))	
-		ax[0,1].plot(t,rhowindline(t,tstart,g_norm_wind),label=r"$t^{-1/4}$",color='r')
-		ax[0,1].plot(t,rhoconstline(t,tstart,g_norm_const),label=r"$t^{-3/8}$",color='k')
+		ax0[0,1].plot(t,rhowindline(t,tstart,g_norm_wind),label=r"$t^{-1/4}$",color='r')
+		ax0[0,1].plot(t,rhoconstline(t,tstart,g_norm_const),label=r"$t^{-3/8}$",color='k')
 
-		plot_param_vs_ta(fs_data,'GAMMAR', ax=ax[0,1], z=z, Tmin=Tmin, Tmax=Tmax,
-				fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=',',color="C1")
+	plot_param_vs_ta(shock_data,'GAMMAR', ax=ax0[0,1], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color)
 
-		# T_a vs e_diss
-		plot_param_vs_ta(fs_data,'EDISS', ax=ax[1,0], z=z, Tmin=Tmin, Tmax=Tmax,
-				fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=',',color="C1")
+	# T_a vs e_diss
+	plot_param_vs_ta(shock_data,'EDISS', ax=ax0[1,0], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color)
 
-		# T_a vs E_syn
-		plot_param_vs_ta(fs_data,'ESYN', ax=ax[1,1], z=z, Tmin=Tmin, Tmax=Tmax,
-				fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=',',color="C1")
+	# T_a vs E_syn
+	plot_param_vs_ta(shock_data,'ESYN', ax=ax0[1,1], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color)
 
-	if(rs_data is not None):
-		# T_a vs T_e
-		plot_param_vs_ta(rs_data,'TE', ax=ax[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker='.')	
-		# T_a vs del T_a
-
-		# T_a vs Gamma_r
-		plot_param_vs_ta(rs_data,'GAMMAR', ax=ax[0,1], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker='.')
-		# T_a vs e_diss
-		plot_param_vs_ta(rs_data,'EDISS', ax=ax[1,0], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker='.')
-		# T_a vs E_syn
-		plot_param_vs_ta(rs_data,'ESYN', ax=ax[1,1], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker='.')
 
 	# Plot Aesthetics
 	fontsize = 14
 	fontweight = "bold"
 
-	# Format Top Left plot, T_a vs T_e
-	
-	ax[0,0].set_ylabel(r"$t_e$",fontsize=fontsize,fontweight=fontweight)
-	ax[0,0].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
-
-	ax[0,0].set_yscale("log")
-	ax[0,0].set_xscale("log")
+	# Format Top Left plot, T_a vs B_eq
+	ax0[0,0].set_ylabel(r"B$_{EQ}$",fontsize=fontsize,fontweight=fontweight)
+	# ax0[0,0].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
+	ax0[0,0].set_yscale("log")
+	ax0[0,0].set_xscale("log")
+	ax0[0,0].legend(fontsize=fontsize)
 
 	# Format Top Right plot, T_a vs Gamma_r 
-	ax[0,1].set_ylabel(r"$\Gamma_r$",fontsize=fontsize,fontweight=fontweight)
-	ax[0,1].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
-
-	ax[0,1].yaxis.set_label_position("right")
-	ax[0,1].yaxis.tick_right()
-	ax[0,1].set_yscale("log")
-	ax[0,1].set_xscale("log")
-	ax[0,1].legend([r"$\rho_{wind}$, $t^{-1/4}$",r"$\rho_{const}$, $t^{-3/8}$","FS","RS"],fontsize=fontsize-4)
-
+	ax0[0,1].set_ylabel(r"$\Gamma_r$",fontsize=fontsize,fontweight=fontweight)
+	# ax0[0,1].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
+	ax0[0,1].yaxis.set_label_position("right")
+	ax0[0,1].yaxis.tick_right()
+	ax0[0,1].set_yscale("log")
+	ax0[0,1].set_xscale("log")
 
 	# Format Bottom Left plot, T_a vs E_diss
-	ax[1,0].set_ylabel(r"E$_{diss}$",fontsize=fontsize,fontweight=fontweight)
-	ax[1,0].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
-	ax[1,0].set_yscale("log")
-	ax[1,0].set_xscale("log")
+	ax0[1,0].set_ylabel(r"E$_{diss}$",fontsize=fontsize,fontweight=fontweight)
+	ax0[1,0].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
+	ax0[1,0].set_yscale("log")
+	ax0[1,0].set_xscale("log")
 
 	# Format Bottom Right plot, T_a vs E_synch
-	ax[1,1].set_ylabel(r"E$_{syn}$",fontsize=fontsize,fontweight=fontweight)
-	ax[1,1].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
-	ax[1,1].yaxis.set_label_position("right")
-	ax[1,1].yaxis.tick_right()
-	ax[1,1].set_yscale("log")
-	ax[1,1].set_xscale("log")
+	ax0[1,1].set_ylabel(r"E$_{syn}$",fontsize=fontsize,fontweight=fontweight)
+	ax0[1,1].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
+	ax0[1,1].yaxis.set_label_position("right")
+	ax0[1,1].yaxis.tick_right()
+	ax0[1,1].set_yscale("log")
+	ax0[1,1].set_xscale("log")
 
 	# Make plots look good
 	for i in range(2):
 		for j in range(2):
-			plot_aesthetics(ax[i,j],fontsize=fontsize,fontweight=fontweight)
+			plot_aesthetics(ax0[i,j],fontsize=fontsize,fontweight=fontweight)
 
 	plt.tight_layout()
 	plt.subplots_adjust(wspace=0,hspace=0)
 
-	if save_pref is not None:
-		plt.savefig('figs/{}-ext-shock-evo-fig0.png'.format(save_pref))
+	if save_pref == True:
+		plt.savefig('figs/{}-all-shock-evo-fig0.png'.format(save_pref))
+
+	### Second Plot ###
+
+	# T_a vs T_e
+	plot_param_vs_ta(shock_data,'TE', ax=ax1[0], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color, label=label)
+
+	# T_a vs del T_a
+	# Make a copy of the axis in order to over plot two separate data sets
+	# ax1cp = ax1[0].twinx()
+	# plot_param_vs_ta(shock_data,'DELT', ax=ax1cp, z=z,Tmin=Tmin, Tmax=Tmax,
+	# 	fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker=marker,color=color)
 
 
-	fig, ax = plt.subplots(2,1,sharex=True,figsize=(6,6))
-
-	if(fs_data is not None):
-		# # T_a vs EPS
-		# plot_param_vs_ta(fs_data,'EPS', ax=ax[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
-		# 		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=',',color="C1")
-
-		# # T_a vs rho
-		# plot_param_vs_ta(fs_data,'RHO', ax=ax[0,1], z=z, Tmin=Tmin, Tmax=Tmax,
-		# 		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=',',color="C1")
-
-		# T_a vs B_eq
-		plot_param_vs_ta(fs_data,'BEQ', ax=ax[0], z=z, Tmin=Tmin, Tmax=Tmax,
-				fontsize=fontsize, fontweight=fontweight, disp_xax=False, marker=',',color="C1")
-
-		# T_a vs Gamma_e
-		plot_param_vs_ta(fs_data,'GAMMAE', ax=ax[1], z=z, Tmin=Tmin, Tmax=Tmax,
-				fontsize=fontsize, fontweight=fontweight, marker=',',color="C1")
-
-	if(rs_data is not None):
-		# # T_a vs EPS
-		# plot_param_vs_ta(rs_data,'EPS', ax=ax[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
-		# 	fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker='.')	
-
-		# # T_a vs rho
-		# plot_param_vs_ta(rs_data,'RHO', ax=ax[0,1], z=z, Tmin=Tmin, Tmax=Tmax,
-		# 	fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker='.')
-		
-		# T_a vs B_eq
-		plot_param_vs_ta(rs_data,'BEQ', ax=ax[0], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, marker='.')
-		# T_a vs Gamma_e
-		plot_param_vs_ta(rs_data,'GAMMAE', ax=ax[1], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, marker='.')
+	# T_a vs Gamma_e
+	plot_param_vs_ta(shock_data,'GAMMAE', ax=ax1[1], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, marker=marker,color=color)
 
 	# Plot Aesthetics
-	fontsize = 14
-	fontweight = "bold"
-
-	# Format Top Left plot, T_a vs Eps
+	# Format Top plot, T_a vs T_e
 	
-	# ax[0,0].set_ylabel(r"$\epsilon$",fontsize=fontsize,fontweight=fontweight)
-	# ax[0,0].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
+	ax1[0].set_ylabel(r"$t_e$",fontsize=fontsize,fontweight=fontweight)
+	ax1[0].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
 
-	# ax[0,0].set_yscale("log")
-	# ax[0,0].set_xscale("log")
+	# ax1cp.set_ylabel(r'$\Delta t$',fontsize=fontsize,fontweight=fontweight)
+	# ax1cp.yaxis.set_label_position("right")
+	# ax1cp.yaxis.tick_right()
 
-	# # Format Top Right plot, T_a vs rho
-	# ax[0,1].set_ylabel(r"$\rho$",fontsize=fontsize,fontweight=fontweight)
-	# ax[0,1].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
+	ax1[0].set_yscale("log")
+	ax1[0].set_xscale("log")
+	# ax1cp.set_yscale("log")
+	# ax1cp.set_xscale("log")
+	ax1[0].legend(fontsize=fontsize)
 
-	# ax[0,1].yaxis.set_label_position("right")
-	# ax[0,1].yaxis.tick_right()
-	# ax[0,1].set_yscale("log")
-	# ax[0,1].set_xscale("log")
-	# ax[0,1].legend(["FS","RS"],fontsize=fontsize-4)
-
-	# Format Bottom Left plot, T_a vs B_eq
-	ax[0].set_ylabel(r"B$_{EQ}$",fontsize=fontsize,fontweight=fontweight)
-	ax[0].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
-	ax[0].set_yscale("log")
-	ax[0].set_xscale("log")
-
-	# Format Bottom Right plot, T_a vs Gamma_e
-	ax[1].set_ylabel(r"$\Gamma_{e}$",fontsize=fontsize,fontweight=fontweight)
-	ax[1].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
-	# ax[1,1].yaxis.set_label_position("right")
-	# ax[1,1].yaxis.tick_right()
-	ax[1].set_yscale("log")
-	ax[1].set_xscale("log")
+	# Format Bottom plot, T_a vs Gamma_e
+	ax1[1].set_ylabel(r"$\Gamma_{e}$",fontsize=fontsize,fontweight=fontweight)
+	ax1[1].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
+	ax1[1].set_yscale("log")
+	ax1[1].set_xscale("log")
 
 	# Make plots look good
 	for i in range(2):
-		plot_aesthetics(ax[i],fontsize=fontsize,fontweight=fontweight)
+		plot_aesthetics(ax1[i],fontsize=fontsize,fontweight=fontweight)
+	# plot_aesthetics(ax1cp,fontsize=fontsize,fontweight=fontweight)
 
 	plt.tight_layout()
-	plt.subplots_adjust(wspace=0,hspace=0)
+	plt.subplots_adjust(hspace=0)
 
-	if save_pref is not None:
-		plt.savefig('figs/{}-ext-shock-evo-fig1.png'.format(save_pref))
+	if save_pref == True:
+		plt.savefig('figs/{}-all-shock-evo-fig1.png'.format(save_pref))
 
 ##############################################################################################################################
 
-def plot_gamma_r(is_data = None,fs_data=None, rs_data=None, ax=None, z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold'):
+def plot_together(is_data = None,fs_data=None, rs_data=None, z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold'):
 
-	# Make plot instance if it doesn't exist
-	if ax is None:
-		ax = plt.figure().gca()
+	fig, ax0 = plt.subplots(2,2,sharex=True,figsize=(12,8))
+	fig, ax1 = plt.subplots(2,1,sharex=True,figsize=(6,6))
+
 
 	if is_data is not None:
-		plot_param_vs_ta(is_data,'GAMMAR', ax=ax, y_factor=1/100, z=z,Tmin=Tmin, Tmax=Tmax,fontsize=fontsize, fontweight=fontweight,marker='.',color='C0',label="IS")
+		make_together_plots(shock_data=is_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,save_pref=save_pref)
 	if fs_data is not None:
-		plot_param_vs_ta(fs_data,'GAMMAR', ax=ax, y_factor=1/100, z=z,Tmin=Tmin, Tmax=Tmax,fontsize=fontsize, fontweight=fontweight,marker='.',color='C1',label="FS")
+		make_together_plots(shock_data=fs_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,save_pref=save_pref)
 	if rs_data is not None:
-		plot_param_vs_ta(rs_data,'GAMMAR', ax=ax, y_factor=1/100, z=z,Tmin=Tmin, Tmax=Tmax,fontsize=fontsize, fontweight=fontweight,marker='.',color='C2',label="RS")
-
-	
-	ax.set_xscale("log")
-	ax.set_yscale("log")
-
-	ax.set_xlabel(r't$_{a}$ (sec)',fontsize=fontsize,fontweight=fontweight)
-	ax.set_ylabel(r'Gamma$_{r}$/100',fontsize=fontsize,fontweight=fontweight)
-
-	ax.legend(fontsize=fontsize-4)
-
-	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
-	
-	plt.tight_layout()
-
-	if save_pref == True:
-		plt.savefig('figs/{}-gamma_r.png'.format(save_pref))
+		make_together_plots(shock_data=rs_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,save_pref=save_pref)
 
 ##############################################################################################################################
 
@@ -828,28 +757,29 @@ def lum_dis(z: float):
 
 if __name__ == '__main__':
 
-	z = 1
+	z = 0
 
 	"""
 	Shell Lorentz Distribution
 	"""
-	"""
+	
 	ax_sd = plt.figure().gca()
 	plot_lor_dist('data-file-dir/shell_dist.txt', ax=ax_sd)
-	"""
+	
 
 	"""
 	Synthetic spectrum 
 	"""
-	
+
 	
 	ax_spec = plt.figure(figsize=(9,8)).gca()
 
-	plot_spec("data-file-dir/test_spec_therm.txt",ax=ax_spec,z=z,label="Thermal")
-	plot_spec("data-file-dir/test_spec_is.txt",ax=ax_spec,z=z,label="IS")
-	plot_spec("data-file-dir/test_spec_fs.txt",ax=ax_spec,z=z,label="FS")
-	plot_spec("data-file-dir/test_spec_rs.txt",ax=ax_spec,z=z,label="RS")
-	plot_spec("data-file-dir/test_spec_total.txt",ax=ax_spec,z=z,label="Total")
+	
+	plot_spec("data-file-dir/test_spec_therm.txt",ax=ax_spec,z=z,label="Thermal",color="r")
+	plot_spec("data-file-dir/test_spec_is.txt",ax=ax_spec,z=z,label="IS",color="C0")
+	plot_spec("data-file-dir/test_spec_fs.txt",ax=ax_spec,z=z,label="FS",color="C1")
+	plot_spec("data-file-dir/test_spec_rs.txt",ax=ax_spec,z=z,label="RS",color="C2")
+	plot_spec("data-file-dir/test_spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
 
 	## Synthetic spectrum before convolusion
 	# plot_spec("data-file-dir/spec_source.txt",ax=ax_spec,unc=False,label="Source")
@@ -878,27 +808,29 @@ if __name__ == '__main__':
 	# plot_light_curve("data-file-dir/test_light_curve_is.txt",ax=ax_lc,z=0.5,label="IS")
 
 	# Interactive light curve
-	# tbox = plot_light_curve_interactive("data-file-dir/test_light_curve.txt",z=z,label="Total")
+	# tbox = plot_light_curve_interactive("data-file-dir/test_light_curve.txt",z=z,label="Total")	
 	
-
+	
 	"""
 	Jet dynamics plots 
 	"""
 	
-	
 	# therm_emission = load_therm_emission("data-file-dir/synthGRB_jet_params_therm.txt")
 	# plot_evo_therm(therm_emission,z=1)
 
-	is_emission = load_is_emission("data-file-dir/synthGRB_jet_params_is.txt")
-	plot_evo_int_shock(is_emission,z=0.5)
+	is_data = load_is_emission("data-file-dir/synthGRB_jet_params_is.txt")
+	# plot_evo_int_shock(is_data,z=0.5)
 
 	fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_fs.txt")
 	rs_data = load_rs_emission("data-file-dir/synthGRB_jet_params_rs.txt")
 
-	plot_evo_ext_shock(fs_data=fs_data,rs_data=rs_data,z=0)
+	# plot_evo_ext_shock(fs_data=fs_data,rs_data=rs_data,z=0)
 	# plot_evo_ext_shock(fs_data=fs_data)		
 	
+	# Plot everything together:
+	plot_together(fs_data=fs_data,rs_data=rs_data,is_data=is_data)
 	
+
 	"""
 	Display real observed data
 	"""

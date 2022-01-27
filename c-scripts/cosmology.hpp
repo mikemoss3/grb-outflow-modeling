@@ -25,6 +25,7 @@ using namespace std;
 
 const double mp = 1.6726*pow(10.,-24.); // proton mass, in g
 const double me = 9.1093*pow(10.,-28.); // electron mass, in g
+const double qe = 4.8032*pow(10.,-10.); // charge of the electron, in cm^3/2 g^1/2 s^-1
 
 const double c_cm = 2.99792*pow(10.,10.); // speed of light, in cm/s
 

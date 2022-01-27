@@ -208,12 +208,13 @@ double BPL(float energy, double * param_list)
     // If the energy is below the peak energy
     if (energy < e0)
     {
-        return pow(energy/100., alpha);
+        return pow(energy/e0, alpha);
     }
     // If the energy is above the peak energy
     else
     {
-        return pow(e0/100., alpha-beta)*pow(energy/100., beta);
+        return pow(energy/e0, beta);
+        // return pow(e0/e0, alpha-beta)*pow(energy/e0, beta);
     }
 }
 

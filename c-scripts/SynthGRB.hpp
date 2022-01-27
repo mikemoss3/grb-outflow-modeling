@@ -110,14 +110,14 @@ public:
 	double ThermalSpec(float energy, float temp, float alpha=0.4);
 
 	// Calls function to calculate the internal shock spectrum rate for each energy bin
-	void MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax, float alpha = -0.7, float beta = -3.5);
+	void MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax);
 
 	// Calls function to calculate the external shock spectrum rate for each energy bin
 	void MakeExtShockSpec(Spectrum * extsh_spectrum, float tmin, float tmax);
 	// Calls function to calculate the forward shock spectrum rate for each energy bin
-	void MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax, float alpha = -0.7, float beta = -3.5);
+	void MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax);
 	// Calls function to calculate the reverse shock spectrum rate for each energy bin
-	void MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax, float alpha = -1.5, float beta = -3.5);
+	void MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax);
 
 	// Calculate the synchrotron spectrum from the synchrotron energy and flux of the emission
 	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt, float alpha = -0.7, float beta = -3.5);
@@ -168,6 +168,8 @@ private:
 	std::vector<double> esyn_is; // erg, Synchrotron energy emitted by accelerated electron
 	std::vector<float> gamma_r_is; // Approximation of the combined Lorentz factor of the colliding shells
 	std::vector<double> e_diss_is; // erg, Dissipated energy during the collision 
+	std::vector<double> eps_star_is; // Internal energy dissipated in a collision 
+	// std::vector<double> rho_is; // g cm^-3, Density of the collision region
 	std::vector<float> asyn_is; // Fraction of the energy in electrons which goes into synchrotron (as opposed to Inverse Compton)
 	std::vector<float> tau; // Optical depth at the location of the collision
 	std::vector<float> relvel; // Relative velocity between the two shells
@@ -181,7 +183,7 @@ private:
 	std::vector<double> esyn_fs; // erg, Synchrotron energy emitted by the accelerated electrons in the FS
 	std::vector<float> gamma_r_fs; // Combined Lorentz factor after collision
 	std::vector<double> e_diss_fs; // Energy dissipated in a FS	
-	// std::vector<double> eps_fs; // Internal energy dissipated in a collision 
+	std::vector<double> eps_star_fs; // Internal energy dissipated in a collision 
 	// std::vector<double> rho_fs; // g cm^-3, Density of the collision region
 	
 	std::vector<float> te_rs; // sec, Time of emission (in the rest frame of the jet)
@@ -192,7 +194,7 @@ private:
 	std::vector<double> esyn_rs; // erg, Synchrotron energy emitted by the accelerated electrons in the RS	
 	std::vector<float> gamma_r_rs; // Combined Lorentz factor after collision
 	std::vector<double> e_diss_rs; // Energy dissipated in a RS
-	// std::vector<double> eps_rs; // Internal energy dissipated in a collision 
+	std::vector<double> eps_star_rs; // Internal energy dissipated in a collision 
 	// std::vector<double> rho_rs; // g cm^-3, Density of the collision region
 
 
