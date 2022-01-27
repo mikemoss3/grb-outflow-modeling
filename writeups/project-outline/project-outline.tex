@@ -625,6 +625,104 @@ To find $\Gamma_{int}$ we return to Eq. \ref{eq: gamrgami 1} and continue to use
 	\Gamma_{int} &= \frac{1}{2}\left[ \left(\frac{\Gamma_1}{\Gamma_2}\right)^{1/2} + \left(\frac{\Gamma_2}{\Gamma_1}\right)^{1/2}\right]\\
 \end{align}
 
+\section[Derivation of the Minimum Electron Lorentz Factor, Gamma_e]{Derivation of the Minimum Electron Lorentz Factor, $\Gamma_e$} \label{sec: gamma_e}
+
+For each shock collision we can write the mass density $\rho$ and energy density $\epsilon$ (or specific energy density $\epsilon_* = \epsilon/m_p$) within the shock region which let us define the energy densities of the magnetic field $\mu_B$ and the electrons $\mu_e$,
+
+\begin{align}
+	\mu_B &= \epsilon_B \rho \epsilon_*\\
+	\mu_e &= \epsilon_e \rho \epsilon_*
+\end{align}
+
+The number density of accelerated electrons can be written as,
+
+\begin{align}
+	n_e^{acc} = \zeta \frac{\rho}{m_p}
+\end{align}
+
+where $\zeta$ is the fraction of electrons accelerated in the shock. For the mildly-relativistic forward shock, $\zeta\sim1$, but in order for the relativistic internal shocks to emit MeV $\gamma$ rays, $\zeta\sim10^{-3}$. 
+
+We assume that the electron population is distributed as a power law with index $p$ above a minimum Lorentz factor $\gamma_m$,
+
+\begin{align}
+	n(\gamma) = A\gamma^{-p} \text{ for } \gamma\geq\gamma_m
+\end{align}
+
+where A is a normalization. We can explicitly find the number density and energy density of the electron population, 
+
+\begin{align}
+	n_e^{acc} &= \int_{\gamma_m}^{\infty} n(\gamma)d\gamma = \frac{A}{p-1}\gamma_m^{1-p}\\
+	\mu_e &= \int_{\gamma_m}^{\infty} n(\gamma) \gamma m_e c^2 d\gamma = \frac{A}{p-2}\gamma_m^{2-p} m_e c^2
+\end{align}
+
+Using the two expressions for $n_e^{acc}$, we can find the normalization A,
+
+\begin{align}
+	\zeta \frac{\rho}{m_p} &= \frac{A}{p-1}\gamma_m^{1-p} //
+	&\Rightarrow A = \zeta (p-1) \frac{\rho}{m_p}\gamma_m^{-(1-p)}
+\end{align}
+
+We can now rewrite $n(\gamma)$,
+
+\begin{align}
+	n(\gamma) &= \zeta (p-1) \frac{\rho}{m_p} \gamma_m^{-(1-p)} \gamma^{-p}\\
+	&= \frac{(p-1)}{\gamma_m} \left(\frac{\gamma}{\gamma_m}\right)^{-p} n_e^{acc}
+\end{align}
+
+and $\mu_e$
+
+\begin{align}
+	\mu_e &= \zeta\frac{\rho}{m_p} \gamma_m^{-(1-p)}\frac{\gamma_m^{2-p}}{(p-2)} m_ec^2\\
+	&= \frac{(p-1)}{(p-2)}\gamma_m m_e c^2 n_e^{acc}
+\end{align}
+
+which leads us to an expression for $\gamma_m$,
+
+\begin{align}
+	\gamma_m &= \frac{(p-2)}{(p-1)}\frac{\mu_e}{n_e^{acc}}\frac{m_e}{c^2}\\
+	&\text{where } \frac{\mu_e}{n_e^{acc}} = \frac{(\epsilon_e \rho \epsilon_*)}{(\zeta \frac{\rho}{m_p})} = \frac{\epsilon_e \epsilon_* m_p}{\zeta}\\
+	\gamma_m &= \frac{(p-2)}{(p-1)} \frac{\epsilon_e}{\zeta} \frac{m_p}{m_e} \frac{\epsilon_*}{c^2} \\
+	\gamma_m &= \frac{(p-2)}{(p-1)} \frac{\epsilon_e}{\zeta} \frac{m_p}{m_e} (\Gamma_{int} -1)
+\end{align}
+
+where we used the relation $\epsilon_*/c^2 = (\Gamma_int - 1)$ in the final line.
+
+This can be considered in various ways depending on which microphysical parameters are kept constant or allowed to vary. For example, if we let $\zeta \sim \epsilon_* c^2$ then $\gamma_m$ will remain constant.
+
+\section[Derivation of nu_m and nu_c]{Derivation of $\nu_m$ and $\nu_c$}
+
+We recall that the frequency associated with a particular Lorentz factor is defined as
+
+\begin{align}
+	\nu(\gamma) = \gamma^2 \frac{q_e B}{2\pi m_e c}
+\end{align}
+
+Following the prescription of $\gamma_m$ (see Sec. \ref{sec: gamma_e}) we can find the frequency associated with the minimum Lorentz factor of an electron distribution (see \textit{Radiative Processes} Chapter 6.1 of Rybicki and Lightman, 1979),
+
+\begin{align}
+	\nu_m &= \nu(\gamma_m) = \gamma_m^2 \frac{q_e B}{2 \pi m_e c}\\
+	&= \frac{(p-2)^2}{(p-1)^2} \frac{\epsilon_e^2}{\zeta^2} \frac{m_p^2}{m_e^2} \frac{\epsilon_*^2}{c^4} \frac{q_e B}{2 \pi m_e c}\\
+	\nu_m &= \frac{1}{2\pi} \left(\frac{(p-2)}{(p-1)} \frac{\epsilon_e}{\zeta}\right)^2 \frac{m_p^2 q_e}{m_e^3 c^5} \epsilon_*^2 B
+\end{align}
+
+To find the critical Synchrotron frequency $\nu_c$, we musts first find the associated critical Synchrotron Lorentz factor $\gamma_c$. We do this by setting the energy of an electron accelerating in a magnetic field equal to the power generated in a time $t$ by the same electron,
+
+\begin{align}
+	\gamma_c m_e c^2 &= P(\gamma_c) t\\
+	&= \frac{4}{3} \sigma_T	c \gamma_c^2 \frac{B^2}{8\pi} t\\
+	\gamma_c &= m_e c^2 \frac{3}{4} \frac{1}{\sigma_T c} \frac{8\pi}{B^2t}\\
+	\gamma_c &= \frac{6 \pi m_e c}{\sigma_T} \frac{1}{B^2t}
+\end{align}
+
+which enables us to find $\nu_c$,
+
+\begin{align}
+	\nu_c &= \nu(\gamma_c) = \left(\frac{6\pi m_e c}{\sigma_t} \frac{1}{B^2t}\right)^2 \frac{q_e B}{2\pi m_e c}\\
+	&= \frac{36\pi^2 m_e c^2}{\sigma_T^2} \frac{q_e}{2\pi m_e c}\frac{1}{B^3t^2}\\
+	\nu_c &= \frac{18\pi q_e m_e c}{\sigma_T^2} \frac{1}{B^3t^2}
+\end{align}
+
+
 \section{Simulation Time Considerations}
 
 In this section we make rough estimates of the times required to run all simulations required for a particular parameter space. Each single simulation requires $\sim$ 5 seconds to run.

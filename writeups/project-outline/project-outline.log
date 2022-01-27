@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.10.13)  21 JAN 2022 14:45
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2021.10.13)  27 JAN 2022 17:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -621,13 +621,13 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 44.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4] [5] (./pro
 ject-outline.bbl
-[6]) [7] [8] [9] [10] [11] [12]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 712.
+[6]) [7] [8] [9] [10] [11] [12] [13] [14]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 810.
  (./project-outline.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 712.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 712.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 810.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 810.
 Package rerunfilecheck Info: File `project-outline.out' has not changed.
-(rerunfilecheck)             Checksum: 670151BFF8833A4B87DCEFE799163C7D;1237.
+(rerunfilecheck)             Checksum: EA025BA4768FC2FBB081581891DFD9B1;1396.
 
 
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right .
@@ -635,13 +635,13 @@ LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right .
 
  ) 
 Here is how much of TeX's memory you used:
- 10486 strings out of 481239
- 146730 string characters out of 5920376
- 488988 words of memory out of 5000000
- 25429 multiletter control sequences out of 15000+600000
+ 10519 strings out of 481239
+ 147140 string characters out of 5920376
+ 489071 words of memory out of 5000000
+ 25432 multiletter control sequences out of 15000+600000
  543392 words of font info for 68 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 42i,15n,41p,748b,527s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 42i,15n,41p,748b,534s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texliv
@@ -665,10 +665,10 @@ msfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts
 i10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti8.pfb
 ></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/
 share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on project-outline.pdf (12 pages, 345205 bytes).
+Output written on project-outline.pdf (14 pages, 356444 bytes).
 PDF statistics:
- 415 PDF objects out of 1000 (max. 8388607)
- 372 compressed objects within 4 object streams
- 147 named destinations out of 1000 (max. 500000)
- 145 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 465 PDF objects out of 1000 (max. 8388607)
+ 419 compressed objects within 5 object streams
+ 177 named destinations out of 1000 (max. 500000)
+ 161 words of extra memory for PDF output out of 10000 (max. 10000000)
 
