@@ -85,7 +85,7 @@ int main(int argc, char const *argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
-	
+	/*
 	float energ_min = 1e-9;
 	float energ_max = 1e6;
 	float num_energ_bins = 200;
@@ -128,6 +128,7 @@ int main(int argc, char const *argv[])
 	test_grb.WriteLightCurveToTXT("data-file-dir/test_light_curve.txt");
 
 	return 0;
+	*/
 	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -213,22 +214,22 @@ int main(int argc, char const *argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/* Testing DataAnalyis Fitting Package */
 	
-	/*
+	
 	// Define parameters for the synthetic source 
-	float tw = 50; 
-	float dte = 0.1;
-	// int numshells = 500;
-	float eps_e = 0.33;
-	float eps_b = 0.33;
-	float zeta = 1e-3;
-	double E_dot_iso = 1e53;
-	float theta = 0.1;
-	float r_open = 1e6;
-	float eps_th = 0.03;
-	float sigma = 0.1;
-	float p = 2.5; 
-	std::string LorentzDist = "step";
-	std::string ShellDistParamsFile = "Default";
+	// float tw = 50; 
+	// float dte = 0.1;
+	// // int numshells = 500;
+	// float eps_e = 0.33;
+	// float eps_b = 0.33;
+	// float zeta = 1e-3;
+	// double E_dot_iso = 1e53;
+	// float theta = 0.1;
+	// float r_open = 1e6;
+	// float eps_th = 0.03;
+	// float sigma = 0.1;
+	// float p = 2.5; 
+	// std::string LorentzDist = "step";
+	// std::string ShellDistParamsFile = "Default";
 
 	// Define parameter space to explore
 	std::vector<float> eps_e_vec = {0.33, 0.5};
@@ -253,7 +254,8 @@ int main(int argc, char const *argv[])
 	
 	// Make "observed" GRB data from a synthetic GRB and the given instrument response matrix 
 	// Initialize synthetic GRB pointer
-	SynthGRB * synth_obs_grb = new SynthGRB(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
+	// SynthGRB * synth_obs_grb = new SynthGRB(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
+	synth_obs_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
 	// Simulate the Jet Dynamics
 	(*synth_obs_grb).SimulateJetDynamics();
 	// Make spectrum from jet simulation
@@ -288,7 +290,7 @@ int main(int argc, char const *argv[])
 	data_analysis.set_param_space(eps_e_vec, eps_b_vec, zeta_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec, p_vec);
 
 	// Fit the synthetic observed spectrum and see if the input parameters are recovered by the fitting algorithm.
-	data_analysis.FitSpectrum_SynthGRB();
+	// data_analysis.FitSpectrum_SynthGRB();
 	// Or use an empirical function
 	data_analysis.set_fit_func("PL");
 	// Fit the synthetic observed spectrum with
@@ -311,7 +313,7 @@ int main(int argc, char const *argv[])
 	ConvolveSpectra(p_folded_model_spectrum, (*(*model_grb).p_source_spectrum), instrument_response, true);
 	// Write convolved spectrum to text file
 	(*p_folded_model_spectrum).WriteToTXT("data-file-dir/spec_model_conv.txt");
-	*/
+	
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////

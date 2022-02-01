@@ -1,4 +1,8 @@
+### g1  ###
 50
+### g2  ###
 400 
+### tfrac  ###
 0.2 
+### fluctuations ###
 false

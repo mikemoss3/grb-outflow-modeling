@@ -12,8 +12,8 @@ RM=rm -f
 MAINSRCS=main.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp SynthGRBLibrary.cpp ObsGRB.cpp DataAnalysis.cpp
 MAINOBS=$(subst .cpp,.o,$(MAINSRCS))
 
-TSTSRCS=testbench.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp SynthGRBLibrary.cpp ObsGRB.cpp DataAnalysis.cpp
-# TSTSRCS=testbench.cpp ShellDist.cpp cosmology.cpp
+# TSTSRCS=testbench.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp SynthGRBLibrary.cpp ObsGRB.cpp DataAnalysis.cpp
+TSTSRCS=testbench.cpp
 TSTOBJS=$(subst .cpp,.o,$(TSTSRCS))
 
 # Define executable file making methods
@@ -43,8 +43,8 @@ DataAnalysis.o: DataAnalysis.cpp DataAnalysis.hpp FitStats.hpp SynthGRBLibrary.h
 
 main.o: main.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp SynthGRBLibrary.hpp SynthGRBLibrary.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
 
-testbench.o: testbench.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp SynthGRBLibrary.hpp SynthGRBLibrary.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
-# testbench.o: testbench.cpp ShellDist.hpp cosmology.hpp
+# testbench.o: testbench.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp SynthGRBLibrary.hpp SynthGRBLibrary.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
+testbench.o: testbench.cpp
 
 # Define cleaning methods
 clean:

@@ -147,9 +147,25 @@ void DataAnalysis::set_fit_method(std::string fit_type_string)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Set the function to use to fit the data
-void DataAnalysis::set_fit_func(double (*func)(float, double *))
+// void DataAnalysis::set_fit_func(double (*func)(float, double *))
+void DataAnalysis::set_fit_func(std::string fit_func)
 {
-	this->spectral_func = func;
+	if(fit_type_string == "brute")
+	{
+		this->spec_func = PL;
+	}
+	else if(fit_type_string == "MC")
+	{
+		this->spec_func = BPL;
+	}
+	else if(fit_type_string == "genetic")
+	{
+		this->spec_func = Band;
+	}
+	else if(fit_type_string == "annealing")
+	{
+		this->spec_func = BB;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

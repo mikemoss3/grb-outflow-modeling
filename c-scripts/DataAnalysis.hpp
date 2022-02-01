@@ -49,7 +49,7 @@ public:
 	// The float argument will be the energy to evaluate the spectrum at, 
 	// the pointer points to a list of doubles/floats which are the input parameters to the function
 	typedef double (*functiontype)(float, double * ); 
-	functiontype spectral_func = NULL;
+	functiontype spec_func = NULL;
 	// Initialize the number of parameters to be given, and the parameter array
 	// int num_elems = 0;
 	float * param_arr;
@@ -64,7 +64,8 @@ public:
 	void set_fit_method(std::string fit_type_string);
 	
 	// Set fitting function 
-	void set_fit_func( double (*functiontype)(float, double * ) );
+	// void set_fit_func( double (*functiontype)(float, double * ) );
+	void set_fit_func(std::string fit_func);
 
 	// Set the initial parameter set
 	void set_init_params(ModelParams * p_input_init_params);

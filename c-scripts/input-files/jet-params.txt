@@ -1,13 +1,26 @@
+### tw ###
 10
+### dte  ###
 0.02
+### eps_e ###
 0.33
+### eps_b ###
 0.33 
+### zeta ###
 1e-3 
-1e53
-0.1 
+### E_dot_iso  ###
+1e52
+### theta  ###
+0.1
+### r_open  ###
 1e6
-0.8
-0.1 
+### eps_th  ###
+0.03
+### sigma  ###
+0.1
+### p ###
 2.5
+### LorentzDist  ###
 osci
+### ShellDistParamsFile ###
 ./input-files/jet-shells-osci.txt

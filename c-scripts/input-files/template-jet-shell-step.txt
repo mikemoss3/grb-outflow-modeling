@@ -1,4 +1,0 @@
-g1 
-g2 
-mfrac 
-fluctuations

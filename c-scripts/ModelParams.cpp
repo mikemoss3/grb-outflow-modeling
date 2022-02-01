@@ -94,44 +94,43 @@ void ModelParams::copy(ModelParams * p_model_params_in)
 // Load ModelParams from a text file
 void ModelParams::LoadFromTXT(std::string filename)
 {
-	// Load in the file
-	ifstream file_model_param(filename);
-	string line_model_params;
-	if(file_model_param.is_open())
-	{
-		getline( file_model_param, line_model_params);
-		this->tw = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->dte = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->eps_e = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->eps_b = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->zeta = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->E_dot_iso = stod(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->theta = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->r_open = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->eps_th = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->sigma = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->p = stof(line_model_params);
-		getline( file_model_param, line_model_params);
-		this->LorentzDist = line_model_params;
-		getline( file_model_param, line_model_params);
-		this->ShellDistParamsFile = line_model_params;
-		// Calculate number of jet shells
-		this->numshells = tw/dte;
+	// Array to store params 
+	string inputs[13];
+	int i = 0;
 
+	// Load in the file
+	ifstream file_jet_params(filename);
+	string line_jet_params;
+	if ( file_jet_params.is_open() ) 
+	{ 
+		while(getline(file_jet_params, line_jet_params))
+		{
+			// If it is a commented line, just pass by
+			if(line_jet_params[0] == '#'){ continue; }
+			// Else: 
+			inputs[i] = line_jet_params;
+			++i;
+		}	
+	
 		// Close files and free memory 
-		file_model_param.close();
+		file_jet_params.close();
 	}
-	else std::cout << "Unable to open file.";
+	else{ std::cout << "Unable to open file."; }
+
+	this->tw = stof(inputs[0]);
+	this->dte = stof(inputs[1]);
+	this->eps_e = stof(inputs[2]);
+	this->eps_b = stof(inputs[3]);
+	this->zeta = stof(inputs[4]);
+	this->E_dot_iso = stod(inputs[5]);
+	this->theta = stof(inputs[6]);
+	this->r_open = stof(inputs[7]);
+	this->eps_th = stof(inputs[8]);
+	this->sigma = stof(inputs[9]);
+	this->p = stof(inputs[10]);
+	this->LorentzDist = inputs[1];
+	this->ShellDistParamsFile = inputs[12];
+	this->numshells = tw/dte;
 
 }
 	

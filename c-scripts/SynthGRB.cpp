@@ -133,74 +133,60 @@ void SynthGRB::InitializeJet()
 // Load jet parameters from a file
 void SynthGRB::LoadJetParamsFromTXT(std::string file_name)
 {
+	// Array to store params 
+	string inputs[13];
+	int i = 0;
+
 	// Load in the file
 	ifstream file_jet_params(file_name);
 	string line_jet_params;
 	if ( file_jet_params.is_open() ) 
-	{
-		// tw
-		getline( file_jet_params, line_jet_params);
-		float col1_val = stof(line_jet_params);
-		// dte
-		getline( file_jet_params, line_jet_params);
-		float col2_val = stof(line_jet_params);	
-		// eps_e
-		getline( file_jet_params, line_jet_params);
-		float col3_val = stof(line_jet_params);
-		// eps_b
-		getline( file_jet_params, line_jet_params);
-		float col4_val = stof(line_jet_params);
-		// zeta
-		getline( file_jet_params, line_jet_params);
-		float col5_val = stof(line_jet_params);
-		// E_dot_iso
-		getline( file_jet_params, line_jet_params);
-		double col6_val = stod(line_jet_params);
-		// theta
-		getline( file_jet_params, line_jet_params);
-		float col7_val = stof(line_jet_params);
-		// r_open
-		getline( file_jet_params, line_jet_params);
-		float col8_val = stof(line_jet_params);
-		// eps_th
-		getline( file_jet_params, line_jet_params);
-		float col9_val = stof(line_jet_params);
-		// sigma
-		getline( file_jet_params, line_jet_params);
-		float col10_val = stof(line_jet_params);
-		// p
-		getline( file_jet_params, line_jet_params);
-		float col11_val = stof(line_jet_params);
-		// LorentzDist
-		getline( file_jet_params, line_jet_params);
-		string col12_val = line_jet_params;
-		// ShellDistParamsFile
-		getline( file_jet_params, line_jet_params);
-		string col13_val = line_jet_params;
-		
-		p_model_params = new ModelParams(
-			col1_val, 
-			col2_val, 
-			col3_val, 
-			col4_val, 
-			col5_val, 
-			col6_val, 
-			col7_val, 
-			col8_val, 
-			col9_val, 
-			col10_val,
-			col11_val,
-			col12_val,
-			col13_val);
-		
-		// Initialize jet based on current jet parameters and shell distribution
-		InitializeJet();
-
+	{ 
+		while(getline(file_jet_params, line_jet_params))
+		{
+			// If it is a commented line, just pass by
+			if(line_jet_params[0] == '#'){ continue; }
+			// Else: 
+			inputs[i] = line_jet_params;
+			++i;
+		}	
+	
 		// Close files and free memory 
 		file_jet_params.close();
 	}
-	else std::cout << "Unable to open file.";
+	else{ std::cout << "Unable to open file."; }
 
+	// Set model parameters 
+	// tw
+	// dte
+	// eps_e
+	// eps_b
+	// zeta
+	// E_dot_iso
+	// theta
+	// r_open
+	// eps_th
+	// sigma
+	// p
+	// LorentzDist
+	// ShellDistParamsFile	
+	p_model_params = new ModelParams(
+		stof(inputs[0]),
+		stof(inputs[1]),
+		stof(inputs[2]),
+		stof(inputs[3]),
+		stof(inputs[4]),
+		stod(inputs[5]),
+		stof(inputs[6]),
+		stof(inputs[7]),
+		stof(inputs[8]),
+		stof(inputs[9]),
+		stof(inputs[10]),
+		inputs[11],
+		inputs[12]);
+
+	// Initialize jet based on current jet parameters and shell distribution
+	InitializeJet();
 
 }
 
@@ -234,34 +220,33 @@ void SynthGRB::set_jet_shells()
 		}
 		else
 		{
-			float g1, g2, mfrac;
-			bool fluctuations;
+			// Array to store para-ms 
+			string inputs[4];
+			int i = 0;
+
 			// Load from designated file
 			ifstream file_jet_params((*p_model_params).ShellDistParamsFile);
 			string line_jet_params;
 			if ( file_jet_params.is_open() ) 
 			{
-
-				getline( file_jet_params, line_jet_params);
-				g1 = stof(line_jet_params);
-
-				getline( file_jet_params, line_jet_params);
-				g2 = stof(line_jet_params);
-				
-				getline( file_jet_params, line_jet_params);
-				mfrac = stof(line_jet_params);
-				
-				getline( file_jet_params, line_jet_params);
-				istringstream(line_jet_params) >> fluctuations;
-
-
-				// Make shell distribution with input parameters
-				(*p_jet_shells).step((*p_model_params).dte, g1, g2, mfrac, fluctuations);	
+				while(getline(file_jet_params, line_jet_params))
+				{
+					// If it is a commented line, just pass by
+					if(line_jet_params[0] == '#'){ continue; }
+					// Else: 
+					inputs[i] = line_jet_params;
+					++i;
+				}	
 
 				// Close files and free memory 
 				file_jet_params.close();
 			}
 			else std::cout << "Unable to open file.";
+		
+			// Make shell distribution with input parameters
+			bool fluc;
+			istringstream(inputs[3]) >> fluc; 
+			(*p_jet_shells).step((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), fluc);
 		}
 		
 	}
@@ -275,34 +260,35 @@ void SynthGRB::set_jet_shells()
 		}
 		else
 		{
-			float g1, g2, tfrac;
-			bool fluctuations;
+			// Array to store params 
+			string inputs[4];
+			int i = 0;
+
 			// Load from designated file
 			ifstream file_jet_params((*p_model_params).ShellDistParamsFile);
 			string line_jet_params;
 			if ( file_jet_params.is_open() ) 
 			{
 
-				getline( file_jet_params, line_jet_params);
-				g1 = stof(line_jet_params);
-
-				getline( file_jet_params, line_jet_params);
-				g2 = stof(line_jet_params);
+				while(getline(file_jet_params, line_jet_params))
+				{
+					// If it is a commented line, just pass by
+					if(line_jet_params[0] == '#'){ continue; }
+					// Else: 
+					inputs[i] = line_jet_params;
+					++i;
+				}
 				
-				getline( file_jet_params, line_jet_params);
-				tfrac = stof(line_jet_params);
-				
-				getline( file_jet_params, line_jet_params);
-				istringstream(line_jet_params) >> fluctuations;
-
-
-				// Make shell distribution with input parameters
-				(*p_jet_shells).smoothstep((*p_model_params).dte, g1, g2, tfrac, fluctuations);	
-
 				// Close files and free memory 
 				file_jet_params.close();
 			}
 			else std::cout << "Unable to open file.";
+
+			// Make shell distribution with input parameters
+			bool fluc;
+			istringstream(inputs[3]) >> fluc; 
+			(*p_jet_shells).smoothstep((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), fluc);
+
 		}
 		
 	}
@@ -316,35 +302,33 @@ void SynthGRB::set_jet_shells()
 		}
 		else
 		{
-			float median, amp, freq, decay;
-			bool fluctuations;
+			// Array to store params 
+			string inputs[5];
+			int i = 0;
+
 			// Load from designated file
 			ifstream file_jet_params((*p_model_params).ShellDistParamsFile);
 			string line_jet_params;
 			if ( file_jet_params.is_open() ) 
 			{
-				getline( file_jet_params, line_jet_params);
-				median = stof(line_jet_params);
-
-				getline( file_jet_params, line_jet_params);
-				amp = stof(line_jet_params);
-
-				getline( file_jet_params, line_jet_params);
-				freq = stof(line_jet_params);
-
-				getline( file_jet_params, line_jet_params);
-				decay = stof(line_jet_params);
-
-				getline( file_jet_params, line_jet_params);
-				istringstream(line_jet_params) >> fluctuations;
-
-				// Make shell distribution with input parameters
-				(*p_jet_shells).oscillatory((*p_model_params).dte, median, amp, freq, decay, fluctuations);	
+				while(getline(file_jet_params, line_jet_params))
+				{
+					// If it is a commented line, just pass by
+					if(line_jet_params[0] == '#'){ continue; }
+					// Else: 
+					inputs[i] = line_jet_params;
+					++i;
+				}
 
 				// Close files and free memory 
 				file_jet_params.close();
 			}
 			else std::cout << "Unable to open file.";
+
+			// Make shell distribution with input parameters
+			bool fluc;
+			istringstream(inputs[3]) >> fluc; 
+			(*p_jet_shells).oscillatory((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), stof(inputs[1]), fluc);
 		}
 		
 	}
