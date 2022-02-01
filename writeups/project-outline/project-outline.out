@@ -11,10 +11,12 @@
 \BOOKMARK [1][-]{appendix.A}{Shell Collision Time and Radius}{}% 11
 \BOOKMARK [2][-]{subsection.A.1}{Typical Values}{appendix.A}% 12
 \BOOKMARK [1][-]{appendix.B}{Derivations of Gamma_r and Gamma_int}{}% 13
-\BOOKMARK [1][-]{appendix.C}{Derivation of the Minimum Electron Lorentz Factor, Gamma_e}{}% 14
-\BOOKMARK [1][-]{appendix.D}{Derivation of nu_m and nu_c}{}% 15
-\BOOKMARK [1][-]{appendix.E}{Simulation Time Considerations}{}% 16
-\BOOKMARK [2][-]{subsection.E.1}{Using observations to help constrain the parameter space}{appendix.E}% 17
-\BOOKMARK [2][-]{subsection.E.2}{Creating a library}{appendix.E}% 18
-\BOOKMARK [1][-]{appendix.F}{Custom Classes/Libraries}{}% 19
-\BOOKMARK [1][-]{appendix.G}{Packages Used}{}% 20
+\BOOKMARK [2][-]{subsection.B.1}{Two Shells of Similar Mass}{appendix.B}% 14
+\BOOKMARK [2][-]{subsection.B.2}{External Shock Considerations}{appendix.B}% 15
+\BOOKMARK [1][-]{appendix.C}{Derivation of the Minimum Electron Lorentz Factor, Gamma_e}{}% 16
+\BOOKMARK [1][-]{appendix.D}{Derivation of nu_m and nu_c}{}% 17
+\BOOKMARK [1][-]{appendix.E}{Simulation Time Considerations}{}% 18
+\BOOKMARK [2][-]{subsection.E.1}{Using observations to help constrain the parameter space}{appendix.E}% 19
+\BOOKMARK [2][-]{subsection.E.2}{Creating a library}{appendix.E}% 20
+\BOOKMARK [1][-]{appendix.F}{Custom Classes/Libraries}{}% 21
+\BOOKMARK [1][-]{appendix.G}{Packages Used}{}% 22

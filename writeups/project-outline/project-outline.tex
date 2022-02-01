@@ -559,7 +559,9 @@ Let us assume shell 1 and 2 have Lorentz factors $\Gamma_1=100$ and $\Gamma_2=40
 
 \section[Derivations of Gamma_r and Gamma_int]{Derivations of $\Gamma_r$ and $\Gamma_{int}$}
 
-In a collision between two relativistic shells with Lorentz factors $\Gamma_1 and \Gamma_2$, and masses M$_1$ and M$_2$, we can calculate the resulting Lorentz factor of the bulk motion of the merged shells, $\Gamma_r$ and the internal motion of the particles, $\Gamma_{int}$. We can find these quantities by adding the four-momentum of each shell. Since the shells are moving radially in the jet, we only need to consider one axis of propagation in the four vector. If we consider the frame of the resulting merged shell we can write the system as
+\subsection{Two Shells of Similar Mass}
+
+In a collision between two relativistic shells with Lorentz factors $\Gamma_1$ and $\Gamma_2$, and masses M$_1$ and M$_2$, we can calculate the resulting Lorentz factor of the bulk motion of the merged shells, $\Gamma_r$ and the internal motion of the particles, $\Gamma_{int}$. We can find these quantities by adding the four-momentum of each shell. Since the shells are moving radially in the jet, we only need to consider one axis of propagation in the four vector. If we consider the frame of the resulting merged shell we can write the system as
 
 \begin{align}
 	\begin{pmatrix}
@@ -585,7 +587,7 @@ In a collision between two relativistic shells with Lorentz factors $\Gamma_1 an
 This system of equations leads to the relations
 
 \begin{align}
-	\Gamma_r \Gamma_i &= \frac{\Gamma_1M_1 + \Gamma_2M_2}{M_1+M_2} \label{eq: gamrgami 1}\\
+	\Gamma_r \Gamma_{int} &= \frac{\Gamma_1M_1 + \Gamma_2M_2}{M_1+M_2} \label{eq: gamrgami 1}\\
 	\Gamma_r\beta_r\Gamma_{int}(M_1+M_2) &= \Gamma_1\beta_1M_1+\Gamma_2\beta_2M_2 \label{eq: gamrgami 2}
 \end{align}
 
@@ -625,6 +627,66 @@ To find $\Gamma_{int}$ we return to Eq. \ref{eq: gamrgami 1} and continue to use
 	\Gamma_{int} &= \frac{1}{2}\left[ \left(\frac{\Gamma_1}{\Gamma_2}\right)^{1/2} + \left(\frac{\Gamma_2}{\Gamma_1}\right)^{1/2}\right]\\
 \end{align}
 
+\subsection{External Shock Considerations}
+
+In the situation of the external shock, we must consider three shells; the reverse shock, the forward shock, and the swept up medium. The reverse and forward shock both have the same Lorentz factor $\Gamma_s$, but they have their own respective mass $M_{RS}$ and $M_{FS}$ and their own respective internal Lorentz factor $\Gamma_{RS,int} = 1$ and $\Gamma_{FS,int} = \Gamma_{int}$. We can discretize the mass of the external medium into chunks of mass $m_{ex}$. Since the external medium is at rest and cold $\Gamma_{ext} = \Gamma_{ext,int} = 1$.
+
+\begin{align}
+	\begin{pmatrix}
+	\beta_s\Gamma_s M_{RS} c^2\\
+	\Gamma_s M_{RS} c^2
+	\end{pmatrix}
+	+
+	\begin{pmatrix}
+	\beta_s\Gamma_{int}\Gamma_s M_{FS} c^2 \\
+	\Gamma_s M_{FS} c^2
+	\end{pmatrix}
+	+
+	\begin{pmatrix}
+	0 \\
+	m_{ex} c^2
+	\end{pmatrix}
+	=
+	\begin{pmatrix}
+	\Gamma_r & \beta_r\Gamma_r\\
+	\beta_r\Gamma_r & \Gamma_r
+	\end{pmatrix}
+	\begin{pmatrix}
+	0 \\
+	[M_{RS} + \Gamma_{int}(M_{FS} + m_{ex}) ]c^2
+	\end{pmatrix}
+\end{align}
+
+This system of equations leads to the relations
+
+\begin{align}
+	\beta_s\Gamma_sM_{RS} + \beta_s\Gamma_{int}\Gamma_sM_{FS} &= \beta_r\Gamma_r[M_{RS} + \Gamma_{int}(M_{FS}+m_{ex})] \label{eq: gamma_r_ext}\\
+	\Gamma_sM_{RS} + \Gamma_{int}\Gamma_sM_{FS} + m_{ex} &= \Gamma_r (M_{RS} + \Gamma_{int}(M_{FS}+m_{ex})) \label{eq: gamma_int_ext}
+\end{align}
+
+We can find $\Gamma_{int}$ directly from Eq. \ref{eq: gamma_int_ext},
+
+\begin{align}
+	\Gamma_{int} = \frac{(M_{RS} + \Gamma_{int}M_{FS})\Gamma_s + m_{ex} - \Gamma_rM_{RS}}{\Gamma_r(M_{FS}+m_{ext})}
+\end{align}
+
+And using Eq. \ref{eq: gamma_r_ext} we can find $\Gamma_r$,
+
+\begin{align}
+	\beta_s\Gamma_sM_{RS} + \beta_s\Gamma_{int}\Gamma_sM_{FS} &= \beta_r\Gamma_r[M_{RS} + \Gamma_{int}(M_{FS} + m_{ex})]\\
+	&= \beta_r (\Gamma_sM_{RS} + \Gamma_{int}\Gamma_sM_{FS} + m_{ex})\\
+	&= \left(1 - \frac{1}{2\Gamma_r^2}\right) (\Gamma_sM_{RS} + \Gamma_{int}\Gamma_sM_{FS} + m_{ex})\\
+	\frac{1}{2\Gamma_r^2} &= 1 - \frac{\beta_s\Gamma_s(M_{RS}+\Gamma_{int}M_{FS})}{\Gamma_s(M_{RS}+\Gamma_{int}M_{FS}) + m_{ex}}\\
+	&= \frac{\Gamma_s(M_{RS}+\Gamma_{int}M_{FS}) + m_{ex} - \beta_s\Gamma_s(M_{RS}+\Gamma_{int}M_{FS})}{\Gamma_s(M_{RS}+\Gamma_{int}M_{FS})+m_{ex}}\\
+	2\Gamma_r^2 &= \frac{\Gamma_s(M_{FS}+\Gamma_{int}M_{FS})+m_{ex}}{\Gamma_s(M_{RS}+\Gamma_{int}M_{FS})(1-\beta_s) + m_{ex}}\\
+	&\text{ use } (1-\beta) \approx \frac{1}{2\Gamma^2}\\
+	2\Gamma_r^2 &= \frac{\Gamma_s(M_{FS}+\Gamma_{int}M_{FS})+m_{ex}}{\frac{1}{2\Gamma_s}(M_{RS}+\Gamma_{int}M_{FS}) + m_{ex}}\\
+	2\Gamma_r^2 &= 2\Gamma_s\frac{\Gamma_s(M_{FS}+\Gamma_{int}M_{FS})+m_{ex}}{(M_{RS}+\Gamma_{int}M_{FS}) + 2\Gamma_sm_{ex}}\\
+	\Gamma_r &= \left[ \frac{\Gamma_s^2(M_{RS} + \Gamma_{int}M_{FS}) + \Gamma_sm_{ex}}{(M_{RS} + \Gamma_{int}M_{FS})+2\Gamma_sm_{ex}}\right]^{1/2}
+\end{align}
+
+
+
 \section[Derivation of the Minimum Electron Lorentz Factor, Gamma_e]{Derivation of the Minimum Electron Lorentz Factor, $\Gamma_e$} \label{sec: gamma_e}
 
 For each shock collision we can write the mass density $\rho$ and energy density $\epsilon$ (or specific energy density $\epsilon_* = \epsilon/m_p$) within the shock region which let us define the energy densities of the magnetic field $\mu_B$ and the electrons $\mu_e$,
@@ -658,7 +720,7 @@ where A is a normalization. We can explicitly find the number density and energy
 Using the two expressions for $n_e^{acc}$, we can find the normalization A,
 
 \begin{align}
-	\zeta \frac{\rho}{m_p} &= \frac{A}{p-1}\gamma_m^{1-p} //
+	\zeta \frac{\rho}{m_p} &= \frac{A}{p-1}\gamma_m^{1-p} \\
 	&\Rightarrow A = \zeta (p-1) \frac{\rho}{m_p}\gamma_m^{-(1-p)}
 \end{align}
 
@@ -685,7 +747,7 @@ which leads us to an expression for $\gamma_m$,
 	\gamma_m &= \frac{(p-2)}{(p-1)} \frac{\epsilon_e}{\zeta} \frac{m_p}{m_e} (\Gamma_{int} -1)
 \end{align}
 
-where we used the relation $\epsilon_*/c^2 = (\Gamma_int - 1)$ in the final line.
+where we used the relation $\epsilon_*/c^2 = (\Gamma_{int} - 1)$ in the final line.
 
 This can be considered in various ways depending on which microphysical parameters are kept constant or allowed to vary. For example, if we let $\zeta \sim \epsilon_* c^2$ then $\gamma_m$ will remain constant.
 
