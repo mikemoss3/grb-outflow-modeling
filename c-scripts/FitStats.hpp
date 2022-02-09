@@ -43,8 +43,11 @@ public:
 	double calc_fit_stat(const Spectrum & observed_spectrum, const Spectrum & folded_spectrum, bool reset = true);
 	// Set the fit statistic type
 	void set_fit_stat_type(std::string fit_type);
+	// Get fit stat type
+	int get_fit_stat_type();
 	// Set the fit statistic value
 	void set_fit_stat_val(double val);
+
 	// Reset fit stat
 	void reset_fit_stat();
 

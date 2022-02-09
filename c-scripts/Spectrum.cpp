@@ -94,6 +94,9 @@ Spectrum::Spectrum(const Spectrum& tmp_spec)
 	Copy constructor.
 	*/
 	Spectrum(tmp_spec.energ_min, tmp_spec.energ_max, tmp_spec.num_energ_bins);
+	this->energ_lo = tmp_spec.energ_lo;
+    this->energ_mid = tmp_spec.energ_mid;
+    this->energ_hi = tmp_spec.energ_hi;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

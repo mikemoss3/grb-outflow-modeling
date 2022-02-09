@@ -182,9 +182,16 @@ int ConvolveSpectra(Spectrum * & folded_spectrum, const Spectrum & unfolded_spec
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Power Law 
-double PL(float energy, float * alpha)
+double PL(float energy, double * param_list)
 {
-    return pow(energy/100.,(*alpha) );
+    /*
+    param_list[0] = alpha, power law slope
+    param_list[1] = norm, normalization of the spectral function
+    */
+    float alpha = param_list[0]; 
+    double norm = param_list[1];
+
+    return norm*pow(energy/100.,alpha);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -193,27 +200,29 @@ double PL(float energy, float * alpha)
 double BPL(float energy, double * param_list)
 {
     /*
-    Compute the pow law spectrum at a particular energy
+    Compute the broken power law spectrum at a particular energy
     
     param_list[0] = e0, the peak energy
     param_list[1] = alpha, the low energy power law slope
     param_list[2] = beta, the high energy power law slope
+    param_list[3] = norm, normalization of the spectral function
 
     */
 
     double e0 = param_list[0];
     float alpha = param_list[1];
     float beta = param_list[2];
+    double norm = param_list[3];
 
     // If the energy is below the peak energy
     if (energy < e0)
     {
-        return pow(energy/e0, alpha);
+        return norm*pow(energy/e0, alpha);
     }
     // If the energy is above the peak energy
     else
     {
-        return pow(energy/e0, beta);
+        return norm*pow(energy/e0, beta);
         // return pow(e0/e0, alpha-beta)*pow(energy/e0, beta);
     }
 }
@@ -225,27 +234,29 @@ double BPL(float energy, double * param_list)
 double Band(float energy, double * param_list)
 {
     /*
-    Compute the pow law spectrum at a particular energy
+    Compute the Band spectrum at a particular energy
     
     param_list[0] = e0, the break energy
     param_list[1] = alpha, the low energy power law slope
     param_list[2] = beta, the high energy power law slope
+    param_list[3] = norm, normalization of the spectral function
 
     */
     
     double e0 = param_list[0];
     float alpha = param_list[1];
     float beta = param_list[2];
+    double norm = param_list[3];
 
     // If the energy is below the break energy
     if (energy <= (alpha-beta)*e0)
     {
-        return pow(energy/100.,alpha) * exp(-energy/e0);
+        return norm*pow(energy/100.,alpha) * exp(-energy/e0);
     }
     // If the energy is above the peak energy
     else
     {
-        return pow((alpha-beta)*e0/100.,alpha-beta) * exp(beta-alpha) * pow(energy/100.,beta);
+        return norm*pow((alpha-beta)*e0/100.,alpha-beta) * exp(beta-alpha) * pow(energy/100.,beta);
     }
 }
 
@@ -254,11 +265,79 @@ double Band(float energy, double * param_list)
 // Broadened Blackbody
 double BB(float energy, double * param_list)
 {
-    // param_list[0] = temp, temperature of the black body
-    // param_list[1] = alpha, low energy power law slope of the black body
+    /*
+    param_list[0] = temp, temperature of the black body (in keV)
+    param_list[1] = alpha, low energy power law slope of the black body
+    param_list[2] = norm, normalization of the spectral function
+    */
 
-    float temp = param_list[0];
+    double temp = param_list[0]*kb_kev;
     float alpha = param_list[1];
+    double norm = param_list[2];
 
-    return pow(energy/(kb_kev*temp),1.+alpha)/(exp(energy/(kb_kev*temp)) - 1.);
+    return norm*pow(energy/temp,1.+alpha)/(exp(energy/temp) - 1.);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Synchrotron spectrum function
+double Synchrotron(float energy, double * param_list)
+{
+    /*
+    Compute the synchrotron spectrum at a particular energy 
+    
+    param_list[0] = nu_c, Hz, the frequency associated with the critical Lorentz factor of the electron population
+    param_list[1] = nu_m, Hz, the frequency associated with the minimum Lorentz factor of the electron population
+    param_list[2] = p, the power law index of the electron population distribution
+    param_list[3] = norm, normalization of the spectral function
+
+    */
+    
+    double nu_c = param_list[0];
+    double nu_m = param_list[1];
+    float p = param_list[2];
+    double norm = param_list[3];
+
+
+    // Decide if the electron population is in the slow- of fast- cooling regimes
+    if(nu_m < nu_c)
+    {
+        // Slow-cooling
+
+        // If the energy is below h*nu_m,
+        if(energy < h_planck*nu_m)
+        {
+            return pow(energy,-2./3.);
+        }
+        else if(energy < h_planck*nu_c)
+        {
+            // If the energy is between h*nu_m and h*nu_c
+            return pow(energy,-(p+1.)/2.);
+        }
+        else
+        {
+            // If the energy is above h*nu_c
+            return pow(energy,-(p+2.)/2.);
+        }   
+    }
+    else
+    {
+        // Fast-cooling
+
+        // If the energy is below h*nu_c,
+        if(energy < h_planck*nu_m)
+        {
+            return pow(energy,-2./3.);
+        }
+        else if(energy < h_planck*nu_c)
+        {
+            // If the energy is between h*nu_c and h*nu_m
+            return pow(energy,-3./2.);
+        }
+        else
+        {
+            // If the energy is above h*nu_m
+            return pow(energy,-(p+2.)/2.);
+        }
+    }
 }

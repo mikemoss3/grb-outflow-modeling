@@ -42,7 +42,7 @@ void SynthGRBLibrary::set_SynthGRB_lib_dir(std::string path_name)
 // Make synthetic GRBs and save them into the specified library
 void SynthGRBLibrary::MakeLibrary(float tw, float dte, 
 	std::vector<float> eps_e_vec, std::vector<float> eps_b_vec, 
-	std::vector<float> zeta_vec, std::vector<double> E_dot_iso_vec, 
+	std::vector<float> zeta_int_vec, std::vector<float> zeta_ext_vec, std::vector<double> E_dot_iso_vec, 
 	std::vector<float> theta_vec, std::vector<float> r_open_vec, 
 	std::vector<float> eps_th_vec, std::vector<float> sigma_vec, std::vector<float> p_vec,
 	std::string LorentzDist, std::string ShellDistParamsFile,
@@ -53,7 +53,8 @@ void SynthGRBLibrary::MakeLibrary(float tw, float dte,
 	// dte = 0.002; // sec, Time between successive shell launches
 	// eps_e_vec = Vector which stores the fraction of dissipated energy that goes into the electrons 
 	// eps_b_vec = Vector which stores the fraction of dissipated energy that goes into the magnetic field 
-	// zeta_vec = Vector which stores the fraction of electrons which are accelerated 
+	// zeta_int_vec = Vector which stores the fraction of electrons which are accelerated in internal and reverse
+	// zeta_ext_vec = Vector which stores the fraction of electrons which are accelerated in forward shocks
 	// E_dot_iso_vec = erg/s, Vector which stores the  injected isotropic energy rate
 	// theta_vec = radians, Vector which stores the half-opening angle of the jet
 	// r_open_vec = cm, Vector which stores the opening radius of the jet
@@ -69,7 +70,7 @@ void SynthGRBLibrary::MakeLibrary(float tw, float dte,
 	// tmax = Maximum time of the emission to calculate the spectra across	
 
 	// Calculate total number of SynthGRBs in the library
-	int num_synthGRBs = eps_e_vec.size() * eps_b_vec.size() * zeta_vec.size() * E_dot_iso_vec.size() * theta_vec.size() * r_open_vec.size() * eps_th_vec.size() * sigma_vec.size();
+	int num_synthGRBs = eps_e_vec.size() * eps_b_vec.size() * zeta_int_vec.size() * zeta_ext_vec.size() * E_dot_iso_vec.size() * theta_vec.size() * r_open_vec.size() * eps_th_vec.size() * sigma_vec.size();
 
 	// Set size of library
 	synth_grb_list.resize(num_synthGRBs);
@@ -80,55 +81,60 @@ void SynthGRBLibrary::MakeLibrary(float tw, float dte,
 	{
 		for(size_t i3=0; i3< eps_b_vec.size(); ++i3)
 		{
-			for(size_t i4=0; i4< zeta_vec.size(); ++i4)
+			for(size_t i4=0; i4< zeta_int_vec.size(); ++i4)
 			{
-				for(size_t i6=0; i6< E_dot_iso_vec.size(); ++i6)
+				for(size_t i5=0; i5< zeta_ext_vec.size(); ++i5)
 				{
-					for(size_t i7=0; i7< theta_vec.size(); ++i7)
+					for(size_t i6=0; i6< E_dot_iso_vec.size(); ++i6)
 					{
-						for(size_t i8=0; i8< r_open_vec.size(); ++i8)
+						for(size_t i7=0; i7< theta_vec.size(); ++i7)
 						{
-							for(size_t i10=0; i10< eps_th_vec.size(); ++i10)
+							for(size_t i8=0; i8< r_open_vec.size(); ++i8)
 							{
-								for(size_t i11=0; i11< sigma_vec.size(); ++i11)
+								for(size_t i10=0; i10< eps_th_vec.size(); ++i10)
 								{
-									for(size_t i12=0; i12 < p_vec.size(); ++i12)
+									for(size_t i11=0; i11< sigma_vec.size(); ++i11)
 									{
-										/*
-										SynthGRB * template_grb = new SynthGRB();
-										(*template_grb).tw = tw;
-										(*template_grb).dte = dte;
-										(*template_grb).eps_e = eps_e_vec.at(i1);
-										(*template_grb).eps_b = eps_b_vec.at(i3);
-										(*template_grb).zeta = zeta_vec.at(i4);
-										(*template_grb).E_dot_iso = E_dot_iso_vec.at(i6);
-										(*template_grb).theta = theta_vec.at(i7);
-										(*template_grb).r_open = r_open_vec.at(i8);
-										(*template_grb).eps_th = eps_th_vec.at(i10);
-										(*template_grb).sigma = sigma_vec.at(i11);
-										(*template_grb).LorentzDist = LorentzDist;
-										(*template_grb).ShellDistParamsFile = ShellDistParamsFile;
-										*/
-										SynthGRB * template_grb = new SynthGRB(tw,
-											dte,
-											eps_e_vec.at(i1),
-											eps_b_vec.at(i3),
-											zeta_vec.at(i4),
-											E_dot_iso_vec.at(i6),
-											theta_vec.at(i7),
-											r_open_vec.at(i8),
-											eps_th_vec.at(i10),
-											sigma_vec.at(i11),
-											p_vec.at(i12),
-											LorentzDist,
-											ShellDistParamsFile);
-										
-										(*template_grb).SimulateJetDynamics();
-										(*template_grb).make_source_spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax);
-										synth_grb_list.at(iter) = (*template_grb);
-										iter+=1;
-									}
+										for(size_t i12=0; i12 < p_vec.size(); ++i12)
+										{
+											/*
+											SynthGRB * template_grb = new SynthGRB();
+											(*template_grb).tw = tw;
+											(*template_grb).dte = dte;
+											(*template_grb).eps_e = eps_e_vec.at(i1);
+											(*template_grb).eps_b = eps_b_vec.at(i3);
+											(*template_grb).zeta_int = zeta_int_vec.at(i4);
+											(*template_grb).zeta_ext = zeta_ext_vec.at(i4);
+											(*template_grb).E_dot_iso = E_dot_iso_vec.at(i6);
+											(*template_grb).theta = theta_vec.at(i7);
+											(*template_grb).r_open = r_open_vec.at(i8);
+											(*template_grb).eps_th = eps_th_vec.at(i10);
+											(*template_grb).sigma = sigma_vec.at(i11);
+											(*template_grb).LorentzDist = LorentzDist;
+											(*template_grb).ShellDistParamsFile = ShellDistParamsFile;
+											*/
+											SynthGRB * template_grb = new SynthGRB(tw,
+												dte,
+												eps_e_vec.at(i1),
+												eps_b_vec.at(i3),
+												zeta_int_vec.at(i4),
+												zeta_ext_vec.at(i5),
+												E_dot_iso_vec.at(i6),
+												theta_vec.at(i7),
+												r_open_vec.at(i8),
+												eps_th_vec.at(i10),
+												sigma_vec.at(i11),
+												p_vec.at(i12),
+												LorentzDist,
+												ShellDistParamsFile);
+											
+											(*template_grb).SimulateJetDynamics();
+											(*template_grb).make_source_spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax);
+											synth_grb_list.at(iter) = (*template_grb);
+											iter+=1;
+										}
 
+									}
 								}
 							}
 						}

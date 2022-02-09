@@ -33,6 +33,8 @@
 \begin{document}
 
 \upsubscripts
+\upsupscripts
+
 \title{GRB Prompt Emission Simulation}
 
 \author{Michael Moss}
@@ -607,10 +609,10 @@ By making the assumption that $\Gamma_1, \Gamma_2 >> 1$, we can approximate $\be
 	\frac{1}{2\Gamma_r^2} &= 1 - \frac{\Gamma_1\beta_1M_1+\Gamma_2\beta_2M_2}{\Gamma_1M_1 + \Gamma_2M_2} \\ 
 	&= \frac{\Gamma_1M_1 + \Gamma_2M_2 - \Gamma_1\beta_1M_1 - \Gamma_2\beta_2M_2 }{\Gamma_1M_1 + \Gamma_2M_2} \\
 	&= \frac{\Gamma_1M_1 + \Gamma_2M_2 - \Gamma_1(1-\frac{1}{2\Gamma_1^2})M_1 - \Gamma_2(1-\frac{1}{2\Gamma_2^2})M_2 }{\Gamma_1M_1 + \Gamma_2M_2} \\
-	\frac{1}{2\Gamma_r^2} &= \frac{\frac{M_1}{2\Gamma_1} - \frac{M_2}{2\Gamma_2}}{\Gamma_1M_1 + \Gamma_2M_2} \\
-	2\Gamma_r^2 &= \frac{\Gamma_1M_1 + \Gamma_2M_2}{\frac{M_1}{2\Gamma_1} - \frac{M_2}{2\Gamma_2}} \\
-	&= \frac{\Gamma_1M_1 + \Gamma_2M_2}{\frac{1}{2\Gamma_1\Gamma_2}(\Gamma_2M_1 - \Gamma_1M_2)} \\
-	\Gamma_r &= \sqrt{\Gamma_1\Gamma_2\frac{\Gamma_1M_1 + \Gamma_2M_2}{\Gamma_2M_1 - \Gamma_1M_2}} \\
+	\frac{1}{2\Gamma_r^2} &= \frac{\frac{M_1}{2\Gamma_1} + \frac{M_2}{2\Gamma_2}}{\Gamma_1M_1 + \Gamma_2M_2} \\
+	2\Gamma_r^2 &= \frac{\Gamma_1M_1 + \Gamma_2M_2}{\frac{M_1}{2\Gamma_1} + \frac{M_2}{2\Gamma_2}} \\
+	&= \frac{\Gamma_1M_1 + \Gamma_2M_2}{\frac{1}{2\Gamma_1\Gamma_2}(\Gamma_2M_1 + \Gamma_1M_2)} \\
+	\Gamma_r &= \sqrt{\Gamma_1\Gamma_2\frac{\Gamma_1M_1 + \Gamma_2M_2}{\Gamma_2M_1 + \Gamma_1M_2}} \\
 \end{align}
 
 We can assume that shock events occur when two shells of approximately equal mass collide, $M_1 \approx M_2 = M$. This simplifies the above expression to
@@ -667,7 +669,7 @@ This system of equations leads to the relations
 We can find $\Gamma_{int}$ directly from Eq. \ref{eq: gamma_int_ext},
 
 \begin{align}
-	\Gamma_{int} = \frac{(M_{RS} + \Gamma_{int}M_{FS})\Gamma_s + m_{ex} - \Gamma_rM_{RS}}{\Gamma_r(M_{FS}+m_{ext})}
+	\Gamma_{int} = \frac{(M_{RS} + \Gamma_{int}M_{FS})\Gamma_s + m_{ex} - \Gamma_rM_{RS}}{\Gamma_r(M_{FS}+m_{ex})}
 \end{align}
 
 And using Eq. \ref{eq: gamma_r_ext} we can find $\Gamma_r$,

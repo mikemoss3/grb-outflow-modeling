@@ -1,26 +1,28 @@
-### tw ###
-10
-### dte  ###
+### tw, sec ###
+10.
+### dte, sec  ###
 0.02
-### eps_e ###
+### eps_e, fraction ###
 0.33
-### eps_b ###
+### eps_b, fraction ###
 0.33 
-### zeta ###
-1e-3 
-### E_dot_iso  ###
-1e52
-### theta  ###
+### zeta internal, fraction ###
+1.e-3 
+### zeta external, fraction ###
+1.0
+### E_dot_iso, erg/s  ###
+1.e52
+### theta, rad  ###
 0.1
-### r_open  ###
-1e6
-### eps_th  ###
+### r_open, cm ###
+1.e6
+### eps_th, fraction  ###
 0.03
-### sigma  ###
+### sigma, dimensionless ###
 0.1
-### p ###
-2.5
-### LorentzDist  ###
+### p, power law index ###
+2.2
+### LorentzDist, i.e., step, smoothstep, osci ###
 osci
-### ShellDistParamsFile ###
+### ShellDistParamsFile, i.e., ./input-files/jet-shells-"LorentzDist".txt ###
 ./input-files/jet-shells-osci.txt

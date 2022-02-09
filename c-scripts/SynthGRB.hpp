@@ -37,24 +37,17 @@ class SynthGRB
 public:
 	// SynthGRB constructor
 	SynthGRB();
-	SynthGRB(float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile);
+	SynthGRB(float tw, float dte, float eps_e, float eps_b, float zeta_int, float zeta_ext, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile);
 	SynthGRB(ModelParams * input_model_params);
 
 	// GRB member variables 
-	// float energ_min; // Lower energy bound of spectrum
-	// float energ_max; // Upper energy bound of spectrum 
-	// int num_energ_bins; // Number of energy bins in spectrum
-	// float tmin; // Lower time bound of light curve
-	// float tmax; // Upper time bound of light curve
-	// float dt; // Time resolution of light curve 
-	// float z; // Redshift of the source
-	
-	// jet parameters:
+	// jet parameters variables definitions:
 	// float tw = 10; // sec, Duration of the wind
 	// float dte = 0.002; // sec, Time between successive shell launches
 	// float eps_e; //  Fraction of dissipated energy that goes into the electrons 
 	// float eps_b; // Fraction of dissipated energy that goes into the magnetic field 
-	// float zeta; // Fraction of electrons which are accelerated 
+	// float zeta_int; // Fraction of electrons which are accelerated in internal and reverse shocks
+	// float zeta; // Fraction of electrons which are accelerated in forward shocks 
 	// double E_dot_iso; // erg/s, Injected isotropic energy rate
 	// float theta; // radians, Half-opening angle of the jet
 	// float r_open; // cm, Opening radius of the jet
@@ -82,7 +75,9 @@ public:
 	// Load jet parameters from a text file
 	void LoadJetParamsFromTXT(std::string file_name);
 
-	// GRB member function
+
+	// // GRB member function
+
 	// Set model params
 	void set_model_params(ModelParams * new_mod_params);
 	// Set jet shells
@@ -120,9 +115,9 @@ public:
 	void MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax);
 
 	// Calculate the synchrotron spectrum from the synchrotron energy and flux of the emission
-	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt, float alpha = -0.7, float beta = -3.5);
+	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt, float alpha = -0.7, float beta = -2.5);
 	// Synchrotron spectrum function form,
-	double SynchSpec(float energy, double Esyn, float alpha = -0.7, float beta = -3.5);
+	double SynchSpec(float energy, double Esyn, float alpha = -0.7, float beta = -2.5);
 	// Make the source light curve using the emission data
 	void make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt);
 
@@ -168,6 +163,7 @@ private:
 	std::vector<double> esyn_is; // erg, Synchrotron energy emitted by accelerated electron
 	std::vector<float> gamma_r_is; // Approximation of the combined Lorentz factor of the colliding shells
 	std::vector<double> e_diss_is; // erg, Dissipated energy during the collision 
+	std::vector<int> shell_ind_is; // Downstream shell swept up in the internal shock
 	std::vector<double> eps_star_is; // Internal energy dissipated in a collision 
 	// std::vector<double> rho_is; // g cm^-3, Density of the collision region
 	std::vector<float> asyn_is; // Fraction of the energy in electrons which goes into synchrotron (as opposed to Inverse Compton)
@@ -194,6 +190,7 @@ private:
 	std::vector<double> esyn_rs; // erg, Synchrotron energy emitted by the accelerated electrons in the RS	
 	std::vector<float> gamma_r_rs; // Combined Lorentz factor after collision
 	std::vector<double> e_diss_rs; // Energy dissipated in a RS
+	std::vector<int> shell_ind_rs; // The index of the shell which was crossed by the reverse shock
 	std::vector<double> eps_star_rs; // Internal energy dissipated in a collision 
 	// std::vector<double> rho_rs; // g cm^-3, Density of the collision region
 

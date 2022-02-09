@@ -18,7 +18,7 @@ Model parameter class which contains all the necessary methods to interface with
 // Import Custom Libraries
 #include "ModelParams.hpp"
 
-ModelParams::ModelParams( float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile)
+ModelParams::ModelParams( float tw, float dte, float eps_e, float eps_b, float zeta_int, float zeta_ext, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile)
 {
 	// If no arguments are given, default values are assumed
 
@@ -27,7 +27,8 @@ ModelParams::ModelParams( float tw, float dte, float eps_e, float eps_b, float z
 	this->dte = dte; // sec, Time between successive shell launches
 	this->eps_e = eps_e; // Fraction of dissipated energy that goes into the electrons 
 	this->eps_b = eps_b; // Fraction of dissipated energy that goes into the magnetic field 
-	this->zeta = zeta; // Fraction of electrons which are accelerated 
+	this->zeta_int = zeta_int; // Fraction of electrons which are accelerated in forward and reverse shocks
+	this->zeta_ext = zeta_ext; // Fraction of electrons which are accelerated in internal shocks
 	this->E_dot_iso = E_dot_iso; // erg/s, Injected isotropic energy rate
 	this->theta = theta; // radians, Half-opening angle of the jet
 	this->r_open = r_open; // cm, Opening radius of the jet
@@ -46,7 +47,8 @@ ModelParams::ModelParams( float tw, float dte, float eps_e, float eps_b, float z
 void ModelParams::set_param_space(
 		std::vector<float> eps_e_vec, 
 		std::vector<float> eps_b_vec, 
-		std::vector<float> zeta_vec, 
+		std::vector<float> zeta_int_vec, 
+		std::vector<float> zeta_ext_vec, 
 		std::vector<double> E_dot_iso_vec, 
 		std::vector<float> theta_vec, 
 		std::vector<float> r_open_vec, 
@@ -56,7 +58,8 @@ void ModelParams::set_param_space(
 {
 	this->eps_e_vec = eps_e_vec;
 	this->eps_b_vec = eps_b_vec;
-	this->zeta_vec = zeta_vec;
+	this->zeta_int_vec = zeta_int_vec;
+	this->zeta_ext_vec = zeta_ext_vec;
 	this->E_dot_iso_vec = E_dot_iso_vec;
 	this->theta_vec = theta_vec;
 	this->r_open_vec = r_open_vec;
@@ -77,7 +80,8 @@ void ModelParams::copy(ModelParams * p_model_params_in)
 	this->numshells = (*p_model_params_in).numshells;
 	this->eps_e = (*p_model_params_in).eps_e;
 	this->eps_b = (*p_model_params_in).eps_b;
-	this->zeta = (*p_model_params_in).zeta;
+	this->zeta_int = (*p_model_params_in).zeta_int;
+	this->zeta_ext = (*p_model_params_in).zeta_ext;
 	this->E_dot_iso = (*p_model_params_in).E_dot_iso;
 	this->theta = (*p_model_params_in).theta;
 	this->r_open = (*p_model_params_in).r_open;
@@ -121,7 +125,8 @@ void ModelParams::LoadFromTXT(std::string filename)
 	this->dte = stof(inputs[1]);
 	this->eps_e = stof(inputs[2]);
 	this->eps_b = stof(inputs[3]);
-	this->zeta = stof(inputs[4]);
+	this->zeta_int = stof(inputs[4]);
+	this->zeta_ext = stof(inputs[4]);
 	this->E_dot_iso = stod(inputs[5]);
 	this->theta = stof(inputs[6]);
 	this->r_open = stof(inputs[7]);
@@ -154,7 +159,8 @@ void ModelParams::WriteToTXT(std::string filename)
 	out_file << "numshells = " << this->numshells << "\n";
 	out_file << "eps_e = " << this->eps_e << "\n";
 	out_file << "eps_b = " << this->eps_b << "\n";
-	out_file << "zeta = " << this->zeta << "\n";
+	out_file << "zeta_int = " << this->zeta_int << "\n";
+	out_file << "zeta_ext = " << this->zeta_ext << "\n";
 	out_file << "E_dot_iso = " << this->E_dot_iso << "\n";
 	out_file << "theta = " << this->theta << "\n";
 	out_file << "r_open = " << this->r_open << "\n";
@@ -176,7 +182,8 @@ void ModelParams::PrintAllParams()
 	std::cout << "numshells = " << this->numshells << "\n";
 	std::cout << "eps_e = " << this->eps_e << "\n";
 	std::cout << "eps_b = " << this->eps_b << "\n";
-	std::cout << "zeta = " << this->zeta << "\n";
+	std::cout << "zeta_int = " << this->zeta_int << "\n";
+	std::cout << "zeta_ext = " << this->zeta_ext << "\n";
 	std::cout << "E_dot_iso = " << this->E_dot_iso << "\n";
 	std::cout << "theta = " << this->theta << "\n";
 	std::cout << "r_open = " << this->r_open << "\n";

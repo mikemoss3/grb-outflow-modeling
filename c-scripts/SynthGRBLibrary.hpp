@@ -45,7 +45,7 @@ public:
 	// Make synthetic GRBs and save them into the specified library
 	void MakeLibrary(float tw, float dte, 
 		std::vector<float> eps_e_vec, std::vector<float> eps_b_vec, 
-		std::vector<float> zeta_vec, std::vector<double> E_dot_iso_vec, 
+		std::vector<float> zeta_int_vec, std::vector<float> zeta_ext_vec, std::vector<double> E_dot_iso_vec, 
 		std::vector<float> theta_vec, std::vector<float> r_open_vec, 
 		std::vector<float> eps_th_vec, std::vector<float> sigma_vec, std::vector<float> p_vec,
 		std::string LorentzDist, std::string ShellDistParamsFile,

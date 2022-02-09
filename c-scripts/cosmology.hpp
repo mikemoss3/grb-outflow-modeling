@@ -37,7 +37,7 @@ const double kb_kev = 8.617*1*pow(10.,-8. ); // keV/K, Boltzmann constant
 
 const double sigma_sb = 5.67*pow(10,-5.); // erg cm^-2 K^-4 s^-1, Stephan-Boltzmann constant 
 
-const double h=6.6*1*pow(10.,-27.); // cm^2 g s^-1, Planck constant 
+const double h_planck=6.6*1*pow(10.,-27.); // cm^2 g s^-1, Planck constant 
 
 const double a = 7.566 * pow(10.,-15.); // erg cm^-3 K^-4, Radiation constant
 

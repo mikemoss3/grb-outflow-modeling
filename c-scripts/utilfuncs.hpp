@@ -38,12 +38,14 @@ int ConvolveSpectra(Spectrum * & folded_spectrum, const Spectrum & unfoleded_spe
 
 // Useful empirical spectral functions
 // Power Law
-double PL(float energy, float * alpha);
+double PL(float energy, double * param_list);
 // Broken Power Law
 double BPL(float energy, double * param_list);
 // Band spectrum function form (Band et. al., 1993)
 double Band(float energy, double * param_list);
 // Broadened Blackbody
 double BB(float energy, double * param_list);
+// Synchrotron spectrum
+double Synchrotron(float energy, double * param_list);
 
 #endif 

@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1620090144 "spec-norm.tex" "spec-norm.pdf" "spec-norm" 1620090147
+["pdflatex"] 1620090144 "spec-norm.tex" "spec-norm.pdf" "spec-norm" 1643806247
   "/usr/local/texlive/2018/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1480098698 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1480098698 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -69,9 +69,9 @@
   "/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1523934492 2717033 f61a5287d9c22a39a74f1979fe3f905c ""
   "/usr/local/texlive/2018/texmf-var/web2c/pdftex/pdflatex.fmt" 1523934516 4220280 10cab8fbd7c5a7c52aba9917e190d018 ""
   "/usr/local/texlive/2018/texmf.cnf" 1523934483 577 0b39adfd7c93507ff20c9c14c2f1a33f ""
-  "spec-norm.aux" 1620090146 8 a94a2480d3289e625eea47cd1b285758 ""
+  "spec-norm.aux" 1620090146 8 a94a2480d3289e625eea47cd1b285758 "pdflatex"
   "spec-norm.tex" 1620090143 2451 bd94f4e7a773ae7657f7a0edb232a2fd ""
   (generated)
-  "spec-norm.aux"
-  "spec-norm.log"
   "spec-norm.pdf"
+  "spec-norm.log"
+  "spec-norm.aux"

@@ -316,7 +316,10 @@ def plot_light_curve_interactive(file_name, z=0, label=None, ax=None, Tmin=None,
 
 		# Plot aesthetics
 		# For axis labels
-		ax[0].set_ylabel(r'Rate (ph cm$^{-2}$ s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
+		if(z>0):
+			ax[0].set_ylabel(r'Rate (ph cm$^{-2}$ s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
+		else:
+			ax[0].set_ylabel(r'Rate (ph s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
 		ax[0].set_xlabel('Obs Time (sec)',fontsize=fontsize,fontweight=fontweight)
 
 		# Add label names to plot if supplied
@@ -377,7 +380,7 @@ def load_is_emission(file_name):
 	Method to load internal shock emission data from the given file name
 	"""
 
-	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),('ASYN',float),('TAU',float),('RELVEL',float)])
+	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),("SHIND",int),('ASYN',float),('TAU',float),('RELVEL',float)])
 
 	return np.genfromtxt(file_name,dtype=dtype)
 
@@ -399,7 +402,7 @@ def load_rs_emission(file_name):
 	Method to load reverse shock emission data from the given file name
 	"""
 
-	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float)])
+	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),("SHIND",int)])
 
 	return np.genfromtxt(file_name,dtype=dtype)
 
@@ -512,7 +515,7 @@ def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=No
 	plot_param_vs_ta(is_emission,'GAMMAR', ax=ax1cp, y_factor=1/100, z=z,Tmin=Tmin, Tmax=Tmax,
 		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='.',color='C1')
 
-	ax[1].set_ylabel('e (en. diss.)',fontsize=fontsize,fontweight=fontweight)
+	ax[1].set_ylabel(r'E$_{diss}/\Delta$t$_e$',fontsize=fontsize,fontweight=fontweight)
 	ax[1].set_xlabel(r't$_a$ (sec), Arrival Time',fontsize=fontsize,fontweight=fontweight)
 	ax1cp.set_ylabel(r'$\Gamma_{r}/100$',fontsize=fontsize,fontweight=fontweight)
 	ax1cp.yaxis.set_label_position("right")
@@ -585,7 +588,7 @@ def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=No
 	ax[1,0].grid(axis='x')
 	ax[1,1].grid(axis='x')
 
-	if save_pref == True:
+	if save_pref is not None:
 		plt.savefig('figs/{}-int-shock-evo-fig1.png'.format(save_pref))
 
 ##############################################################################################################################
@@ -644,7 +647,7 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 	ax0[0,1].set_xscale("log")
 
 	# Format Bottom Left plot, T_a vs E_diss
-	ax0[1,0].set_ylabel(r"E$_{diss}$",fontsize=fontsize,fontweight=fontweight)
+	ax0[1,0].set_ylabel(r"E$_{diss}/\Delta$t$_{e}$",fontsize=fontsize,fontweight=fontweight)
 	ax0[1,0].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
 	ax0[1,0].set_yscale("log")
 	ax0[1,0].set_xscale("log")
@@ -665,7 +668,7 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 	plt.tight_layout()
 	plt.subplots_adjust(wspace=0,hspace=0)
 
-	if save_pref == True:
+	if save_pref is not None:
 		plt.savefig('figs/{}-all-shock-evo-fig0.png'.format(save_pref))
 
 	### Second Plot ###
@@ -715,23 +718,27 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 	plt.tight_layout()
 	plt.subplots_adjust(hspace=0)
 
-	if save_pref == True:
+	if save_pref is not None:
 		plt.savefig('figs/{}-all-shock-evo-fig1.png'.format(save_pref))
 
 ##############################################################################################################################
 
 def plot_together(is_data = None,fs_data=None, rs_data=None, z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold'):
 
-	fig, ax0 = plt.subplots(2,2,sharex=True,figsize=(12,8))
-	fig, ax1 = plt.subplots(2,1,sharex=True,figsize=(6,6))
+	fig0, ax0 = plt.subplots(2,2,sharex=True,figsize=(12,8))
+	fig1, ax1 = plt.subplots(2,1,sharex=True,figsize=(6,6))
 
 
 	if is_data is not None:
-		make_together_plots(shock_data=is_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,save_pref=save_pref)
+		make_together_plots(shock_data=is_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight)
 	if fs_data is not None:
-		make_together_plots(shock_data=fs_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,save_pref=save_pref)
+		make_together_plots(shock_data=fs_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight)
 	if rs_data is not None:
-		make_together_plots(shock_data=rs_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,save_pref=save_pref)
+		make_together_plots(shock_data=rs_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight)
+
+	if save_pref is not None:
+		fig0.savefig('figs/{}-all-shock-evo-fig0.png'.format(save_pref))
+		fig1.savefig('figs/{}-all-shock-evo-fig1.png'.format(save_pref))
 
 ##############################################################################################################################
 
@@ -762,19 +769,18 @@ if __name__ == '__main__':
 	"""
 	Shell Lorentz Distribution
 	"""
-	
+	"""
 	ax_sd = plt.figure().gca()
 	plot_lor_dist('data-file-dir/shell_dist.txt', ax=ax_sd)
-	
+	"""
 
 	"""
 	Synthetic spectrum 
 	"""
-
 	
 	ax_spec = plt.figure(figsize=(9,8)).gca()
 
-	
+	## Synthetic spectra with each component
 	plot_spec("data-file-dir/test_spec_therm.txt",ax=ax_spec,z=z,label="Thermal",color="r")
 	plot_spec("data-file-dir/test_spec_is.txt",ax=ax_spec,z=z,label="IS",color="C0")
 	plot_spec("data-file-dir/test_spec_fs.txt",ax=ax_spec,z=z,label="FS",color="C1")
@@ -789,6 +795,7 @@ if __name__ == '__main__':
 	## Synthetic spectrum after convolusion
 	# plot_spec("data-file-dir/spec_obs.txt",ax=ax_spec,unc=True,label="Obs")
 	# plot_spec("data-file-dir/spec_model_conv.txt",ax=ax_spec,unc=False,label="Model",joined=True)
+	# plot_spec("data-file-dir/spec_mod_emp.txt",ax=ax_spec,unc=False,label="Model",joined=True)
 
 	add_FermiGBM_band(ax_spec)
 	# add_SwiftBAT_band(ax_spec)

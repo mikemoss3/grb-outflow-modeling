@@ -19,6 +19,7 @@ Header file for DataAnalysis.cpp class
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <list>
 
 // Import Custom Libraries
 #include "cosmology.hpp"
@@ -44,15 +45,16 @@ public:
 	// DataAnalysis member variables
 	FitStats * p_curr_fit_stats; // A pointer to the current fit statistic object 
 	ModelParams * p_curr_model_params; // A pointer to the current model parameter 
+	std::vector<double> best_fit_params; // List of best fit parameters, will be filled after a fit is performed
 
 	// Make an empty function that will be set to the desired spectral function to use during fitting 
 	// The float argument will be the energy to evaluate the spectrum at, 
 	// the pointer points to a list of doubles/floats which are the input parameters to the function
 	typedef double (*functiontype)(float, double * ); 
-	functiontype spec_func = NULL;
+	std::list<functiontype> spec_funcs;
+	
 	// Initialize the number of parameters to be given, and the parameter array
-	// int num_elems = 0;
-	float * param_arr;
+	std::vector<std::vector<std::vector<double>>> model_param_bounds;
 
 	std::vector<Spectrum*> spec_list; // Vector containing pointers to all loaded spectra
 	std::vector<Response*> resp_list; // Vector containing pointers to all loaded response matrices
@@ -65,24 +67,9 @@ public:
 	
 	// Set fitting function 
 	// void set_fit_func( double (*functiontype)(float, double * ) );
-	void set_fit_func(std::string fit_func);
-
-	// Set the initial parameter set
-	void set_init_params(ModelParams * p_input_init_params);
-	void set_init_params(float tw, float dte, float eps_e, float eps_b, float zeta, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile);
-	// Set parameter space 
-	void set_param_space(
-		std::vector<float> eps_e_vec, 
-		std::vector<float> eps_b_vec, 
-		std::vector<float> zeta_vec, 
-		std::vector<double> E_dot_iso_vec, 
-		std::vector<float> theta_vec, 
-		std::vector<float> r_open_vec, 
-		std::vector<float> eps_th_vec, 
-		std::vector<float> sigma_vec,
-		std::vector<float> p_vec);
-	void set_param_space(float * param_space);
-
+	void add_fit_func(std::string fit_func);
+	// Set boundary for a specific parameter
+	void set_param_bound(int model_num, int param_num, double * param_bounds);
 
 	// Load an observed spectrum + instrument response combination
 	void LoadSpecAndResp(Spectrum * observed_spectrum, Response * instrument_response);
@@ -92,10 +79,15 @@ public:
 	// Fitting methods using empirical functions
 	// Fit the currently loaded data with an empirical model (e.g., a power law, broken power law, or Band function)
 	void FitSpectrum();
+	// Make parameter space grid
+	void make_param_space_grid(std::vector<std::vector<double>> &param_combo_list);
 	// Brute Force fitting method 
 	void BruteForce();
 	// Brute Fore fitting, but using multiple cores (uses multi processing)
 	void BruteForce(int cores);
+
+	// Calculate spectrum from the loaded model components
+	void make_model_spectrum(Spectrum * p_model_spectrum, std::vector<double> parameter_list);
 
 private:
 	int fit_method = 1;

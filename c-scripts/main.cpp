@@ -23,7 +23,7 @@ Main function to create and use Spectra, Light Curves, and Response functions
 #include "Response.hpp"
 // #include "LightCurve.hpp"
 // #include "Spectrum.hpp"
-// #include "cosmology.hpp"
+#include "cosmology.hpp"
 #include "utilfuncs.hpp"
 #include "DataAnalysis.hpp"
 #include "TTEs.hpp"
@@ -85,8 +85,8 @@ int main(int argc, char const *argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
-	/*
-	float energ_min = 1e-9;
+	
+	float energ_min = 1e-1;
 	float energ_max = 1e6;
 	float num_energ_bins = 200;
 
@@ -101,9 +101,9 @@ int main(int argc, char const *argv[])
 
 	test_grb.SimulateJetDynamics();
 	test_grb.write_out_jet_params("./data-file-dir/");
-
 	float tlo = tmin;
 	float thi = tmax;
+	
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
 	test_grb.WriteSpectrumToTXT("data-file-dir/test_spec_total.txt");
 
@@ -122,17 +122,17 @@ int main(int argc, char const *argv[])
 	Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
 	test_grb.MakeRSSpec(p_source_spectrum_rs, tlo, thi);
 	(*p_source_spectrum_rs).WriteToTXT("data-file-dir/test_spec_rs.txt");
-
+	
 	test_grb.make_source_light_curve(8., 4e4, tlo, thi, dt);
-	// test_grb.make_source_light_curve(1e-9, 1e-2, tlo, thi, dt);
+	// test_grb.make_source_light_curve(1e-5, 1e-1, 80, 3e2, 1);
 	test_grb.WriteLightCurveToTXT("data-file-dir/test_light_curve.txt");
 
 	return 0;
-	*/
+		
 	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/* Testing SynthGRB spectrum making*/
+	/* Testing SynthGRB spectrum making */
 
 	/*
 	// Initialize all jet parameters to be given to SynthGRB
@@ -141,7 +141,8 @@ int main(int argc, char const *argv[])
 	// // int numshells =  50;
 	// float eps_e =  1./3.;
 	// float eps_b =  1./3.;
-	// float zeta =  1e-3;
+	// float zeta_int =  1e-3;
+	// float zeta_ext =  1.;
 	// double E_dot_iso = 1e53; 
 	// float theta =  0.1;
 	// float r_open = 1e6; 
@@ -152,7 +153,7 @@ int main(int argc, char const *argv[])
 	// std::string ShellDistParamsFile = "Default";
 	// std::string ShellDistParamsFile = "./input-files/jet-shells-step.txt";
 
-	// SynthGRB * test_grb_time = new SynthGRB(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
+	// SynthGRB * test_grb_time = new SynthGRB(tw, dte, eps_e, eps_b, zeta_int, zeta_ext, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
 
 	// Or use a text file with specified jet parameters
 	std::string JetParamFile = "./input-files/jet-params.txt";
@@ -215,13 +216,15 @@ int main(int argc, char const *argv[])
 	/* Testing DataAnalyis Fitting Package */
 	
 	
+	/*
 	// Define parameters for the synthetic source 
 	// float tw = 50; 
 	// float dte = 0.1;
 	// // int numshells = 500;
 	// float eps_e = 0.33;
 	// float eps_b = 0.33;
-	// float zeta = 1e-3;
+	// float zeta_int = 1e-3;
+	// float zeta_ext = 1.;
 	// double E_dot_iso = 1e53;
 	// float theta = 0.1;
 	// float r_open = 1e6;
@@ -234,7 +237,8 @@ int main(int argc, char const *argv[])
 	// Define parameter space to explore
 	std::vector<float> eps_e_vec = {0.33, 0.5};
 	std::vector<float> eps_b_vec = {0.33, 0.5};
-	std::vector<float> zeta_vec = {1e-3, 1.};
+	std::vector<float> zeta_int_vec = {1e-3, 1.};
+	std::vector<float> zeta_ext_vec = {1.};
 	std::vector<double> E_dot_iso_vec = {1e52, 1e53};
 	std::vector<float> theta_vec = {0.1, 0.2};
 	std::vector<float> r_open_vec = {1e6};
@@ -254,8 +258,10 @@ int main(int argc, char const *argv[])
 	
 	// Make "observed" GRB data from a synthetic GRB and the given instrument response matrix 
 	// Initialize synthetic GRB pointer
-	// SynthGRB * synth_obs_grb = new SynthGRB(tw, dte, eps_e, eps_b, zeta, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
-	synth_obs_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
+	// SynthGRB * synth_obs_grb = new SynthGRB(tw, dte, eps_e, eps_b, zeta_int, zeta_ext, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
+	SynthGRB * synth_obs_grb = new SynthGRB();
+	(*synth_obs_grb).LoadJetParamsFromTXT("input-files/jet-params.txt");
+
 	// Simulate the Jet Dynamics
 	(*synth_obs_grb).SimulateJetDynamics();
 	// Make spectrum from jet simulation
@@ -280,41 +286,27 @@ int main(int argc, char const *argv[])
 	// Write convolved spectrum to text file
 	(*p_folded_spectrum).WriteToTXT("data-file-dir/spec_obs.txt");
 
-
 	// Make Data Analysis object
 	DataAnalysis data_analysis = DataAnalysis();
-
-	// Set initial parameters for the fit
-	data_analysis.set_init_params(50, 0.1, 0.4, 0.4, 0.1, 1e52, 0.15, 1e6, 0.03, 0.1, "step", "Default");
-	// Define parameter space for the fitting algorithm to explore
-	data_analysis.set_param_space(eps_e_vec, eps_b_vec, zeta_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec, p_vec);
 
 	// Fit the synthetic observed spectrum and see if the input parameters are recovered by the fitting algorithm.
 	// data_analysis.FitSpectrum_SynthGRB();
 	// Or use an empirical function
-	data_analysis.set_fit_func("PL");
+	// data_analysis.add_fit_func("PL");
+	data_analysis.add_fit_func("BPL");
 	// Fit the synthetic observed spectrum with
 	data_analysis.FitSpectrum();
 
+	// Using the best fit parameters, print out the best fit spectrum
+	Spectrum * p_mod_unf = new Spectrum(instrument_response.phot_energ_min, instrument_response.phot_energ_max,instrument_response.num_phot_bins);
+	Spectrum * p_mod_fold = new Spectrum(instrument_response.chan_energ_min, instrument_response.chan_energ_max,instrument_response.num_chans);
 
-	// Print best fit parameters
-	(*data_analysis.p_curr_model_params).PrintAllParams();
+	// Make spectrum using the best fit model parameters
+	data_analysis.make_model_spectrum(p_mod_unf, data_analysis.best_fit_params);
 
-	// Make a new GRB using the best fit parameters
-	SynthGRB * model_grb = new SynthGRB(data_analysis.p_curr_model_params);
-	// Simulated the jet dynamics and create the spectrum
-	(*model_grb).SimulateJetDynamics();
-	(*model_grb).make_source_spectrum(instrument_response.phot_energ_min, instrument_response.phot_energ_max,instrument_response.num_phot_bins);
-	// Write spectrum to text
-	(*(*model_grb).p_source_spectrum).WriteToTXT("data-file-dir/spec_model.txt");
-	// Convolve spectrum with instrument response matrix
-	Spectrum * p_folded_model_spectrum = new Spectrum(instrument_response.chan_energ_min, instrument_response.chan_energ_max,instrument_response.num_chans);
-	// Convolve synthetic spectrum and instrument response matrix
-	ConvolveSpectra(p_folded_model_spectrum, (*(*model_grb).p_source_spectrum), instrument_response, true);
-	// Write convolved spectrum to text file
-	(*p_folded_model_spectrum).WriteToTXT("data-file-dir/spec_model_conv.txt");
-	
-
+	ConvolveSpectra(p_mod_fold, (*p_mod_unf), instrument_response, true);
+	(*p_mod_fold).WriteToTXT("data-file-dir/spec_mod_emp.txt");
+	*/
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/* Testing ObsGRB */
@@ -405,7 +397,8 @@ int main(int argc, char const *argv[])
 	// Define parameter space to explore
 	std::vector<float> eps_e_vec = {0.33, 0.5};
 	std::vector<float> eps_b_vec = {0.33, 0.5};
-	std::vector<float> zeta_vec = {1e-3, 1.};
+	std::vector<float> zeta_int_vec = {1e-3, 1.};
+	std::vector<float> zeta_ext_vec = {1.};
 	std::vector<double> E_dot_iso_vec = {1e52, 1e53};
 	std::vector<float> theta_vec = {0.1, 0.2};
 	std::vector<float> r_open_vec = {1e6};
@@ -413,7 +406,7 @@ int main(int argc, char const *argv[])
 	std::vector<float> sigma_vec = {0.1};
 	std::vector<float> p_vec = {2.2, 2.5};
 	// Define parameter space for the fitting algorithm to explore
-	data_analysis.set_param_space(eps_e_vec, eps_b_vec, zeta_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec, p_vec);
+	data_analysis.set_param_space(eps_e_vec, eps_b_vec, zeta_int_vec, zeta_ext_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec, p_vec);
 
 	// Load observations and response into the data_analysis object
 	data_analysis.LoadSpecAndResp(p_folded_spectrum_1,&instrument_response_1);

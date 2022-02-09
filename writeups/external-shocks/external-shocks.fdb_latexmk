@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex external-shocks"] 1643300253 "external-shocks.aux" "external-shocks.bbl" "external-shocks" 1643300253
+["bibtex external-shocks"] 1644247613 "external-shocks.aux" "external-shocks.bbl" "external-shocks" 1644247613
   "./aasjournal.bst" 1642084029 37930 c2368a73b82a7c192c7ab34d16c71a72 ""
   "bibliograpy-list.bib" 0 -1 0 ""
   "external-shocks.aux" 1643192763 3002 5ea99d0672ccd76e3837b251b49db6eb "pdflatex"
   (generated)
   "external-shocks.blg"
   "external-shocks.bbl"
-["pdflatex"] 1643192763 "external-shocks.tex" "external-shocks.pdf" "external-shocks" 1643300253
+["pdflatex"] 1643192763 "external-shocks.tex" "external-shocks.pdf" "external-shocks" 1644247613
   "/etc/texmf/web2c/texmf.cnf" 1634150134 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/adobe/helvetic/phvr.tfm" 1136768653 2504 ba6584b616b92101c768b6c4ffb32dd0 ""
@@ -133,7 +133,7 @@
   "external-shocks.out" 1643192763 886 798e145bfdf40ed39852970049b78fe8 "pdflatex"
   "external-shocks.tex" 1643205574 17584 fef5959d9960ec19538cc7ffdb41e49e ""
   (generated)
-  "external-shocks.aux"
   "external-shocks.pdf"
   "external-shocks.log"
   "external-shocks.out"
+  "external-shocks.aux"
