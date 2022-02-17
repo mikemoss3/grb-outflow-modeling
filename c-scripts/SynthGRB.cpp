@@ -36,24 +36,6 @@ SynthGRB::SynthGRB()
 	p_jet_shells = NULL;
 	p_model_params = new ModelParams();
 
-	// Assign default values for the jet parameters
-	/*
-	(*p_model_params).tw = 10; // sec, Duration of the wind
-	(*p_model_params).dte = 0.002; // sec, Time between successive shell launches
-	(*p_model_params).eps_e = 1./3.; // Fraction of dissipated energy that goes into the electrons 
-	(*p_model_params).eps_b = 1./3.; // Fraction of dissipated energy that goes into the magnetic field 
-	(*p_model_params).zeta_int = 1e-3; // Fraction of electrons which are accelerated in internal and reverse shocks
-	(*p_model_params).zeta_ext = 1; // Fraction of electrons which are accelerated in forward shocks
-	(*p_model_params).E_dot_iso = 1e53; // erg/s, Injected isotropic energy rate
-	(*p_model_params).theta = 0.1; // radians, Half-opening angle of the jet
-	(*p_model_params).r_open = 1e6; // cm, Opening radius of the jet
-	(*p_model_params).eps_th = 0.03; // Fraction of energy in the outflow in the form of thermal energy 
-	(*p_model_params).sigma = 0.1; // Magnetization of the outflow 
-	// (*p_model_params).LorentzDist = "step"; // Distribution of the jet shells
-	(*p_model_params).LorentzDist = "oscillatory"; // Distribution of the jet shells
-	(*p_model_params).ShellDistParamsFile = "Default"; // File that contains the parameters to create the distribution of jet shells. If Default is used, default params are passed
-	*/ 
-
 	// Initialize jet based on current jet parameters and shell distribution
 	InitializeJet();
 }
@@ -61,32 +43,18 @@ SynthGRB::SynthGRB()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Overloaded SynthGRB constructor, uses given arguments 
-SynthGRB::SynthGRB(float tw, float dte, float eps_e, float eps_b, float zeta_int, float zeta_ext, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile)
+SynthGRB::SynthGRB(float tw, float dte, 
+		double E_dot_iso, float theta, float r_open, float eps_th, float sigma,
+		float eps_e_int, float eps_b_int, float zeta_int, float p_int,
+		float eps_e_ext, float eps_b_ext, float zeta_ext, float p_ext,
+		float k_med, double rho_not,
+		std::string LorentzDist, std::string ShellDistParamsFile)
 {
 	// Assign pointers to NULL
 	p_source_spectrum = NULL;
 	p_source_light_curve = NULL;
 	p_jet_shells = NULL;
-	p_model_params = new ModelParams(tw, dte, eps_e, eps_b, zeta_int, zeta_ext, E_dot_iso, theta, r_open, eps_th, sigma, p, LorentzDist, ShellDistParamsFile);
-
-	// Assign default values for the jet parameters
-	/*
-	(*p_model_params).tw = 10; // sec, Duration of the wind
-	(*p_model_params).dte = 0.002; // sec, Time between successive shell launches
-	(*p_model_params).eps_e = eps_e; // Fraction of dissipated energy that goes into the electrons 
-	(*p_model_params).eps_b = eps_b; // Fraction of dissipated energy that goes into the magnetic field 
-	(*p_model_params).zeta_int = zeta_int; // Fraction of electrons which are accelerated in internal and reverse shocks
-	(*p_model_params).zeta_ext = zeta_ext; // Fraction of electrons which are accelerated in forward shocks
-	(*p_model_params).E_dot_iso = E_dot_iso; // erg/s, Injected isotropic energy rate
-	(*p_model_params).theta = theta; // radians, Half-opening angle of the jet
-	(*p_model_params).r_open = r_open; // cm, Opening radius of the jet
-	(*p_model_params).eps_th = eps_th; // Fraction of energy in the outflow in the form of thermal energy 
-	(*p_model_params).sigma = sigma; // Magnetization of the outflow 
-	(*p_model_params).p = p; // Power law index of the electron population  
-	// (*p_model_params).LorentzDist = LorentzDist; // Distribution of the jet shells
-	(*p_model_params).LorentzDist = LorentzDist; // Distribution of the jet shells
-	(*p_model_params).ShellDistParamsFile = ShellDistParamsFile; // File that contains the parameters to create the distribution of jet shells. If Default is used, default params are passed
-	*/ 
+	p_model_params = new ModelParams(tw, dte, E_dot_iso, theta, r_open, eps_th, sigma, eps_e_int, eps_b_int, zeta_int, p_int, eps_e_ext, eps_b_ext, zeta_ext, p_ext, k_med, rho_not, LorentzDist, ShellDistParamsFile);
 
 	// Initialize jet based on current jet parameters and shell distribution
 	InitializeJet();
@@ -136,7 +104,7 @@ void SynthGRB::InitializeJet()
 void SynthGRB::LoadJetParamsFromTXT(std::string file_name)
 {
 	// Array to store params 
-	string inputs[13];
+	string inputs[19];
 	int i = 0;
 
 	// Load in the file
@@ -161,33 +129,43 @@ void SynthGRB::LoadJetParamsFromTXT(std::string file_name)
 	// Set model parameters 
 	// tw
 	// dte
-	// eps_e
-	// eps_b
-	// zeta_int
-	// zeta_ext
 	// E_dot_iso
 	// theta
 	// r_open
 	// eps_th
 	// sigma
-	// p
+	// eps_e_int
+	// eps_b_int
+	// zeta_int
+	// p_int
+	// eps_e_ext
+	// eps_b_ext
+	// zeta_ext
+	// p_ext
+	// k_med
+	// rho_not
 	// LorentzDist
 	// ShellDistParamsFile	
 	p_model_params = new ModelParams(
 		stof(inputs[0]),
 		stof(inputs[1]),
-		stof(inputs[2]),
+		stod(inputs[2]),
 		stof(inputs[3]),
 		stof(inputs[4]),
 		stof(inputs[5]),
-		stod(inputs[6]),
+		stof(inputs[6]),
 		stof(inputs[7]),
 		stof(inputs[8]),
 		stof(inputs[9]),
 		stof(inputs[10]),
 		stof(inputs[11]),
-		inputs[12],
-		inputs[13]);
+		stof(inputs[12]),
+		stof(inputs[13]),
+		stof(inputs[14]),
+		stof(inputs[15]),
+		stod(inputs[16]),
+		inputs[17],
+		inputs[18]);
 
 	// Initialize jet based on current jet parameters and shell distribution
 	InitializeJet();
@@ -434,7 +412,7 @@ void SynthGRB::SimulateJetDynamics()
 	for(int i=0; i<(*p_model_params).numshells; ++i)
 	{
 		// Calculate the photospheric radius for each jet shell, Equation 9 of Hascoet 2013
-		r_phot.at(i) = (0.2*(*p_model_params).E_dot_iso / ( (1+(*p_model_params).sigma)*8.*M_PI*pow(c_cm,4.) *pow( (*p_jet_shells).shell_gamma.at(i) ,3.) ) ); // units of lightseconds, cm/speed of light
+		r_phot.at(i) = (0.2*(*p_model_params).E_dot_iso / ( (1.+(*p_model_params).sigma)*8.*M_PI*pow(c_cm,4.) *pow( (*p_jet_shells).shell_gamma.at(i) ,3.) ) ); // units of lightseconds, cm/speed of light
 		// r_phot = 2.9*pow(10,13) *((*p_model_params).E_dot_iso/1e53) / ( cc.c*(1+(*p_model_params).sigma)* pow((*p_jet_shells).shell_gamma/100,3) ) # units of lightseconds, cm/(cm/s)
 
 		// Times when each shell will cross the photosphere
@@ -446,16 +424,18 @@ void SynthGRB::SimulateJetDynamics()
 		Phi = pow((*p_model_params).theta,-2./3.) * pow(r_phot.at(i)*c_cm,-2./3.) * pow((*p_model_params).r_open,2./3.) * pow((*p_jet_shells).shell_gamma.at(i),2./3.); // Eq. 11 in Hascoet 2013
 
 		// Temperature at photosphere
-		// T0 = pow((*p_model_params).E_dot_iso*pow((*p_model_params).theta,2.) / (4*M_PI * a * c_cm * pow((*p_model_params).r_open,2.) ),1./4.); // K, rearrangement Eq. 1 of Hascoet 2013 
-		T0 = pow(E_dot_therm*pow((*p_model_params).theta,2.) / (4*M_PI * a * c_cm * pow((*p_model_params).r_open,2.) ),1./4.); // K, rearrangement Eq. 1 of Hascoet 2013 
+		T0 = pow(E_dot_therm*pow((*p_model_params).theta,2.) / (4.* M_PI * a * c_cm * pow((*p_model_params).r_open,2.) ),1./4.); // K, rearrangement of Eq. 1 in Hascoet 2013 
 		// T0 =  (2/3)*np.pow((*p_model_params).eps_th,1/4)*np.pow((*p_model_params).theta/0.1,1/2)*np.pow((*p_model_params).E_dot_iso/1e53,1/4)*np.pow((*p_model_params).r_open/1e7,-1/2) / (cc.kb_kev/1000) # K, alternative expression, Eq. in Hascoet
 
-		T_phot.at(i) = T0*Phi; // K, Equation 7 in Hascoet 2013
+		T_phot.at(i) = T0*Phi; // K, Equation 7 in Hascoet 2013, observed temperature ( not corrected for 1+z )
 
 		// Luminosity at photosphere, from equation 8 in Hascoet 2013
-		L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * Phi; // erg/s, beamed
-		// L_phot.at(i) = E_dot_therm * Phi; // erg/s, isotropic
-		// L_phot.at(i) = pow((*p_jet_shells).shell_gamma.at(i),2.) * a * pow( T0*Phi/(*p_jet_shells).shell_gamma.at(i),4.) * c_cm * (M_PI * pow((*p_model_params).theta,2.) * pow(c_cm * r_phot.at(i),2) ); // erg/s, alternative expression
+		// L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * Phi; // erg/s, beamed
+		L_phot.at(i) = E_dot_therm * Phi/(*p_model_params).numshells; // erg/s, isotropic
+		// L_phot.at(i) = pow((*p_jet_shells).shell_gamma.at(i),2.) * a * pow( T0*Phi/(*p_jet_shells).shell_gamma.at(i),4.) * c_cm * (M_PI * pow((*p_model_params).theta,2.) * pow(c_cm * r_phot.at(i),2.) );// erg/s, beamed (alternative expression)
+	
+		// Test expression
+		// L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * (*p_model_params).tw * Phi / delt_therm.at(i); // erg/s, beamed
 	}
 
 
@@ -489,10 +469,9 @@ void SynthGRB::SimulateJetDynamics()
 
 	double tmp_tau = 0.; // Temporary value of the optical depth at the site of the collision
 
-	double t_syn = 0.; // sec, Synchrotron time-scale
-	double gamma_comb = 1.; // Final Lorentz factor of the combined shell (after complete redistribution of momenta)
+	double min_mass = 0.; // g/M_tot, mass of the less massive shell involved in the internal shock
+	// double gamma_comb = 1.; // Final Lorentz factor of the combined shell (after complete redistribution of momenta)
 	double rad_coll = 0.; // light seconds, Radius of the collision
-
 
 	// Declare and initialize variables for 
 	//External Shock processes
@@ -511,15 +490,16 @@ void SynthGRB::SimulateJetDynamics()
 
 	double tmp_r_before = 0.; // light seconds, Temporary radius before the time step
 
-	int fs_shell_index; // To keep track of which shell is representing the FS
-	int rs_shell_index;// To keep track of which shell is representing the RS
+	int fs_shell_index = 0; // To keep track of which shell is representing the FS
+	int rs_shell_index = 0;// To keep track of which shell is representing the RS
 
+	// double is_gamma_int = 1.; // Lorentz factor for internal motion in shocked material
 	double fs_gamma_int = 1.; // Internal Lorentz factor for the forward shock
 	// double rs_gamma_int = 1.; // Internal Lorentz factor for the forward shock
 
 	// float k = 2.;// Wind density profile for external medium
 	// float Astar = 1.; // Normalization of the stellar wind parameter 
-	// float rho_not = Astar*5.*pow(10.,11.); // g cm^-3, Normalization of external the density
+	// float rho_not = Astar*5.*pow(10.,11.); // g cm^-1, Normalization of external the density
 
 	float k = 0.;// Constant density profile for external medium
 	float n0 = 1; // cm^-3, particle number density at R_ext0
@@ -539,11 +519,14 @@ void SynthGRB::SimulateJetDynamics()
 	double tmp_esyn_kev = 0.; // keV, Temporary value of the typical energy of accelerated electrons
 	double tmp_esyn_erg = 0.; // erg, 
 	double tmp_gamma_r = 1.; // Temporary value of the combined bulk Lorentz factor two colliding shells  
-	double tmp_e_diss = 0.; // erg/s Temporary value of the energy dissipated during the collision
-
-	double gamma_int = 1.; // Lorentz factor for internal motion in shocked material
-	double eps_star = 0.; // erg / g, Average proton factor from the collision of two shells
-	double rho = 0.; // g/cm^3, Comoving proton density
+	double tmp_e_diss = 0.; // erg Temporary value of the energy dissipated during the collision
+	double tmp_delt = 0.; // sec, Temporary value of the duration of the current emission event
+	double tmp_lum_diss = 0.; // erg/s Temporary value of the energy dissipated during the collision normalized by the duration of the emission
+	double tmp_eps_star = 0.; // erg / g, Average proton factor from the collision of two shells
+	double tmp_rho = 0.; // g/cm^3, Comoving proton density
+	bool tmp_eff = false; // Is the emission event efficient?
+	
+	double t_syn = 0.; // sec, Synchrotron time-scale
 	double quadr_const = 0.; // Constant in the quadratic equation
 	double w = 0.; // Indicates whether we are in the Klein-Nishina regime or Thompson (i.e., w>>1 or w<<1, respectively)
 	double Q_IC = 0.; // Inverse Compton parameter
@@ -618,20 +601,24 @@ void SynthGRB::SimulateJetDynamics()
 			else if (k == 0)
 			{
 				t_FS_sweep = ( pow( (3.*m_remaining*m_bar / (4. * M_PI * rho_not)) + pow((*p_jet_shells).shell_radius.at(fs_shell_index)*c_cm,3.),1./3.) - ((*p_jet_shells).shell_radius.at(fs_shell_index)*c_cm) )/ (beta((*p_jet_shells).shell_gamma.at(fs_shell_index))*c_cm); // sec
-			}			
+			}	
 		}
 
+
+		cout.precision(17);
 		/* Calculate time until next RS */
 		// If the reverse shock has begun, calculate the time until the next RS event
-		if(rs_active == true)
+		if( (rs_active == true) and ( (*p_jet_shells).shell_gamma.at(active_inds.at(0)) > (*p_jet_shells).shell_gamma.at(rs_shell_index)) )
 		{
 			// Calculate when the outer most shell will collide with the external shock discontinuity, e.g., when a reverse shock will happen
 			t_RS_coll = ((*p_jet_shells).shell_radius.at(rs_shell_index) - (*p_jet_shells).shell_radius.at(active_inds.at(0))) / (beta((*p_jet_shells).shell_gamma.at(active_inds.at(0))) - beta((*p_jet_shells).shell_gamma.at(rs_shell_index)));
 		}
 
+
 		/* Internal Shock Dynamics and Emission*/
 		if((t_IS_lowest < t_FS_sweep) & (t_IS_lowest < t_RS_coll))
 		{
+
 			// Move to the emission time of the shell collision (in the rest frame of the jet)
 			tmp_te += t_IS_lowest;
 			// Move shells forward
@@ -664,23 +651,25 @@ void SynthGRB::SimulateJetDynamics()
 				// If the mass swept up is greater than m_ex, a forward shock begins (and therefor a reverse shock)
 				if(m_swept_tot >= m_ex)
 				{				
+
 					fs_active = true;
 					rs_active = true;
 
 					// Turn the outermost shell into the FS
 					fs_shell_index = active_inds.at(0);
-					(*p_jet_shells).shell_status.at(fs_shell_index) = 0; // Deactivate the shell so it does not participate in any further IS calculations
+					(*p_jet_shells).shell_status.at(0) = 0; // Deactivate the shell so it does not participate in any further IS calculations
 					(*p_jet_shells).shell_mass.at(fs_shell_index) += m_swept_tot;
 
 					// Turn the second outermost shell into the RS
 					rs_shell_index = active_inds.at(1);
-					(*p_jet_shells).shell_status.at(rs_shell_index) = 0; // Deactivate the shell so it does not participate in any further IS calculations
+					(*p_jet_shells).shell_status.at(1) = 0; // Deactivate the shell so it does not participate in any further IS calculations
 
 					// Reset swept up mass
 					m_swept = 0.;
 					m_swept_tot = 0.;
 					m_ex = q * ((*p_jet_shells).shell_mass.at(fs_shell_index)+(*p_jet_shells).shell_mass.at(rs_shell_index))/(*p_jet_shells).shell_gamma.at(fs_shell_index);
 					// m_remaining = m_ex;
+
 				}
 			}
 			// Else, the FS is already active
@@ -715,21 +704,29 @@ void SynthGRB::SimulateJetDynamics()
 			shell_us_m = (*p_jet_shells).shell_mass.at(ind_s_us);
 			shell_us_g = (*p_jet_shells).shell_gamma.at(ind_s_us);
 
-			// Approximate the resulting Lorentz factor from the collision
-			tmp_gamma_r = sqrt(shell_ds_g*shell_us_g);
-			// Final Lorentz factor of the combined shell (after complete redistribution of momenta)
-			gamma_comb = _calc_shell_coll_gamma(shell_ds_g, shell_us_g, shell_ds_m, shell_us_m);
-
-			// Set the Lorentz factor of the merged shells
-			(*p_jet_shells).shell_gamma.at(ind_s_us) = gamma_comb;
-			// Set the mass of the merged shell (i.e., add the mass of the two shells)
-			(*p_jet_shells).shell_mass.at(ind_s_us) += (*p_jet_shells).shell_mass.at(ind_s_ds);
-			
 			// Record the radius of the collision
 			rad_coll = (*p_jet_shells).shell_radius.at(ind_s_us);
 
-			// De-active the downstream shell now that it has been merged
-			(*p_jet_shells).shell_status.at(ind_s_ds) = 0;
+			_shell_collision_int(shell_ds_m, shell_ds_g, shell_us_m, shell_us_g, rad_coll,
+							tmp_te,
+							tmp_asyn,
+							tmp_beq,
+							tmp_gamma_e,
+							tmp_esyn_kev,
+							tmp_esyn_erg,
+							tmp_gamma_r,
+							tmp_e_diss,
+							tmp_delt,
+							tmp_lum_diss,
+							tmp_eps_star,
+							tmp_rho,
+							tmp_eff,
+							"internal");
+
+			// Set the Lorentz factor of the merged shells
+			(*p_jet_shells).shell_gamma.at(ind_s_us) = tmp_gamma_r;
+			// Set the mass of the merged shell (i.e., add the mass of the two shells)
+			(*p_jet_shells).shell_mass.at(ind_s_us) += (*p_jet_shells).shell_mass.at(ind_s_ds);
 
 			// Calculate optical depth 
 			tmp_tau = 0.; // Reset to zero
@@ -744,25 +741,48 @@ void SynthGRB::SimulateJetDynamics()
 				}
 			}
 
-			gamma_int = 0.5 *( sqrt(shell_ds_g/shell_us_g) + sqrt(shell_us_g/shell_ds_g) ); // Lorentz factor for internal motion in shocked material
-			eps_star = (gamma_int - 1) * pow(c_cm,2.); // erg / g, Average proton factor from the collision of two shells
+			// De-active the downstream shell now that it has been merged
+			(*p_jet_shells).shell_status.at(ind_s_ds) = 0;
+
+
+			/*
+			// Approximate the resulting Lorentz factor from the collision
+			// tmp_gamma_r = sqrt(shell_ds_g*shell_us_g);
+			// Resulting Lorentz factor of the combined shell (after complete redistribution of momenta)
+			tmp_gamma_r = _calc_shell_coll_gamma(shell_ds_g, shell_us_g, shell_ds_m, shell_us_m);
+
+			// Calculate the energy dissipated in this collision, using the smaller mass of the two shells:
+			if(shell_us_m > shell_ds_m)
+			{
+				min_mass = shell_ds_m;
+			}
+			else
+			{
+				min_mass = shell_us_m;
+			}
+
+			// Energy dissipated in shock
+			tmp_e_diss = m_bar * pow(c_cm,2.) * (shell_ds_m*shell_ds_g + shell_us_m*shell_us_g - (shell_us_m + shell_ds_m)*tmp_gamma_r); // erg
+			
+			// gamma_int = 0.5 *( sqrt(shell_ds_g/shell_us_g) + sqrt(shell_us_g/shell_ds_g) ); // Lorentz factor for internal motion in shocked material
+			// tmp_eps_star = (gamma_int - 1) * pow(c_cm,2.); // erg / g, Average proton factor from the collision of two shells
+			tmp_eps_star = tmp_e_diss/(2.*m_bar*min_mass*tmp_gamma_r);
 
 			// Characteristic Lorentz factor of accelerated electrons
-			tmp_gamma_e = ((*p_model_params).p-2) * (*p_model_params).eps_e * mp * eps_star / ((*p_model_params).p-1) / (*p_model_params).zeta_int / me / pow(c_cm,2.); // Minimum Lorentz factor for a population of electrons distributed as a power law with index p
-			// tmp_gamma_e = 1e4; // Constant
+			tmp_gamma_e = ((*p_model_params).p-2.) * (*p_model_params).eps_e * mp * tmp_eps_star / ((*p_model_params).p-1.) / (*p_model_params).zeta_int / me / pow(c_cm,2.); // Minimum Lorentz factor for a population of electrons distributed as a power law with index p
+			// tmp_gamma_e = 15000; // Constant
 
-			rho = E_dot_kin / (4. * M_PI * pow(rad_coll*gamma_bar,2.) * pow(c_cm,5.)); // g/cm^3, Comoving proton mass density
-			tmp_beq = sqrt( 8.* M_PI * (*p_model_params).eps_b * rho * eps_star); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
+			tmp_rho = E_dot_kin / (4. * M_PI * pow(rad_coll*gamma_bar,2.) * pow(c_cm,5.)); // g/cm^3, Comoving proton mass density
+			tmp_beq = sqrt( 8.* M_PI * (*p_model_params).eps_b * tmp_rho * tmp_eps_star); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
 			tmp_esyn_kev = 50.*(tmp_gamma_r/300.)*(tmp_beq/1e3)*pow((tmp_gamma_e/100.),2.) / 1000.; // keV, Synchrotron energy in the rest frame
 			tmp_esyn_erg = kev_to_erg * tmp_esyn_kev; // erg, Synchrotron energy in the rest frame
 			
 			w = tmp_gamma_e*(tmp_esyn_erg/tmp_gamma_r)/(me * pow(c_cm,2.) ); // Indicates whether we are in the Klein-Nishina regime or Thompson (i.e., w>>1 or w<<1, respectively)
 			// w = 33.*(tmp_beq/1e3)*pow((tmp_gamma_e/1e4),3.); // Alternative relation to find w 
 
-			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
 			quadr_const = -(3./2.)*(0.2/M_PI/pow(c_cm*rad_coll,2.)) * tmp_gamma_e * 100. * (E_dot_kin/pow(gamma_bar*c_cm,2.)) * pow(tmp_beq/1000.,-2.); // Constant in the quadratic equation
 			// Calculate Compton parameter
-			Q_IC = (-1 + sqrt(1-4.*quadr_const))/2.;
+			Q_IC = (-1. + sqrt(1.-4.*quadr_const))/2.;
 			if(w>=1.) // Klein-Nishina regime 
 			{
 				// Calculate fraction of energy that goes into Inverse Compton electron
@@ -773,47 +793,44 @@ void SynthGRB::SimulateJetDynamics()
 				alpha_ic = Q_IC/(1.+Q_IC);
 			}
 
-			tmp_asyn = 1 - alpha_ic; // Fraction of energy remaining for synchrotron electrons
+			tmp_asyn = 1. - alpha_ic; // Fraction of energy remaining for synchrotron electrons
 
-			// Calculate the energy dissipated in this collision, using the smaller mass of the two shells:
-			if(shell_us_m > shell_ds_m)
-			{
-				// tmp_e_diss = shell_ds_m * m_bar * pow(c_cm,2.) * (shell_ds_g + shell_us_g - 2.*tmp_gamma_r) * (*p_model_params).eps_e * tmp_asyn; // erg
-				tmp_e_diss = shell_ds_m * m_bar * pow(c_cm,2.) * (shell_ds_g + shell_us_g - 2.*tmp_gamma_r) * (*p_model_params).eps_e * tmp_asyn / (rad_coll/2./pow(tmp_gamma_r,2.)); // erg / s
-			}
-			else
-			{
-				// tmp_e_diss = shell_us_m * m_bar * pow(c_cm,2.) * (shell_ds_g + shell_us_g - 2.*tmp_gamma_r) * (*p_model_params).eps_e * tmp_asyn; // erg
-				tmp_e_diss = shell_us_m * m_bar * pow(c_cm,2.) * (shell_ds_g + shell_us_g - 2.*tmp_gamma_r) * (*p_model_params).eps_e * tmp_asyn / (rad_coll/2./pow(tmp_gamma_r,2.)); // erg / s
-			}
+			// Duration of the emission event 
+			tmp_delt = rad_coll/2./pow(tmp_gamma_r,2.);
+
+			tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e * tmp_asyn / tmp_delt; // erg / s
+			
+			// Is the emission efficient? 
+			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
+			tmp_eff = (t_syn < ((1.+Q_IC)*rad_coll/gamma_bar) );
+			*/
 
 			// If the emission is efficient, add the contribution
 			// E.g., if the emission time is less than the shell expansion (the dynamical time scale of the shell)		
-			if ( t_syn < ((1+Q_IC)*rad_coll/gamma_bar) )
+			if ( tmp_eff )
 			{
 				// Calculate the arrival time at the observer and the width of the emission 
 				te_is.push_back(tmp_te); // sec, Time of emission (in the rest frame of the jet), is also equal to the time a shell crosses the photosphere
 				ta_is.push_back(tmp_te - rad_coll); // sec, Time when the emission arrives at the observer (in the observer frame)
-				delt_is.push_back(rad_coll/2./pow(tmp_gamma_r,2.)); // sec, Width of the emission (in observer frame)
+				delt_is.push_back(tmp_delt); // sec, Width of the emission (in observer frame)
 				beq_is.push_back(tmp_beq); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
 				gamma_e_is.push_back(tmp_gamma_e); // Lorentz factor of the electron population
 				esyn_is.push_back(tmp_esyn_kev); // keV, Synchrotron energy emitted by accelerated electron
 				gamma_r_is.push_back(tmp_gamma_r); // Approximation of the combined Lorentz factor of the colliding shells
-				e_diss_is.push_back(tmp_e_diss); // erg, Dissipated energy during the collision 
+				e_diss_is.push_back(tmp_lum_diss); // erg, Dissipated energy during the collision 
 				shell_ind_is.push_back(ind_s_ds); // Downstream shell swept up in the internal shock
-				eps_star_is.push_back(eps_star); // erg / g,s Internal energy dissipated in a collision 
+				eps_star_is.push_back(tmp_eps_star); // erg / g,s Internal energy dissipated in a collision 
 				// rho_is.push_back(rho); // g cm^-3, Density of the collision region
 
 				asyn_is.push_back(tmp_asyn); // Fraction of the energy in electrons which goes into synchrotron (as opposed to Inverse Compton)
 				tau.push_back(tmp_tau); // Optical depth at the location of the collision
 				relvel.push_back( _rel_vel(shell_us_g,shell_ds_g) ); // Relative velocity between the two shells
 			}
-
-		}
-		
+		}		
 		/* Forward Shock Dynamics and Emission*/
 		else if((fs_active == true ) & (t_FS_sweep < t_RS_coll))
 		{
+			
 			// Move to the emission time of the shell collision (in the rest frame of the jet)
 			tmp_te += t_FS_sweep;
 
@@ -856,23 +873,43 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_rs_g = (*p_jet_shells).shell_gamma.at(rs_shell_index); // current Lorentz factor of the reverse shock shell
 			tmp_rs_r = (*p_jet_shells).shell_radius.at(rs_shell_index); // current radius of the reverse shock shell
 
+			_shell_collision_ext(tmp_rs_m, tmp_fs_m, fs_gamma_int, tmp_fs_g, m_swept_tot, 1, tmp_fs_r,
+							tmp_te,
+							tmp_asyn,
+							tmp_beq,
+							tmp_gamma_e,
+							tmp_esyn_kev,
+							tmp_esyn_erg,
+							tmp_gamma_r,
+							tmp_e_diss,
+							tmp_delt,
+							tmp_lum_diss,
+							tmp_eps_star,
+							tmp_rho,
+							tmp_eff,
+							"external");
 
+			/*
 			// Calculate necessary parameters:
 			// The new Lorentz factor at the discontinuity due to forward shock
-			tmp_gamma_r = pow( ((tmp_rs_m + tmp_fs_m*fs_gamma_int)*pow(tmp_fs_g,2.) + m_swept_tot*tmp_fs_g ) / ( (tmp_rs_m + tmp_fs_m*fs_gamma_int) + 2*m_swept_tot*tmp_fs_g ) ,0.5);
+			tmp_gamma_r = pow( ((tmp_rs_m + tmp_fs_m*fs_gamma_int)*pow(tmp_fs_g,2.) + m_swept_tot*tmp_fs_g ) / ( (tmp_rs_m + tmp_fs_m*fs_gamma_int) + 2.*m_swept_tot*tmp_fs_g ) ,0.5);
 
-			// The new internal Lorentz factor in the shocked forward medium due to forward shock, if:
-			// adiabatic (slow cooling) so FS_gamma_int > 1 and approx = gamma_r  :
-			fs_gamma_int = ((tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_fs_g + m_swept_tot - tmp_rs_m*tmp_gamma_r)/(tmp_fs_m+m_swept_tot)/tmp_gamma_r;
+			// The energy dissipated by forward shock
+			tmp_e_diss = pow(c_cm,2.) * m_bar * ( (tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_fs_g + m_swept_tot - (m_swept_tot + tmp_rs_m + tmp_fs_m*fs_gamma_int )*tmp_gamma_r); // erg 
+			// tmp_e_diss = pow(c_cm,2.) * m_bar * m_swept_tot * ( tmp_fs_g + 1 - 2*tmp_gamma_r); // erg 
 
-			eps_star =  (fs_gamma_int - 1) * pow(c_cm,2.); // erg/g, Average energy dissipated for each proton in the collision of two shells
+			// tmp_eps_star =  (fs_gamma_int - 1) * pow(c_cm,2.); // erg/g, Average energy dissipated for each proton in the collision of two shells
+			tmp_eps_star = tmp_e_diss /(2.*m_bar*m_swept_tot*tmp_gamma_r);
+			// tmp_eps_star = tmp_e_diss /(2.*m_bar*(tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_gamma_r);
 
 			// The typical Lorentz factor of the electron distribution (Gamma_min)
-			tmp_gamma_e = ((*p_model_params).p-2.) * (*p_model_params).eps_e * mp * eps_star / ((*p_model_params).p-1.) /(*p_model_params).zeta_ext / me / pow(c_cm,2.); // Minimum Lorentz factor for a population of electrons distributed as a power law with index p
+			// tmp_gamma_e = tmp_gamma_r * ((*p_model_params).p-2.) * (*p_model_params).eps_e * mp * tmp_eps_star / ((*p_model_params).p-1.) /(*p_model_params).zeta_ext / me / pow(c_cm,2.);
+			tmp_gamma_e = tmp_gamma_r * ((*p_model_params).p-2.) * (*p_model_params).eps_e * mp / ((*p_model_params).p-1.) /(*p_model_params).zeta_ext / me;
+			// tmp_gamma_e = 15000;
 			
 			// The magnetic field in the forward shock
-			rho = rho_not/pow(tmp_fs_r*c_cm,k); // g/cm^3, comoving proton density 
-			tmp_beq = sqrt(8 * M_PI * (*p_model_params).eps_b * rho * eps_star);
+			tmp_rho = rho_not/pow(tmp_fs_r*c_cm,k); // g/cm^3, comoving proton density 
+			tmp_beq = c_cm*tmp_gamma_r*sqrt(32. * M_PI * (*p_model_params).eps_b * tmp_rho);
 
 			// The synchrotron energy of the accelerated electrons 
 			tmp_esyn_kev = 50.*(tmp_gamma_r/300.)*(tmp_beq/1e3)*pow((tmp_gamma_e/100.),2.) / 1000.; // keV, Synchrotron energy in the rest frame
@@ -881,7 +918,7 @@ void SynthGRB::SimulateJetDynamics()
 			w = tmp_gamma_e*(tmp_esyn_erg/tmp_gamma_r)/(me * pow(c_cm,2.) ); // Indicates whether we are in the Klein-Nishina regime or Thompson (i.e., w>>1 or w<<1, respectively)
 			quadr_const = -(3./2.)*(0.2/M_PI/pow(c_cm*tmp_fs_r,2.)) * tmp_gamma_e * 100. * (E_dot_kin/pow(gamma_bar*c_cm,2.)) * pow(tmp_beq/1000.,-2.); // Constant in the quadratic equation
 			// Calculate Compton parameter
-			Q_IC = (-1 + sqrt(1-4.*quadr_const))/2.;
+			Q_IC = (-1. + sqrt(1.-4.*quadr_const))/2.;
 			if(w>=1.) // Klein-Nishina regime 
 			{
 				// Calculate fraction of energy that goes into Inverse Compton electron
@@ -894,12 +931,16 @@ void SynthGRB::SimulateJetDynamics()
 
 			tmp_asyn = 1 - alpha_ic; // Fraction of energy remaining for synchrotron electrons
 
-			// The energy dissipated by forward shock
-			// tmp_e_diss = pow(c_cm,2) * m_bar * ( (tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_fs_g + m_swept_tot - (tmp_rs_m + m_swept_tot + tmp_fs_m*fs_gamma_int )*tmp_gamma_r) * (*p_model_params).eps_e * tmp_asyn ; // erg
-			tmp_e_diss = pow(c_cm,2.) * m_bar * ( (tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_fs_g + m_swept_tot - (tmp_rs_m + m_swept_tot + tmp_fs_m*fs_gamma_int )*tmp_gamma_r) * (*p_model_params).eps_e * tmp_asyn / (tmp_fs_r/2./pow(tmp_gamma_r,2.))/q; // erg / s;  
+			tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e * tmp_asyn / (tmp_fs_r/2./pow(tmp_gamma_r,2.)); // erg / s;  
+			*/
+			
 
 			// Update the mass of the forward shock shell
 			(*p_jet_shells).shell_mass.at(fs_shell_index) += m_swept_tot;
+
+			// The new internal Lorentz factor in the shocked forward medium due to forward shock, if:
+			// adiabatic (slow cooling) so FS_gamma_int > 1 and approx = gamma_r  :
+			fs_gamma_int = ((tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_fs_g + m_swept_tot - tmp_rs_m*tmp_gamma_r)/(tmp_fs_m+m_swept_tot)/tmp_gamma_r;
 
 			// Update the Lorentz factor of the forward and reverse shock shells
 			(*p_jet_shells).shell_gamma.at(fs_shell_index) = tmp_gamma_r;
@@ -909,24 +950,24 @@ void SynthGRB::SimulateJetDynamics()
 			m_swept = 0.;
 			m_swept_tot = 0.;
 			m_ex = q * ((*p_jet_shells).shell_mass.at(fs_shell_index)+(*p_jet_shells).shell_mass.at(rs_shell_index))/gamma_bar;
-			// m_remaining = m_ex;
 
 			// Continuous emission:
 			te_fs.push_back(tmp_te); // sec, Time of emission 
 			ta_fs.push_back(tmp_te - tmp_fs_r); // sec, Arrival time of emission at observer
-			delt_fs.push_back(tmp_fs_r/2./pow(tmp_gamma_r,2.)); // sec, Duration of the emission
+			delt_fs.push_back(tmp_delt); // sec, Duration of the emission
 			beq_fs.push_back(tmp_beq); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
 			gamma_e_fs.push_back(tmp_gamma_e); // Lorentz factor of the electron population
 			esyn_fs.push_back(tmp_esyn_kev); // erg, The typical synchrotron energy of the accelerated electrons
 			gamma_r_fs.push_back(tmp_gamma_r); // New Lorentz factor of the FS
-			e_diss_fs.push_back(tmp_e_diss); // erg/s, Dissipated energy of the FS	
-			eps_star_fs.push_back(eps_star); // erg / g, Internal energy dissipated in a collision 
+			e_diss_fs.push_back(tmp_lum_diss); // erg/s, Dissipated energy of the FS	
+			eps_star_fs.push_back(tmp_eps_star); // erg / g, Internal energy dissipated in a collision 
 			// rho_fs.push_back(rho); // g cm^-3, Density of the collision region
 		}
 
 		/* Reverse Shock Dynamics and Emission*/
 		else if((rs_active == true ))
 		{
+
 			// Move to the emission time of the shell collision (in the rest frame of the jet)
 			tmp_te += t_RS_coll;
 
@@ -939,6 +980,7 @@ void SynthGRB::SimulateJetDynamics()
 				}
 			}
 			// Move FS and RS forward
+			tmp_r_before = (*p_jet_shells).shell_radius.at(fs_shell_index);
 			(*p_jet_shells).shell_radius.at(fs_shell_index) += beta((*p_jet_shells).shell_gamma.at(fs_shell_index))*t_RS_coll;
 			(*p_jet_shells).shell_radius.at(rs_shell_index) += beta((*p_jet_shells).shell_gamma.at(rs_shell_index))*t_RS_coll;
 
@@ -951,7 +993,6 @@ void SynthGRB::SimulateJetDynamics()
 			// Assume a constant density profile for the medium:
 			else if (k == 0)
 			{
-				tmp_r_before = (*p_jet_shells).shell_radius.at(fs_shell_index) - beta((*p_jet_shells).shell_gamma.at(fs_shell_index)) * t_RS_coll;
 				m_swept = (4./3.)* M_PI * rho_not * ( pow((*p_jet_shells).shell_radius.at(fs_shell_index)*c_cm,3.) - pow(tmp_r_before*c_cm ,3.) )/m_bar; // g/M
 			} 
 			// Calculate the mass still needed to be swept up until a FS occurs
@@ -976,26 +1017,61 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_rs_r = (*p_jet_shells).shell_radius.at(rs_shell_index); // current radius of the reverse shock shell
 
 
+			_shell_collision_int( (tmp_rs_m + tmp_fs_m*fs_gamma_int ), tmp_rs_g, tmp_ej_m, tmp_ej_g, tmp_rs_r,
+							tmp_te,
+							tmp_asyn,
+							tmp_beq,
+							tmp_gamma_e,
+							tmp_esyn_kev,
+							tmp_esyn_erg,
+							tmp_gamma_r,
+							tmp_e_diss,
+							tmp_delt,
+							tmp_lum_diss,
+							tmp_eps_star,
+							tmp_rho,
+							tmp_eff,
+							"internal");
+
+			/*
 			// Calculate necessary parameters: 
 			// The new Lorentz factor at the discontinuity due to reverse shock 			
 			tmp_gamma_r = pow(tmp_rs_g*tmp_ej_g,0.5)*pow( ((tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_rs_g + tmp_ej_m*tmp_ej_g )/((tmp_rs_m + tmp_fs_m*fs_gamma_int )*tmp_ej_g + tmp_ej_m*tmp_rs_g ),0.5);
 			
-			gamma_int = 0.5 *( sqrt(tmp_gamma_r/tmp_ej_g) + sqrt(tmp_ej_g/tmp_gamma_r) ); // Lorentz factor for internal motion in shocked material
-			eps_star =  (gamma_int - 1.) * pow(c_cm,2.); // erg / g, Average energy per proton within the collided shells
+			// Calculate the energy dissipated in this collision, using the smaller mass of the two shells:
+			if(tmp_rs_m > tmp_ej_m)
+			{
+				min_mass = tmp_ej_m;
+			}
+			else
+			{
+				min_mass = tmp_rs_m;
+			}
+
+			// The energy dissipated by reverse shock
+			tmp_e_diss = pow(c_cm,2.) * m_bar * ( (tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_rs_g + tmp_ej_m*tmp_ej_g - (tmp_ej_m + tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_gamma_r); // erg
+
+			// gamma_int = 0.5 *( sqrt(tmp_gamma_r/tmp_ej_g) + sqrt(tmp_ej_g/tmp_gamma_r) ); // Lorentz factor for internal motion in shocked material
+			// tmp_eps_star =  (gamma_int - 1.) * pow(c_cm,2.); // erg / g, Average energy per proton within the collided shells
+
+			tmp_eps_star = tmp_e_diss /(2.*m_bar*min_mass*tmp_gamma_r);
 
 			// The typical Lorentz factor of the electron distribution (Gamma_min)
-			tmp_gamma_e = ((*p_model_params).p-2.) * (*p_model_params).eps_e * mp * eps_star / ((*p_model_params).p-1.) / (*p_model_params).zeta_int / me / pow(c_cm,2.); // Minimum Lorentz factor for a population of electrons distributed as a power law with index p
-			
+			tmp_gamma_e = ((*p_model_params).p-2.) * (*p_model_params).eps_e * mp * tmp_eps_star / ((*p_model_params).p-1.) / (*p_model_params).zeta_int / me / pow(c_cm,2.); // Minimum Lorentz factor for a population of electrons distributed as a power law with index p
+			// tmp_gamma_e = 15000;
+
 			// Density in the reverse shock medium			
-			rho = E_dot_kin / (4. * M_PI * pow(tmp_rs_r*gamma_bar,2.) * pow(c_cm,5.)); // g/cm^3, Comoving proton mass density
+			tmp_rho = E_dot_kin / (4. * M_PI * pow(tmp_rs_r*gamma_bar,2.) * pow(c_cm,5.)); // g/cm^3, Comoving proton mass density
 			
 			// The magnetic field in the reverse shock
-			tmp_beq = sqrt(8. * M_PI * (*p_model_params).eps_b * rho * eps_star); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
+			tmp_beq = sqrt(8. * M_PI * (*p_model_params).eps_b * tmp_rho * tmp_eps_star); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
 
 			// The typical energy of an accelerated electron
 			tmp_esyn_kev = 50.*(tmp_gamma_r/300.)*(tmp_beq/1e3)*pow((tmp_gamma_e/100.),2.) / 1000.; // keV, Synchrotron energy in the source frame
 			tmp_esyn_erg = kev_to_erg * tmp_esyn_kev; // erg, Synchrotron energy in the rest frame 
 
+			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
+			
 			w = tmp_gamma_e*(tmp_esyn_erg/tmp_gamma_r)/(me * pow(c_cm,2.) ); // Indicates whether we are in the Klein-Nishina regime or Thompson (i.e., w>>1 or w<<1, respectively)
 			quadr_const = -(3./2.)*(0.2/M_PI/pow(c_cm*tmp_rs_r,2.)) * tmp_gamma_e * 100. * (E_dot_kin/pow(gamma_bar*c_cm,2.)) * pow(tmp_beq/1000.,-2.); // Constant in the quadratic equation
 			// Calculate Compton parameter
@@ -1012,10 +1088,8 @@ void SynthGRB::SimulateJetDynamics()
 
 			tmp_asyn = 1. - alpha_ic; // Fraction of energy remaining for synchrotron electrons
 
-			// The energy dissipated by reverse shock
-			// tmp_e_diss = pow(c_cm,2.) * m_bar * ( (tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_fs_m + tmp_ej_m*tmp_ej_g - (tmp_rs_m + tmp_ej_m + tmp_fs_m*fs_gamma_int )*tmp_gamma_r) * (*p_model_params).eps_e * tmp_asyn; // erg
-			// tmp_e_diss = pow(c_cm,2.) * m_bar * ( (tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_rs_g + tmp_ej_m*tmp_ej_g - (tmp_rs_m + tmp_ej_m + tmp_fs_m*fs_gamma_int )*tmp_gamma_r) * (*p_model_params).eps_e * tmp_asyn / (tmp_rs_r/2./pow(tmp_gamma_r,2.)); // erg / s;
-			tmp_e_diss = pow(c_cm,2.) * m_bar * tmp_ej_m*( (1+fs_gamma_int)*tmp_rs_g + tmp_ej_g - (2+fs_gamma_int )*tmp_gamma_r) * (*p_model_params).eps_e * tmp_asyn / (tmp_rs_r/2./pow(tmp_gamma_r,2.)); // erg / s;
+			tmp_lum_diss = tmp_e_diss * (*p_model_params).eps_e * tmp_asyn / (tmp_rs_r/2./pow(tmp_gamma_r,2.)); // erg / s;
+			*/
 
 			// Update the mass of the reverse shock shell
 			(*p_jet_shells).shell_mass.at(rs_shell_index) += tmp_ej_m;
@@ -1023,21 +1097,22 @@ void SynthGRB::SimulateJetDynamics()
 			(*p_jet_shells).shell_gamma.at(fs_shell_index) = tmp_gamma_r;
 			(*p_jet_shells).shell_gamma.at(rs_shell_index) = tmp_gamma_r;
 
+			// Deactivate internal shell that collided with RS
+			(*p_jet_shells).shell_status.at(active_inds.at(0)) = 0;
+
 			// Record necessary parameters to calculate the emission
 			te_rs.push_back(tmp_te); // sec, Time of emission 
 			ta_rs.push_back(tmp_te - tmp_rs_r); // sec, Arrival time of emission at observer
-			delt_rs.push_back(tmp_rs_r/2./pow(tmp_gamma_r,2.)); // sec, Duration of the emission
+			delt_rs.push_back(tmp_delt); // sec, Duration of the emission
 			beq_rs.push_back(tmp_beq); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
 			gamma_e_rs.push_back(tmp_gamma_e); // Lorentz factor of the electron population	
 			esyn_rs.push_back(tmp_esyn_kev); // erg, The typical synchrotron energy of the accelerated electrons
 			gamma_r_rs.push_back(tmp_gamma_r); // New Lorentz factor of the RS
-			e_diss_rs.push_back(tmp_e_diss); // erg, Dissipated energy of the RS
+			e_diss_rs.push_back(tmp_lum_diss); // erg, Dissipated energy of the RS
 			shell_ind_rs.push_back(active_inds.at(0)); // The index of the shell which was crossed by the reverse shock
-			eps_star_rs.push_back(eps_star); // erg / g, Internal energy dissipated in a collision 
+			eps_star_rs.push_back(tmp_eps_star); // erg / g, Internal energy dissipated in a collision 
 			// rho_rs.push_back(rho); // g cm^-3, Density of the collision region
 
-			// Deactivate internal shell that collided with RS
-			(*p_jet_shells).shell_status.at(active_inds.at(0)) = 0;
 		}
 		else
 		{
@@ -1051,6 +1126,7 @@ void SynthGRB::SimulateJetDynamics()
 			rs_shell_index = active_inds.at(1);
 			(*p_jet_shells).shell_status.at(rs_shell_index) = 0; // Deactivate the shell so it does not participate in any further IS calculations
 		}
+
 
 
 		// Check if any more collisions will occur
@@ -1072,6 +1148,245 @@ void SynthGRB::SimulateJetDynamics()
 			// std::cout << "At time t=" << tmp_te << " s, all shells have passed through the reverse shock.\n";
 		}
 	}
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Evaluate a shell collision
+void SynthGRB::_shell_collision_int(double m1, double g1, double m2, double g2, double rad_coll,
+	double & tmp_te,
+	double & tmp_asyn,
+	double & tmp_beq,
+	double & tmp_gamma_e,
+	double & tmp_esyn_kev,
+	double & tmp_esyn_erg,
+	double & tmp_gamma_r,
+	double & tmp_e_diss,
+	double & tmp_delt,
+	double & tmp_lum_diss,
+	double & tmp_eps_star,
+	double & tmp_rho,
+	bool & tmp_eff,
+	string location)
+{
+	/*
+	m1 = Mass of the down stream shell, g/M_tot
+	g1 = Lorentz factor of the down stream shell
+
+	m2 = Mass of the up stream shell, g/M_tot
+	g2 = Lorentz factor of the up stream shell
+
+	rad_coll = Radius of the collision, light seconds
+	*/
+
+	double quadr_const = 0.; // Constant in the quadratic equation
+	double w = 0.; // Indicates whether we are in the Klein-Nishina regime or Thompson (i.e., w>>1 or w<<1, respectively)
+	double Q_IC = 0.; // Inverse Compton parameter
+	double alpha_ic = 0.; // Fraction of energy that goes into Inverse Compton electrons
+	double t_syn = 0.; // sec, Synchrotron time-scale
+	double min_mass = 0.; // g/M_tot, mass of the less massive shell involved in the internal shock
+	double nu_c; // Frequency associated with the critical Synchrotron Lorentz factor
+	double nu_m; // Frequency associated with the minimum Lorentz factor of the electron population 
+	
+	float tmp_zeta=0.; // Fraction of electrons accelerated in the shock
+	float tmp_eps_e=0.; // Fraction of energy in electrons
+	float tmp_eps_b=0.; // Fraction of energy in the magnetic field 
+	float tmp_p=0.; // Power law index of electron population
+
+	// Calculate the energy dissipated in this collision, using the smaller mass of the two shells:
+	if(m1 > m2)
+	{
+		min_mass = m2;
+	}
+	else
+	{
+		min_mass = m1;
+	}
+
+	cout << "int" << endl;
+	tmp_zeta = (*p_model_params).zeta_int;
+	tmp_eps_e = (*p_model_params).eps_e_int;
+	tmp_eps_b = (*p_model_params).eps_b_int;
+	tmp_p = (*p_model_params).p_int;
+
+	// Calculate necessary parameters for a shell collision:
+	// The new Lorentz factor at the discontinuity due to reverse shock 	
+	tmp_gamma_r = _calc_shell_coll_gamma(g1, g2, m1, m2);
+
+	// The energy dissipated by reverse shock
+	tmp_e_diss = pow(c_cm,2.) * m_bar * ( m1*g1 + m2*g2 - (m1+m2)*tmp_gamma_r); // erg
+
+	// gamma_int = 0.5 *( sqrt(tmp_gamma_r/tmp_ej_g) + sqrt(tmp_ej_g/tmp_gamma_r) ); // Lorentz factor for internal motion in shocked material, assuming equal masses 
+	// tmp_eps_star =  (gamma_int - 1.) * pow(c_cm,2.); // erg / g, Average energy per proton within the collided shells
+
+	tmp_eps_star = tmp_e_diss /(2.*m_bar*min_mass*tmp_gamma_r);
+
+	// The typical Lorentz factor of the electron distribution (Gamma_min)
+	tmp_gamma_e = (tmp_p-2.) * tmp_eps_e * mp * tmp_eps_star / (tmp_p-1.) / tmp_zeta / me / pow(c_cm,2.); // Minimum Lorentz factor for a population of electrons distributed as a power law with index p
+	// tmp_gamma_e = 15000;
+
+	// Density in the reverse shock medium			
+	tmp_rho = E_dot_kin / (4. * M_PI * pow(rad_coll*gamma_bar,2.) * pow(c_cm,5.)); // g/cm^3, Comoving proton mass density
+	
+	// The magnetic field in the reverse shock
+	tmp_beq = sqrt(8. * M_PI * tmp_eps_b * tmp_rho * tmp_eps_star); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
+
+	// The typical energy of an accelerated electron
+	tmp_esyn_kev = 50. * (tmp_gamma_r/300.) * (tmp_beq/1e3) * pow((tmp_gamma_e/100.),2.) / 1000.; // keV, Synchrotron energy in the source frame
+	tmp_esyn_erg = kev_to_erg * tmp_esyn_kev; // erg, Synchrotron energy in the rest frame 
+
+	w = tmp_gamma_e * ( tmp_esyn_erg / tmp_gamma_r ) / (me * pow(c_cm,2.) ); // Indicates whether we are in the Klein-Nishina regime or Thompson (i.e., w>>1 or w<<1, respectively)
+	quadr_const = -(3./2.) * (0.2/M_PI/pow(c_cm*rad_coll,2.)) * tmp_gamma_e * 100. * (E_dot_kin/pow(gamma_bar*c_cm,2.)) * pow(tmp_beq/1000.,-2.); // Constant in the quadratic equation
+	// Calculate Compton parameter
+	Q_IC = (-1. + sqrt(1.-4.*quadr_const))/2.;
+	if(w>=1.) // Klein-Nishina regime 
+	{
+		// Calculate fraction of energy that goes into Inverse Compton electron
+		alpha_ic = (Q_IC/w)/(1.+(Q_IC/w));
+	}
+	else // w < 1, Thompson regime 
+	{
+		alpha_ic = Q_IC/(1.+Q_IC);
+	}
+
+	tmp_asyn = 1. - alpha_ic; // Fraction of energy remaining for synchrotron electrons
+
+	// Duration of the emission event 
+	tmp_delt = rad_coll/2./pow(tmp_gamma_r,2.);
+
+	// Dissipated luminosity
+	tmp_lum_diss = tmp_e_diss * tmp_eps_e * tmp_asyn / tmp_delt; // erg / s;
+
+	// Is the emission efficient? 
+	t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
+	tmp_eff = (t_syn < ((1.+Q_IC)*rad_coll/gamma_bar) );
+
+	// Calculate nu_m
+	nu_m = (1./2./M_PI) * pow((tmp_p-2.)*tmp_eps_e/(tmp_p-1.)/tmp_zeta,2.) * (qe*pow(mp,2.)/pow(me,3.)/pow(c_cm,5.)) * pow(tmp_eps_star,2.) * tmp_beq;
+
+	// Calculate nu_c
+	nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(tmp_beq,3.)/pow(tmp_delt,2.);
+}
+
+// Evaluate a shell collision
+void SynthGRB::_shell_collision_ext(double m1r, double m1f, double & g1i, double g1, double m2, double g2, double rad_coll,
+	double & tmp_te,
+	double & tmp_asyn,
+	double & tmp_beq,
+	double & tmp_gamma_e,
+	double & tmp_esyn_kev,
+	double & tmp_esyn_erg,
+	double & tmp_gamma_r,
+	double & tmp_e_diss,
+	double & tmp_delt,
+	double & tmp_lum_diss,
+	double & tmp_eps_star,
+	double & tmp_rho,
+	bool & tmp_eff,
+	string location)
+{
+	/*
+	m1 = Mass of the down stream shell, reverse shock region, g/M_tot
+	m1 = Mass of the down stream shell, forward shock region, g/M_tot
+	g1i = Internal Lorentz factor of the forward shell
+	g1 = Lorentz factor of the down stream shell
+
+	m2 = Mass of the up stream shell, g/M_tot
+	g2 = Lorentz factor of the up stream shell
+
+	rad_coll = Radius of the collision, light seconds
+	*/
+
+	double quadr_const = 0.; // Constant in the quadratic equation
+	double w = 0.; // Indicates whether we are in the Klein-Nishina regime or Thompson (i.e., w>>1 or w<<1, respectively)
+	double Q_IC = 0.; // Inverse Compton parameter
+	double alpha_ic = 0.; // Fraction of energy that goes into Inverse Compton electrons
+	double t_syn = 0.; // sec, Synchrotron time-scale
+	double min_mass = 0.; // g/M_tot, mass of the less massive shell involved in the internal shock
+	double nu_c; // Frequency associated with the critical Synchrotron Lorentz factor
+	double nu_m; // Frequency associated with the minimum Lorentz factor of the electron population 
+	
+	float tmp_zeta=0.; // Fraction of electrons accelerated in the shock
+	float tmp_eps_e=0.; // Fraction of energy in electrons
+	float tmp_eps_b=0.; // Fraction of energy in the magnetic field 
+	float tmp_p=0.; // Power law index of electron population
+
+	// Calculate the energy dissipated in this collision, using the smaller mass of the two shells:
+	if( (m1f*g1i) > m2)
+	{
+		min_mass = m2;
+	}
+	else
+	{
+		min_mass = (m1f*g1i);
+	}
+
+	cout << "ext" << endl;
+	tmp_zeta = (*p_model_params).zeta_ext;
+	tmp_eps_e = (*p_model_params).eps_e_ext;
+	tmp_eps_b = (*p_model_params).eps_b_ext;
+	tmp_p = (*p_model_params).p_ext;
+
+	// Calculate necessary parameters for a shell collision:
+	// The new Lorentz factor at the discontinuity due to reverse shock 	
+	tmp_gamma_r = pow( ( (m1r+m1f*g1i)*pow(g1,2.) + m2*g1 ) / ( (m1r+m1f*g1i) + 2.*m2*g1 ) ,0.5);
+
+	// The new internal Lorentz factor in the shocked forward medium due to forward shock, if:
+	// adiabatic (slow cooling) so FS_gamma_int > 1 and approx = gamma_r  :
+	g1i = ((m1r+m1f*g1i)*g1 + m2 - m1r*tmp_gamma_r)/(m1f+m2)/tmp_gamma_r;
+
+	// The energy dissipated by reverse shock
+	tmp_e_diss = pow(c_cm,2.) * m_bar * ( (m1r+m1f*g1i)*g1 + m2*g2 - ((m1r+m1f*g1i)+m2)*tmp_gamma_r); // erg
+
+	// gamma_int = 0.5 *( sqrt(tmp_gamma_r/tmp_ej_g) + sqrt(tmp_ej_g/tmp_gamma_r) ); // Lorentz factor for internal motion in shocked material, assuming equal masses 
+	// tmp_eps_star =  (gamma_int - 1.) * pow(c_cm,2.); // erg / g, Average energy per proton within the collided shells
+
+	tmp_eps_star = tmp_e_diss /(2.*m_bar*min_mass*tmp_gamma_r);
+
+	// The typical Lorentz factor of the electron distribution (Gamma_min)
+	tmp_gamma_e = tmp_gamma_r * (tmp_p-2.) * tmp_eps_e * mp / (tmp_p-1.) / tmp_zeta / me;
+	// tmp_gamma_e = 15000;
+
+	// The magnetic field in the forward shock
+	tmp_rho = (*p_model_params).rho_not/pow(rad_coll*c_cm, (*p_model_params).k_med); // g/cm^3, comoving proton density 
+	tmp_beq = c_cm*tmp_gamma_r*sqrt(32. * M_PI * tmp_eps_b * tmp_rho);
+
+
+	// The typical energy of an accelerated electron
+	tmp_esyn_kev = 50. * (tmp_gamma_r/300.) * (tmp_beq/1e3) * pow((tmp_gamma_e/100.),2.) / 1000.; // keV, Synchrotron energy in the source frame
+	tmp_esyn_erg = kev_to_erg * tmp_esyn_kev; // erg, Synchrotron energy in the rest frame 
+
+	w = tmp_gamma_e * ( tmp_esyn_erg / tmp_gamma_r ) / (me * pow(c_cm,2.) ); // Indicates whether we are in the Klein-Nishina regime or Thompson (i.e., w>>1 or w<<1, respectively)
+	quadr_const = -(3./2.) * (0.2/M_PI/pow(c_cm*rad_coll,2.)) * tmp_gamma_e * 100. * (E_dot_kin/pow(gamma_bar*c_cm,2.)) * pow(tmp_beq/1000.,-2.); // Constant in the quadratic equation
+	// Calculate Compton parameter
+	Q_IC = (-1. + sqrt(1.-4.*quadr_const))/2.;
+	if(w>=1.) // Klein-Nishina regime 
+	{
+		// Calculate fraction of energy that goes into Inverse Compton electron
+		alpha_ic = (Q_IC/w)/(1.+(Q_IC/w));
+	}
+	else // w < 1, Thompson regime 
+	{
+		alpha_ic = Q_IC/(1.+Q_IC);
+	}
+
+	tmp_asyn = 1. - alpha_ic; // Fraction of energy remaining for synchrotron electrons
+
+	// Duration of the emission event 
+	tmp_delt = rad_coll/2./pow(tmp_gamma_r,2.);
+
+	// Dissipated luminosity
+	tmp_lum_diss = tmp_e_diss * tmp_eps_e * tmp_asyn / tmp_delt; // erg / s;
+
+	// Is the emission efficient? 
+	t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
+	tmp_eff = (t_syn < ((1.+Q_IC)*rad_coll/gamma_bar) );
+
+	// Calculate nu_m
+	nu_m = (1./2./M_PI) * pow((tmp_p-2.)*tmp_eps_e/(tmp_p-1.)/tmp_zeta,2.) * (qe*pow(mp,2.)/pow(me,3.)/pow(c_cm,5.)) * pow(tmp_eps_star,2.) * tmp_beq;
+
+	// Calculate nu_c
+	nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(tmp_beq,3.)/pow(tmp_delt,2.);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1107,12 +1422,14 @@ void SynthGRB::MakeThermalSpec(Spectrum * therm_spectrum, float tmin, float tmax
 	// For each thermal emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_therm.size(); ++i)
 	{
+
 		// We only want to take the emission that occurs between the specified tmin and tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with tmin and tmax, calculate its contribution.
 		if ( ta_therm.at(i) <= tmax and (ta_therm.at(i)+delt_therm.at(i)) >= tmin )
 		{
 			// Call function to calculate thermal spectrum rate
 			CalcThermalContribution(therm_spectrum, T_phot.at(i),L_phot.at(i));
+
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum.
 	}
@@ -1125,16 +1442,16 @@ void SynthGRB::CalcThermalContribution(Spectrum * therm_spectrum, float temp, do
 {
 	// Calculate the normalization
 	double norm=0.; // Set normalization to zero
-	int norm_num_bin=100.*log10(1e4*(*therm_spectrum).energ_hi.back()/(*therm_spectrum).energ_lo.at(0)); // Number of energy bins to use to calculate normalization
+	int norm_num_bin=20.*log10(1e6*(*therm_spectrum).energ_hi.back()/(*therm_spectrum).energ_lo.at(0)); // Number of energy bins to use to calculate normalization
 	std::vector<float> norm_energy_axis(norm_num_bin+1); // Make vector to store energy axis (initialized to zero's) 
-	_make_en_axis(norm_energy_axis,(*therm_spectrum).energ_lo.at(0)/100.,100.*(*therm_spectrum).energ_hi.back(),norm_num_bin+1); // Fill in energy values
+	_make_en_axis(norm_energy_axis,(*therm_spectrum).energ_lo.at(0)/1000.,1000.*(*therm_spectrum).energ_hi.back(),norm_num_bin+1); // Fill in energy values
 
 	float en_curr=0.; // Current energy to evaluate the addition to the normalization
 	// For each energy bin along the normalization energy axis, calculate the addition to the normalization and add it. 
 	for(int i=0;i < norm_num_bin; ++i)
 	{
 		en_curr = (norm_energy_axis.at(i+1) + norm_energy_axis.at(i) ) / 2.; // Set the current energy
-		if(en_curr < 2.*pow(10.,3.))
+		if(en_curr < 5.*pow(10.,3.))
 		{
 			// Calculate the contribution according to a Left-Riemann-Sum
 			norm += (norm_energy_axis.at(i+1)-norm_energy_axis.at(i)) * en_curr * ThermalSpec(en_curr,temp);
@@ -1154,7 +1471,7 @@ void SynthGRB::CalcThermalContribution(Spectrum * therm_spectrum, float temp, do
 		// The current temp and energy bin define the count rate, the normalization found above is applied.
 		// This must still be multiplied by the flux of the source.
 		// If the current energy bin is > 2 MeV, then thermal radiation can be ignored.
-		if(en_curr < 2.*pow(10.,3.))
+		if(en_curr < 5.*pow(10.,3.))
 		{
 			tmp_val = flux * ThermalSpec(en_curr,temp) / norm;
 		}
@@ -1186,8 +1503,8 @@ void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 	double nu_c; // Frequency associated with the critical Synchrotron Lorentz factor
 	double nu_m; // Frequency associated with the minimum Lorentz factor of the electron population 
 
-	float alpha = 0; // Low energy power law slope 
-	float beta = -3.5; // high energy power law slope
+	float alpha = 0.; // Low energy power law slope 
+	float beta = -2.5; // high energy power law slope
 
 	// For each emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_is.size(); ++i)
@@ -1201,24 +1518,21 @@ void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 			if ( relvel.at(i) > 0.1 and tau.at(i) < 1)
 			{
 		
-				// Calculate nu_m
-				nu_m = (1./2./M_PI) * pow(((*p_model_params).p-2.)*(*p_model_params).eps_e/((*p_model_params).p-1.)/(*p_model_params).zeta_int,2.) * (qe*pow(mp,2.)/pow(me,3.)/pow(c_cm,5.)) * pow(eps_star_is.at(i),2.) * beq_is.at(i);
+				// // Decide if fast cooling or slow cooling
+				// if(nu_m > nu_c)
+				// {
+				// 	alpha = -0.7; // Fast Cooling
+				// }
+				// else
+				// {
+				// 	alpha = -1.5; // Slow Cooling
+				// }
 
-				// Calculate nu_c
-				nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(beq_is.at(i),3.)/pow(delt_is.at(i),2.);
-		
-				// Decide if fast cooling or slow cooling
-				if(nu_m > nu_c)
-				{
-					alpha = -0.7; // Fast Cooling
-				}
-				else
-				{
-					alpha = -1.5; // Slow Cooling
-				}
+				// Emission profile
+				double profile_factor = 2./pow(1. + ((tmax - ta_is.at(i))/delt_is.at(i)),3.);
 
 				// Call function to calculate spectrum count rate, assuming synchrotron emission
-				CalcSynchContribution(intsh_spectrum, esyn_is.at(i),e_diss_is.at(i),delt_is.at(i), alpha, beta);
+				CalcSynchContribution(intsh_spectrum, esyn_is.at(i),e_diss_is.at(i),delt_is.at(i), profile_factor, alpha, beta);
 			}	
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum. 
@@ -1246,7 +1560,7 @@ void SynthGRB::MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 	double nu_m; // Frequency associated with the minimum Lorentz factor of the electron population 
 
 	float alpha = 0; // Low energy power law slope 
-	float beta = -3.5; // high energy power law slope
+	float beta = -2.5; // high energy power law slope
 
 	// For each emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_fs.size(); ++i)
@@ -1255,23 +1569,21 @@ void SynthGRB::MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
 		if ( ta_fs.at(i) <= tmax and (ta_fs.at(i)+delt_fs.at(i)) >= tmin )
 		{
-			// Calculate nu_m
-			nu_m = (1./2./M_PI) * pow(((*p_model_params).p-2.)*(*p_model_params).eps_e/((*p_model_params).p-1.)/(*p_model_params).zeta_ext,2.) * (qe*pow(mp,2.)/pow(me,3.)/pow(c_cm,5.)) * pow(eps_star_fs.at(i),2.) * beq_fs.at(i);
-			// Calculate nu_c
-			nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(beq_fs.at(i),3.)/pow(delt_fs.at(i),2.);
+			// // Decide if fast cooling or slow cooling
+			// if(nu_m > nu_c)
+			// {
+			// 	alpha = -0.7; // Fast Cooling					
+			// }
+			// else
+			// {
+			// 	alpha = -1.5; // Slow Cooling
+			// }
 
-			// Decide if fast cooling or slow cooling
-			if(nu_m > nu_c)
-			{
-				alpha = -0.7; // Fast Cooling					
-			}
-			else
-			{
-				alpha = -1.5; // Slow Cooling
-			}
+			// Emission profile
+			double profile_factor = 2./pow(1. + ((tmax - ta_fs.at(i))/delt_fs.at(i)),3.);
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
-			CalcSynchContribution(extsh_spectrum, esyn_fs.at(i),e_diss_fs.at(i),delt_fs.at(i), alpha, beta);
+			CalcSynchContribution(extsh_spectrum, esyn_fs.at(i),e_diss_fs.at(i),delt_fs.at(i), profile_factor, alpha, beta);
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum. 
 	}
@@ -1286,7 +1598,7 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 	double nu_m; // Frequency associated with the minimum Lorentz factor of the electron population 
 
 	float alpha = 0; // Low energy power law slope 
-	float beta = -3.5; // high energy power law slope
+	float beta = -2.5; // high energy power law slope
 
 	// For each emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_rs.size(); ++i)
@@ -1295,24 +1607,22 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
 		if ( ta_rs.at(i) <= tmax and (ta_rs.at(i)+delt_rs.at(i)) >= tmin )
 		{
-			// Calculate nu_m
-			nu_m = (1./2./M_PI) * pow(((*p_model_params).p-2.)*(*p_model_params).eps_e/((*p_model_params).p-1.)/(*p_model_params).zeta_int,2.) * (qe*pow(mp,2.)/pow(me,3.)/pow(c_cm,5.)) * pow(eps_star_rs.at(i),2.) * beq_rs.at(i);
 
-			// Calculate nu_c
-			nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(beq_rs.at(i),3.)/pow(delt_rs.at(i),2.);
+			// // Decide if fast cooling or slow cooling
+			// if(nu_m > nu_c)
+			// {
+			// 	alpha = -0.7; // Fast Cooling					
+			// }
+			// else
+			// {
+			// 	alpha = -1.5; // Slow Cooling
+			// }
 
-			// Decide if fast cooling or slow cooling
-			if(nu_m > nu_c)
-			{
-				alpha = -0.7; // Fast Cooling					
-			}
-			else
-			{
-				alpha = -1.5; // Slow Cooling
-			}
+			// Emission profile
+			double profile_factor = 2./pow(1. + ((tmax - ta_rs.at(i))/delt_rs.at(i)),3.);
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
-			CalcSynchContribution(extsh_spectrum, esyn_rs.at(i),e_diss_rs.at(i),delt_rs.at(i), alpha, beta);
+			CalcSynchContribution(extsh_spectrum, esyn_rs.at(i),e_diss_rs.at(i),delt_rs.at(i), profile_factor, alpha, beta);
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum. 
 	}
@@ -1322,14 +1632,14 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 /* Synchrotron spectrum member functions*/
 
 // Calculate the synchrotron spectrum from the synchrotron energy and flux of the emission
-void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, double e_diss, double delt, float alpha, float beta)
+void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, double e_diss, double delt, double profile_factor, float alpha, float beta)
 {
 	
 	// Calculate the normalization
 	double norm = 0.; // Set normalization to zero
-	int norm_num_bin= 100.*log10(1e4*(*synch_spectrum).energ_hi.back()/(*synch_spectrum).energ_lo.at(0)); // Number of energy bins to use to calculate normalization
+	int norm_num_bin= 20.*log10(1e6*(*synch_spectrum).energ_hi.back()/(*synch_spectrum).energ_lo.at(0)); // Number of energy bins to use to calculate normalization
 	std::vector<float> norm_energy_axis(norm_num_bin+1); // Make vector to store energy axis (initialized to zero's) 
-	_make_en_axis(norm_energy_axis,(*synch_spectrum).energ_lo.at(0)/100.,100*(*synch_spectrum).energ_hi.back(),norm_num_bin+1); // Make energy axis
+	_make_en_axis(norm_energy_axis,(*synch_spectrum).energ_lo.at(0)/1000.,1000.*(*synch_spectrum).energ_hi.back(),norm_num_bin+1); // Make energy axis
 
 	float en_curr=0.; // Current energy to evaluate the addition to the normalization
 	// For each energy bin along the normalization energy axis, calculate the addition to the normalization and add it. 
@@ -1350,7 +1660,7 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 		// The current temp and energy bin define the count rate, the normalization found above is applied.
 		// This (*p_model_params).must still be (*p_model_params).multiplied by the energy dissipated during the emission event.
 		// The energy dissipated can be turned into Flux by dividing the energy dissipated by the observed emission duration (delt).
-		tmp_val = e_diss * SynchSpec(en_curr, esyn, alpha, beta) / norm;
+		tmp_val = e_diss * profile_factor * SynchSpec(en_curr, esyn, alpha, beta) / norm;
 		
 		// Add the contribution to the total spectrum according to a Center-Riemann-Sum
 		(*synch_spectrum).spectrum_sum += ((*synch_spectrum).energ_hi.at(i) - (*synch_spectrum).energ_lo.at(i)) * tmp_val;
@@ -1374,8 +1684,8 @@ double SynthGRB::SynchSpec(float energy, double esyn, float alpha, float beta)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Make the source light curve using the emission data
-void SynthGRB::make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt)
+// Make the source light curve using the emission data and specify the time step of the light curve
+void SynthGRB::make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt, bool logscale)
 {
 	// Release previous spectrum if it exists
 	if(p_source_light_curve != NULL)
@@ -1383,7 +1693,7 @@ void SynthGRB::make_source_light_curve(float energ_min, float energ_max, float T
 		delete p_source_light_curve;
 	} 
 	// Make a LightCurve object
-	p_source_light_curve = new LightCurve(Tstart , Tend, dt);
+	p_source_light_curve = new LightCurve(Tstart , Tend, dt, logscale);
 	(*p_source_light_curve).ZeroLightCurve(); // Reset spectrum
 
 	// Define the number of energy bins
@@ -1397,6 +1707,8 @@ void SynthGRB::make_source_light_curve(float energ_min, float energ_max, float T
 		
 		// Ensure that the light curve rate is set to zero before adding values to it.
 		(*p_source_light_curve).lc_rate.at(i) = (*p_source_spectrum).spectrum_sum;
+		// (*p_source_light_curve).lc_rate.at(i) = (*p_source_spectrum).spectrum_sum / ((*p_source_light_curve).lc_time.at(i+1) - (*p_source_light_curve).lc_time.at(i));
+
 
 		// Apply distance corrections
 		// (*p_source_light_curve).lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
@@ -1446,7 +1758,7 @@ void SynthGRB::write_out_jet_params(std::string dir_path_name)
 	is_params_file.open(dir_path_name+"synthGRB_jet_params_is.txt"); // Open text file with this name
 	i=0;
 	is_params_file << "# Internal Shock Dynamics" << endl;
-	is_params_file << "# t_e \t t_a \t delt_a \t B_eq \t Gamma_e \t E_syn \t Gamma_r \t E_diss \t a_syn \t tau \t relvel" << endl << endl;
+	is_params_file << "# t_e \t t_a \t delt_a \t B_eq \t Gamma_e \t E_syn \t Gamma_r \t E_diss \t shell_index \t a_syn \t tau \t relvel" << endl << endl;
 	// For each time bin, write the time and count rate to the file.
 	while ( i < te_is.size())
 	{

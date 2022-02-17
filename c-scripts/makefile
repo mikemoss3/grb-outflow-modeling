@@ -9,10 +9,10 @@ RM=rm -f
 # -g : this flag adds debugging information to the executable file
 
 # Define source file names
-MAINSRCS=main.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp SynthGRBLibrary.cpp ObsGRB.cpp DataAnalysis.cpp
+MAINSRCS=main.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp ObsGRB.cpp DataAnalysis.cpp
 MAINOBS=$(subst .cpp,.o,$(MAINSRCS))
 
-# TSTSRCS=testbench.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp SynthGRBLibrary.cpp ObsGRB.cpp DataAnalysis.cpp
+# TSTSRCS=testbench.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp ObsGRB.cpp DataAnalysis.cpp
 TSTSRCS=testbench.cpp
 TSTOBJS=$(subst .cpp,.o,$(TSTSRCS))
 
@@ -35,15 +35,14 @@ utilfuncs.o: utilfuncs.cpp utilfuncs.hpp Spectrum.hpp Response.hpp cosmology.hpp
 
 ModelParams.o: ModelParams.cpp ModelParams.hpp
 SynthGRB.o: SynthGRB.cpp SynthGRB.hpp ModelParams.hpp ShellDist.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
-SynthGRBLibrary.o: SynthGRBLibrary.cpp SynthGRBLibrary.hpp SynthGRB.hpp ModelParams.hpp
 ObsGRB.o: ObsGRB.cpp ObsGRB.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp
 
 FitStats.o: FitStats.cpp FitStats.hpp
-DataAnalysis.o: DataAnalysis.cpp DataAnalysis.hpp FitStats.hpp SynthGRBLibrary.hpp SynthGRB.hpp ModelParams.hpp ObsGRB.hpp utilfuncs.hpp cosmology.hpp
+DataAnalysis.o: DataAnalysis.cpp DataAnalysis.hpp FitStats.hpp SynthGRB.hpp ModelParams.hpp ObsGRB.hpp utilfuncs.hpp cosmology.hpp
 
-main.o: main.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp SynthGRBLibrary.hpp SynthGRBLibrary.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
+main.o: main.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
 
-# testbench.o: testbench.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp SynthGRBLibrary.hpp SynthGRBLibrary.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
+# testbench.o: testbench.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
 testbench.o: testbench.cpp
 
 # Define cleaning methods

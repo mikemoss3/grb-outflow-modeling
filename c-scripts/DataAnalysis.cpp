@@ -22,7 +22,6 @@ DataAnalysis class which contains all the necessary methods to perform data anal
 #include "LightCurve.hpp"
 #include "ModelParams.hpp"
 #include "SynthGRB.hpp"
-#include "SynthGRBLibrary.hpp"
 #include "FitStats.hpp"
 #include "ObsGRB.hpp"
 #include "DataAnalysis.hpp"

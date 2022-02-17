@@ -2,14 +2,6 @@
 10.
 ### dte, sec  ###
 0.02
-### eps_e, fraction ###
-0.33
-### eps_b, fraction ###
-0.33 
-### zeta internal, fraction ###
-1.e-3 
-### zeta external, fraction ###
-1.0
 ### E_dot_iso, erg/s  ###
 1.e52
 ### theta, rad  ###
@@ -20,8 +12,26 @@
 0.03
 ### sigma, dimensionless ###
 0.1
-### p, power law index ###
+### eps_e internal, fraction ###
+0.33
+### eps_b internal, fraction ###
+0.33 
+### zeta internal, fraction ###
+1.e-3 
+### p internal, dimensionless ###
 2.2
+### eps_e external, fraction ###
+0.33
+### eps_b external, fraction ###
+0.33
+### zeta external, fraction ###
+1.0
+### p external, dimensionless ###
+2.2
+### k, wind parameter, i.e., 0, 2 ###
+0
+### rho_not, density normalization (for k = 0, g cm^-3, i.e., mp*n0 | for k = 2, g cm^-1, i.e., A_star * 5.e11 ) ###
+1.672e-24
 ### LorentzDist, i.e., step, smoothstep, osci ###
 osci
 ### ShellDistParamsFile, i.e., ./input-files/jet-shells-"LorentzDist".txt ###

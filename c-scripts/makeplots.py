@@ -17,6 +17,9 @@ import scipy.integrate as integrate
 import time
 from matplotlib.widgets import TextBox
 
+kb_kev = 8.617*1e-8
+kev_to_erg = 1.6022*np.power(10.,-9.)
+
 def plot_aesthetics(ax,fontsize=14,fontweight='bold'):
 
 	for tick in ax.xaxis.get_major_ticks():
@@ -207,7 +210,7 @@ def add_SwiftBAT_band(ax,fontsize=12):
 
 ##############################################################################################################################
 
-def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, save_pref=None, fontsize=14,fontweight='bold'):
+def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, save_pref=None, fontsize=14,fontweight='bold', logscale=False):
 	"""
 	Method to plot the input light curve data files
 
@@ -245,6 +248,10 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 			# ax.scatter(light_curve_data['TIME'],light_curve_data['RATE'],label=label,marker=".")
 			ax.step(light_curve_data['TIME'],light_curve_data['RATE'],label=label,marker=" ",where="mid")
 
+		if(logscale == True):
+			ax.set_yscale('log')
+			ax.set_xscale('log')
+
 		# Plot aesthetics
 		# For axis labels
 		ax.set_ylabel(r'Rate (ph cm$^{-2}$ s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
@@ -262,7 +269,7 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 
 ##############################################################################################################################
 
-def plot_light_curve_interactive(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, save_pref=None, fontsize=14,fontweight='bold'):
+def plot_light_curve_interactive(file_name, z=0, with_comps=False, label=None, ax=None, Tmin=None, Tmax=None, save_pref=None, fontsize=14,fontweight='bold',logscale=False):
 	"""
 	Method to plot the input light curve data files
 
@@ -284,7 +291,7 @@ def plot_light_curve_interactive(file_name, z=0, label=None, ax=None, Tmin=None,
 		return;
 	else:
 		# Make plot instance if it doesn't exist
-		fig, ax = plt.subplots(1,2,figsize=(12,6))	
+		fig, ax = plt.subplots(1,2,figsize=(16, 8))	
 		
 		# Load light curve data
 		light_curve_data = np.genfromtxt(file_name,dtype=[("TIME",float),("RATE",float)])
@@ -303,7 +310,12 @@ def plot_light_curve_interactive(file_name, z=0, label=None, ax=None, Tmin=None,
 		tmax = np.max(light_curve_data['TIME']*(1+z))*3/4
 		subprocess.run(["./main","quickplot", "{}".format(tmin), "{}".format(tmax)])
 
-		line = plot_spec("data-file-dir/quickplot_spectrum.txt",ax=ax[1],z=z,joined=True)
+		line_TOT = plot_spec("data-file-dir/quickplot_spectrum.txt",ax=ax[1],z=z,joined=True,color='k',label='TOT',logscale=logscale)
+		if(with_comps == True):
+			line_TH = plot_spec("data-file-dir/quickplot_spectrum_TH.txt",ax=ax[1],z=z,joined=True,color='r',label="TH",logscale=logscale)
+			line_IS = plot_spec("data-file-dir/quickplot_spectrum_IS.txt",ax=ax[1],z=z,joined=True,color='C0',label="IS",logscale=logscale)
+			line_FS = plot_spec("data-file-dir/quickplot_spectrum_FS.txt",ax=ax[1],z=z,joined=True,color='C1',label="FS",logscale=logscale)
+			line_RS = plot_spec("data-file-dir/quickplot_spectrum_RS.txt",ax=ax[1],z=z,joined=True,color='C2',label="RS",logscale=logscale)
 		add_FermiGBM_band(ax[1])
 
 		fig.canvas.mpl_disconnect(fig.canvas.manager.key_press_handler_id)
@@ -314,6 +326,7 @@ def plot_light_curve_interactive(file_name, z=0, label=None, ax=None, Tmin=None,
 		lower_limit_line = ax[0].axvline(np.max(light_curve_data['TIME']*(1+z))/4, color='k')
 		upper_limit_line = ax[0].axvline(np.max(light_curve_data['TIME']*(1+z))*3/4, color='k')
 
+
 		# Plot aesthetics
 		# For axis labels
 		if(z>0):
@@ -322,9 +335,7 @@ def plot_light_curve_interactive(file_name, z=0, label=None, ax=None, Tmin=None,
 			ax[0].set_ylabel(r'Rate (ph s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
 		ax[0].set_xlabel('Obs Time (sec)',fontsize=fontsize,fontweight=fontweight)
 
-		# Add label names to plot if supplied
-		if label is not None:
-			ax[0].legend(fontsize=fontsize-2)
+		ax[0].legend(fontsize=fontsize-2)
 
 		plot_aesthetics(ax[0],fontsize=fontsize,fontweight=fontweight)
 		fig.canvas.draw()
@@ -345,8 +356,35 @@ def plot_light_curve_interactive(file_name, z=0, label=None, ax=None, Tmin=None,
 			spec_data = np.genfromtxt("data-file-dir/quickplot_spectrum.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
 			spec_data["ENERG"] /= (1+z)
 			spec_data["RATE"] /= (1+z)
-			line.set_xdata(spec_data["ENERG"])
-			line.set_ydata( spec_data["RATE"]*(spec_data['ENERG']**2) )
+			line_TOT.set_xdata(spec_data["ENERG"])
+			line_TOT.set_ydata( spec_data["RATE"]*(spec_data['ENERG']**2) )
+
+			if(with_comps == True):
+				spec_data_TH = np.genfromtxt("data-file-dir/quickplot_spectrum_TH.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
+				spec_data_IS = np.genfromtxt("data-file-dir/quickplot_spectrum_IS.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
+				spec_data_FS = np.genfromtxt("data-file-dir/quickplot_spectrum_FS.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
+				spec_data_RS = np.genfromtxt("data-file-dir/quickplot_spectrum_RS.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
+
+				spec_data_TH["ENERG"] /= (1+z)
+				spec_data_TH["RATE"] /= (1+z)
+				line_TH.set_xdata(spec_data_TH["ENERG"])
+				line_TH.set_ydata(spec_data_TH["RATE"]*(spec_data_TH['ENERG']**2) )
+
+				spec_data_IS["ENERG"] /= (1+z)
+				spec_data_IS["RATE"] /= (1+z)
+				line_IS.set_xdata(spec_data_IS["ENERG"])
+				line_IS.set_ydata(spec_data_IS["RATE"]*(spec_data_IS['ENERG']**2) )
+
+				spec_data_FS["ENERG"] /= (1+z)
+				spec_data_FS["RATE"] /= (1+z)
+				line_FS.set_xdata(spec_data_FS["ENERG"])
+				line_FS.set_ydata(spec_data_FS["RATE"]*(spec_data_FS['ENERG']**2) )
+
+				spec_data_RS["ENERG"] /= (1+z)
+				spec_data_RS["RATE"] /= (1+z)
+				line_RS.set_xdata(spec_data_RS["ENERG"])
+				line_RS.set_ydata(spec_data_RS["RATE"]*(spec_data_RS['ENERG']**2) )
+
 			ax[1].redraw_in_frame()
 
 			# Redraw the figure to ensure it updates
@@ -408,18 +446,21 @@ def load_rs_emission(file_name):
 
 ##############################################################################################################################
 
-def plot_param_vs_ta(emission_comp,param,ax=None,z=0, y_factor=1, label=None, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',disp_xax=True,disp_yax=True,color='C0',marker='.'):
+def plot_param_vs_time(emission_comp,param,ax=None,z=0, y_factor=1, label=None, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',disp_xax=True,disp_yax=True,color='C0',marker='.',frame="obs"):
 	"""
 	Plot emission parameters as a function of time (in the observer frame)
 	"""
+
+	time_str = "TA"
+	if(frame=="source"):
+		time_str = "TE"
 
 	# Make plot instance if it doesn't exist
 	if ax is None:
 		ax = plt.figure().gca()
 
 	# Multiply by 1+z for the time axis and apply the supplied factor on the y-axis 
-	ax_time = emission_comp['TA'] * (1+z)
-	emission_comp[param]*=y_factor
+	ax_time = emission_comp[time_str] * (1+z)
 
 	# Find the indices of the start and stop time
 	ind_start, ind_stop = 0,-1 
@@ -435,12 +476,15 @@ def plot_param_vs_ta(emission_comp,param,ax=None,z=0, y_factor=1, label=None, Tm
 	# if label is None:
 	# 	label = param
 
-	ax.scatter(ax_time,ax_param,label=label,c=color,marker=marker)
+	ax.scatter(ax_time,ax_param*y_factor,label=label,c=color,marker=marker)
 
 	if disp_yax is True:
 		ax.set_ylabel(param,fontsize=fontsize,fontweight=fontweight)
 	if disp_xax is True:
-		ax.set_xlabel(r't$_a$',fontsize=fontsize,fontweight=fontweight)
+		if(time_str == "TA"):
+			ax.set_xlabel(r't$_a$',fontsize=fontsize,fontweight=fontweight)
+		elif(time_str == "TE"):
+			ax.set_xlabel(r't$_e$',fontsize=fontsize,fontweight=fontweight)
 
 	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
 		
@@ -449,29 +493,33 @@ def plot_param_vs_ta(emission_comp,param,ax=None,z=0, y_factor=1, label=None, Tm
 
 ##############################################################################################################################
 
-def plot_evo_therm(thermal_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold'):
+def plot_evo_therm(thermal_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',frame="obs"):
 	"""
 	Plot evolution of thermal emission parameters 
 	"""
 
 	# Make plot instance if it doesn't exist
 	if ax is None:
-		fig, ax = plt.subplots(2,1,figsize=(5,8),sharex=True)
+		fig, ax = plt.subplots(2,1,figsize=(5,8))
 
 	# Plot temperature of the thermal component vs time (in observer frame)
-	kb_kev = 8.617*1e-8
-	plot_param_vs_ta(thermal_emission,'T', ax=ax[0], z=z, y_factor=kb_kev/(1+z),Tmin=Tmin, Tmax=Tmax,
-		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False)
+	plot_param_vs_time(thermal_emission,'T', ax=ax[0], z=z, y_factor=kb_kev/(1+z),Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,frame=frame)
 	
 	ax[0].set_xlabel(r't$_{obs}$',fontsize=fontsize,fontweight=fontweight)
 	ax[0].set_ylabel(r'k$_B$T (KeV)',fontsize=fontsize,fontweight=fontweight)
 	ax[0].set_yscale('log')
 
 	# Plot Rphot vs Tphot
-	ax[1].scatter(thermal_emission['RPHOT'],thermal_emission['T'])
-	
-	ax[1].set_xlabel(r'R$_{phot}$ (light sec)',fontsize=fontsize,fontweight=fontweight)
-	ax[1].set_ylabel(r'T$_{phot}}$ (K)',fontsize=fontsize,fontweight=fontweight)
+	# ax[1].scatter(thermal_emission['RPHOT'],thermal_emission['T'])
+	plot_param_vs_time(thermal_emission,'RPHOT', y_factor=3*1e10, ax=ax[1], z=z, Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,frame=frame)
+
+	ax[1].set_yscale('log')
+
+	ax[1].set_xlabel(r't$_{obs}$',fontsize=fontsize,fontweight=fontweight)
+	ax[1].set_ylabel(r'R$_{phot}$',fontsize=fontsize,fontweight=fontweight)
+	# ax[1].set_ylabel(r'T$_{phot}}$ (K)',fontsize=fontsize,fontweight=fontweight)
 
 	plot_aesthetics(ax[0],fontsize=fontsize,fontweight=fontweight)
 	plot_aesthetics(ax[1],fontsize=fontsize,fontweight=fontweight)
@@ -482,7 +530,7 @@ def plot_evo_therm(thermal_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=N
 
 ##############################################################################################################################
 
-def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold'):
+def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',frame="obs"):
 	"""
 	Plot evolution of internal shock emission parameters 
 	"""
@@ -494,11 +542,11 @@ def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=No
 	ax0cp = ax[0].twinx()
 
 	# Plot Arrival Time (ta) vs Emission Time (te)
-	plot_param_vs_ta(is_emission,'TE', ax=ax[0], z=z, Tmin=Tmin, Tmax=Tmax,
-		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='^')
+	plot_param_vs_time(is_emission,'TE', ax=ax[0], z=z, Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='^',frame=frame)
 	# Plot Arrival Time (ta) vs delta T
-	plot_param_vs_ta(is_emission,'DELT', ax=ax0cp, z=z,Tmin=Tmin, Tmax=Tmax,
-		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='.',color='C1')
+	plot_param_vs_time(is_emission,'DELT', ax=ax0cp, z=z,Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='.',color='C1',frame=frame)
 	
 	ax[0].set_ylabel(r'$t_{e}$',fontsize=fontsize,fontweight=fontweight)
 	ax0cp.set_ylabel(r'$\Delta t$',fontsize=fontsize,fontweight=fontweight)
@@ -509,11 +557,11 @@ def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=No
 	ax1cp = ax[1].twinx()
 	
 	# Plot Arrival Time (ta) vs the dissipated energy (e)
-	plot_param_vs_ta(is_emission,'EDISS', ax=ax[1], y_factor=is_emission['DELT'], z=z, Tmin=Tmin, Tmax=Tmax,
-		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='^')
+	plot_param_vs_time(is_emission,'EDISS', ax=ax[1], y_factor=is_emission['DELT'], z=z, Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='^',frame=frame)
 	# Plot Arrival Time (ta) vs approximate Lorentz factor (gamma_r)
-	plot_param_vs_ta(is_emission,'GAMMAR', ax=ax1cp, y_factor=1/100, z=z,Tmin=Tmin, Tmax=Tmax,
-		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='.',color='C1')
+	plot_param_vs_time(is_emission,'GAMMAR', ax=ax1cp, y_factor=1/100, z=z,Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='.',color='C1',frame=frame)
 
 	ax[1].set_ylabel(r'E$_{diss}/\Delta$t$_e$',fontsize=fontsize,fontweight=fontweight)
 	ax[1].set_xlabel(r't$_a$ (sec), Arrival Time',fontsize=fontsize,fontweight=fontweight)
@@ -543,27 +591,27 @@ def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=No
 	fig, ax = plt.subplots(2,2,sharex=True,figsize=(12,8))
 
 	# Plot Arrival Time (ta) vs the energy fraction in synchrotron electron (asyn)
-	plot_param_vs_ta(is_emission,'ASYN', ax=ax[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
-		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False)
+	plot_param_vs_time(is_emission,'ASYN', ax=ax[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,frame=frame)
 	ax[0,0].set_ylabel(r'$\alpha_{syn}$',fontsize=fontsize,fontweight=fontweight)
 	
 	# Plot Arrival Time (ta) vs the dissipated energy (e)
-	plot_param_vs_ta(is_emission,'GAMMAE', ax=ax[0,1], y_factor=1/1e4,z=z, Tmin=Tmin, Tmax=Tmax,
-		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False)
+	plot_param_vs_time(is_emission,'GAMMAE', ax=ax[0,1], y_factor=1/1e4,z=z, Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,frame=frame)
 	ax[0,1].set_ylabel(r'$\Gamma_{e}$/1e4',fontsize=fontsize,fontweight=fontweight)
 	ax[0,1].yaxis.set_label_position("right")
 	ax[0,1].yaxis.tick_right()
 
 	# Plot Arrival Time (ta) vs the equipartition magnetic field (Beq)
-	plot_param_vs_ta(is_emission,'BEQ', ax=ax[1,0], z=z, Tmin=Tmin, Tmax=Tmax,
-		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='.')
+	plot_param_vs_time(is_emission,'BEQ', ax=ax[1,0], z=z, Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker='.',frame=frame)
 	ax[1,0].set_yscale('log')
 	ax[1,0].set_ylabel(r'B$_{eq}$',fontsize=fontsize,fontweight=fontweight)
 	ax[1,0].set_xlabel(r't$_a$ (sec), Arrival Time',fontsize=fontsize,fontweight=fontweight)
 
 	# Plot Arrival Time (ta) vs the synchrotron energy (Esyn)
-	plot_param_vs_ta(is_emission,'ESYN', ax=ax[1,1], z=z, Tmin=Tmin, Tmax=Tmax,
-		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False)
+	plot_param_vs_time(is_emission,'ESYN', ax=ax[1,1], z=z, Tmin=Tmin, Tmax=Tmax,
+		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,frame=frame)
 	ax[1,1].set_yscale('log')
 	ax[1,1].set_ylabel(r'$E_{syn}$/1e3',fontsize=fontsize,fontweight=fontweight)
 	ax[1,1].set_xlabel(r't$_a$ (sec), Arrival Time',fontsize=fontsize,fontweight=fontweight)
@@ -593,14 +641,14 @@ def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=No
 
 ##############################################################################################################################
 
-def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".", z=0, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None):
+def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".", z=0, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None,frame="obs"):
 
 
 	### First Plot ###
 
 	# T_a vs B_eq
-	plot_param_vs_ta(shock_data,'BEQ', ax=ax0[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,label=label)
+	plot_param_vs_time(shock_data,'BEQ', ax=ax0[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,label=label,frame=frame)
 
 	# T_a vs Gamma_r
 	if guidelines == True:
@@ -615,16 +663,16 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 		ax0[0,1].plot(t,rhowindline(t,tstart,g_norm_wind),label=r"$t^{-1/4}$",color='r')
 		ax0[0,1].plot(t,rhoconstline(t,tstart,g_norm_const),label=r"$t^{-3/8}$",color='k')
 
-	plot_param_vs_ta(shock_data,'GAMMAR', ax=ax0[0,1], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color)
+	plot_param_vs_time(shock_data,'GAMMAR', ax=ax0[0,1], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,frame=frame)
 
 	# T_a vs e_diss
-	plot_param_vs_ta(shock_data,'EDISS', ax=ax0[1,0], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color)
+	plot_param_vs_time(shock_data,'EDISS', ax=ax0[1,0], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,frame=frame)
 
 	# T_a vs E_syn
-	plot_param_vs_ta(shock_data,'ESYN', ax=ax0[1,1], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color)
+	plot_param_vs_time(shock_data,'ESYN', ax=ax0[1,1], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,frame=frame)
 
 
 	# Plot Aesthetics
@@ -674,19 +722,19 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 	### Second Plot ###
 
 	# T_a vs T_e
-	plot_param_vs_ta(shock_data,'TE', ax=ax1[0], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color, label=label)
+	plot_param_vs_time(shock_data,'TE', ax=ax1[0], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color, label=label,frame=frame)
 
 	# T_a vs del T_a
 	# Make a copy of the axis in order to over plot two separate data sets
 	# ax1cp = ax1[0].twinx()
-	# plot_param_vs_ta(shock_data,'DELT', ax=ax1cp, z=z,Tmin=Tmin, Tmax=Tmax,
-	# 	fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker=marker,color=color)
+	# plot_param_vs_time(shock_data,'DELT', ax=ax1cp, z=z,Tmin=Tmin, Tmax=Tmax,
+	# 	fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False,marker=marker,color=color,frame=frame)
 
 
 	# T_a vs Gamma_e
-	plot_param_vs_ta(shock_data,'GAMMAE', ax=ax1[1], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, marker=marker,color=color)
+	plot_param_vs_time(shock_data,'GAMMAE', ax=ax1[1], z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, marker=marker,color=color,frame=frame)
 
 	# Plot Aesthetics
 	# Format Top plot, T_a vs T_e
@@ -723,18 +771,18 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 
 ##############################################################################################################################
 
-def plot_together(is_data = None,fs_data=None, rs_data=None, z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold'):
+def plot_together(is_data = None,fs_data=None, rs_data=None, z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',frame="obs"):
 
 	fig0, ax0 = plt.subplots(2,2,sharex=True,figsize=(12,8))
 	fig1, ax1 = plt.subplots(2,1,sharex=True,figsize=(6,6))
 
 
 	if is_data is not None:
-		make_together_plots(shock_data=is_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight)
+		make_together_plots(shock_data=is_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame)
 	if fs_data is not None:
-		make_together_plots(shock_data=fs_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight)
+		make_together_plots(shock_data=fs_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame)
 	if rs_data is not None:
-		make_together_plots(shock_data=rs_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight)
+		make_together_plots(shock_data=rs_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame)
 
 	if save_pref is not None:
 		fig0.savefig('figs/{}-all-shock-evo-fig0.png'.format(save_pref))
@@ -769,10 +817,9 @@ if __name__ == '__main__':
 	"""
 	Shell Lorentz Distribution
 	"""
-	"""
+	
 	ax_sd = plt.figure().gca()
-	plot_lor_dist('data-file-dir/shell_dist.txt', ax=ax_sd)
-	"""
+	plot_lor_dist('data-file-dir/shell_dist.txt', ax=ax_sd)	
 
 	"""
 	Synthetic spectrum 
@@ -810,21 +857,23 @@ if __name__ == '__main__':
 	"""
 	
 	ax_lc = plt.figure().gca()
-	plot_light_curve("data-file-dir/test_light_curve.txt",ax=ax_lc,z=z,label="Total")
+	plot_light_curve("data-file-dir/test_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False)
 	# plot_light_curve("data-file-dir/test_light_curve_therm.txt",ax=ax_lc,z=0.5,label="Therm")
 	# plot_light_curve("data-file-dir/test_light_curve_is.txt",ax=ax_lc,z=0.5,label="IS")
 
 	# Interactive light curve
 	# tbox = plot_light_curve_interactive("data-file-dir/test_light_curve.txt",z=z,label="Total")	
+	# tbox = plot_light_curve_interactive("data-file-dir/test_light_curve.txt",z=z,label="Total",with_comps=True)	
 	
 	
 	"""
 	Jet dynamics plots 
 	"""
-	
+	"""
 	# therm_emission = load_therm_emission("data-file-dir/synthGRB_jet_params_therm.txt")
 	# plot_evo_therm(therm_emission,z=1)
 
+	
 	is_data = load_is_emission("data-file-dir/synthGRB_jet_params_is.txt")
 	# plot_evo_int_shock(is_data,z=0.5)
 
@@ -836,7 +885,7 @@ if __name__ == '__main__':
 	
 	# Plot everything together:
 	plot_together(fs_data=fs_data,rs_data=rs_data,is_data=is_data)
-	
+	"""
 
 	"""
 	Display real observed data
@@ -875,13 +924,11 @@ if __name__ == '__main__':
 	"""
 
 
+
+
 	"""
 	Testing
 	"""
-
-
-
-
 
 
 

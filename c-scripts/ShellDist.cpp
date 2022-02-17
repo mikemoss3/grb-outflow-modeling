@@ -195,6 +195,51 @@ void ShellDist::oscillatory(float dte, float median, float amp, float freq, floa
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// // Distribute the shell 
+// void ShellDist::oscillatory(float dte, float median, float amp, float freq, float decay, bool fluctuations)
+// {
+// 	/*
+// 	Distribute the Lorentz factors of the shells into a step function. 
+// 	Params: 
+// 	dte = time between shell launches, this can be specific by a single float to apply a constant time step through out the jet evolution or can be a array of the shell emission times
+// 	median = median Lorentz factor of the undamped oscillating distribution 
+// 	amp = amplitude of the undamped oscillating distribution 
+// 	freq = frequency of the oscillations in the distribution
+// 	decay = used to modulate the decay rate, number multiplied by the half life time scale
+// 	*/
+
+// 	// Set the Lorentz factors for each section of the step distribution
+// 	double gamma_bar = 0.0;// Average Lorentz factor in the outflow
+// 	for(double i = 0; i<numshells; ++i)
+// 	{
+// 		shell_gamma.at(i) = median * ( 1. + amp * cos( freq * M_PI * (1. - i/numshells) ) )*exp(-decay*i/numshells);
+// 		gamma_bar += shell_gamma.at(i);
+// 	}
+// 	gamma_bar /= numshells;
+	
+// 	for(float i=0; i<numshells; ++i)
+// 	{
+// 		// Set the Mass for each shell 
+// 		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+// 		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
+		
+// 		// Calculate the launch time of each shell
+// 		shell_te.at(i) = -i*dte;
+
+// 		// Calculate the shell position based on when the shell will be launched
+// 		// Notice this is actually R/c 
+// 		shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+
+// 		// Activate all shells
+// 		shell_status.at(i) = 1;
+// 	}
+
+// 	// Eliminate possible divide by zero error (still insignificantly small).
+// 	shell_radius.at(0) = 1./c_cm;
+// }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Write shell distribution to a text file
 void ShellDist::WriteToTXT(string filename)
 {

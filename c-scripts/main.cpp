@@ -18,7 +18,6 @@ Main function to create and use Spectra, Light Curves, and Response functions
 
 // Import Custom Libraries
 #include "SynthGRB.hpp"
-#include "SynthGRBLibrary.hpp"
 #include "ObsGRB.hpp"
 #include "Response.hpp"
 // #include "LightCurve.hpp"
@@ -55,27 +54,27 @@ int main(int argc, char const *argv[])
 			synth_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax);
 			synth_grb.WriteSpectrumToTXT("data-file-dir/quickplot_spectrum.txt");
 
-			/*
+			
 			// Thermal Component
 			Spectrum * p_source_spectrum_therm = new Spectrum(energ_min, energ_max, num_energ_bins);
-			synth_grb.MakeThermalSpec(p_source_spectrum_therm, tlo, thi);
+			synth_grb.MakeThermalSpec(p_source_spectrum_therm, tmin, tmax);
 			(*p_source_spectrum_therm).WriteToTXT("data-file-dir/quickplot_spectrum_TH.txt");
 
 			// Internal Shock Component
-			Spectrum * p_source_spectrum_synch = new Spectrum(energ_min, energ_max, num_energ_bins);
-			synth_grb.MakeSynchSpec(p_source_spectrum_synch, tlo, thi);
-			(*p_source_spectrum_synch).WriteToTXT("data-file-dir/quickplot_spectrum_IS.txt");
+			Spectrum * p_source_spectrum_is = new Spectrum(energ_min, energ_max, num_energ_bins);
+			synth_grb.MakeISSpec(p_source_spectrum_is, tmin, tmax);
+			(*p_source_spectrum_is).WriteToTXT("data-file-dir/quickplot_spectrum_IS.txt");
 
 			// Forward Shock Component
 			Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
-			synth_grb.MakeFSSpec(p_source_spectrum_fs, tlo, thi);
+			synth_grb.MakeFSSpec(p_source_spectrum_fs, tmin, tmax);
 			(*p_source_spectrum_fs).WriteToTXT("data-file-dir/quickplot_spectrum_FS.txt");
 
 			// Reverse Shock Component
 			Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
-			synth_grb.MakeRSSpec(p_source_spectrum_rs, tlo, thi);
+			synth_grb.MakeRSSpec(p_source_spectrum_rs, tmin, tmax);
 			(*p_source_spectrum_rs).WriteToTXT("data-file-dir/quickplot_spectrum_RS.txt");
-			*/
+			
 
 			return 0; 
 		}
@@ -86,24 +85,24 @@ int main(int argc, char const *argv[])
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
 	
-	float energ_min = 1e-1;
-	float energ_max = 1e6;
+	float energ_min = 8;
+	float energ_max = 4e4;
 	float num_energ_bins = 200;
 
-	float tmin = 0;
-	float tmax = 10;
+	float tmin = 0.;
+	float tmax = 10.;
 	float dt = 0.1;
 
 	SynthGRB test_grb = SynthGRB();
 	test_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
-
 	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();
 	test_grb.write_out_jet_params("./data-file-dir/");
 	float tlo = tmin;
 	float thi = tmax;
-	
+
+
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
 	test_grb.WriteSpectrumToTXT("data-file-dir/test_spec_total.txt");
 
@@ -124,7 +123,7 @@ int main(int argc, char const *argv[])
 	(*p_source_spectrum_rs).WriteToTXT("data-file-dir/test_spec_rs.txt");
 	
 	test_grb.make_source_light_curve(8., 4e4, tlo, thi, dt);
-	// test_grb.make_source_light_curve(1e-5, 1e-1, 80, 3e2, 1);
+	// test_grb.make_source_light_curve(0.2, 10, 20, 1e4, dt/2, true);
 	test_grb.WriteLightCurveToTXT("data-file-dir/test_light_curve.txt");
 
 	return 0;
@@ -183,33 +182,6 @@ int main(int argc, char const *argv[])
 	(*test_grb_time).WriteLightCurveToTXT("data-file-dir/test_light_curve.txt");
 	*/
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/* Testing SynthGRBLibrary template generation  */
-	/*
-	std::string dir_path_name = "/home/mikemoss/Research/grb-prompt-simulations/c_scripts/test_temp_lib";
-	float tw = 50;
-	float dte = 1;
-	// int numshells = 50;
-	std::vector<float> eps_e_vec = {0.33, 0.5};
-	std::vector<float> eps_b_vec = {0.33, 0.5};
-	std::vector<float> ksi_vec = {1e-3, 1.};
-	std::vector<double> E_dot_iso_vec = {1e52, 1e53};
-	std::vector<float> theta_vec = {0.1, 0.2};
-	std::vector<float> r_open_vec = {1e6};
-	std::vector<float> eps_th_vec = {0.03};
-	std::vector<float> sigma_vec = {0.1};
-	std::vector<float> p_vec = {2.2,2.5}
-	std::string LorentzDist = "step";
-	std::string ShellDistParamsFile = "Default";
-	float energ_min = 8.;
-	float energ_max = 1e4;
-	int num_energ_bins = 50;
-	float tmin = 0.;
-	float tmax = 30.;
-
-	SynthGRBLibrary synthgrblib = SynthGRBLibrary(dir_path_name);
-	synthgrblib.MakeLibrary(tw, dte, eps_e_vec, eps_b_vec, ksi_vec, E_dot_iso_vec, theta_vec, r_open_vec, eps_th_vec, sigma_vec , p_vec, LorentzDist, ShellDistParamsFile, energ_min, energ_max, num_energ_bins, tmin, tmax);
-	*/
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////

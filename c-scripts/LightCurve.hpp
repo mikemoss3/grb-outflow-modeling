@@ -29,7 +29,7 @@ class LightCurve
 {
 public:
 	// LightCurve constructor
-	LightCurve(float tmin=0, float tmax=20, float dt=0.1);
+	LightCurve(float tmin=0, float tmax=20, float dt=0.1, bool logscale = false);
 	// Explicitly provide the member variables
 	LightCurve(std::vector<double> lc_time, std::vector<double> lc_rate);
 	// Copy Constructor
@@ -46,8 +46,8 @@ public:
 
 	// LightCurve member functions
 	// Make time axis
-	void make_time_axis(float tmin, float tmax, float dt);
-	void make_time_axis();
+	void make_time_axis(float tmin, float tmax, float dt, bool logscale = false);
+	void make_time_axis(bool logscale = false);
 	// Set the lengths of the time axes
 	void set_time_axis_length(int num_time_bins);
 	// Set the light curve rates to zero

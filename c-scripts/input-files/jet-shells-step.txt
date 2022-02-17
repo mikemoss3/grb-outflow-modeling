@@ -3,6 +3,6 @@
 ### g2  ### 
 400 
 ### mfrac  ### 
-0.9
+0.5
 ### fluctuations ### 
 false

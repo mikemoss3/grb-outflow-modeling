@@ -28,18 +28,25 @@ The light curve calculation is done in light_curve_funcs.cpp and the spectrum ca
 using namespace std;
 
 // LightCurve constructors
-LightCurve::LightCurve(float tmin, float tmax, float dt)
+LightCurve::LightCurve(float tmin, float tmax, float dt, bool logscale)
 {
 	// Assign input variables to class member variables
 	this->tmin = tmin;
 	this->tmax = tmax;
 	this->dt = dt;
-	num_time_bins = (tmax-tmin)/dt;
+	if(logscale == false)
+	{
+		this->num_time_bins = (tmax-tmin)/dt;
+	}
+	else
+	{
+		this->num_time_bins = ( log(tmax) - log(tmin) ) / dt;
+	}
 
 	// Set time axis length
-	set_time_axis_length(num_time_bins);
+	set_time_axis_length(this->num_time_bins);
 	// Make time axis
-	make_time_axis();
+	make_time_axis(logscale);
 	// Zero light curve
 	ZeroLightCurve();
 
@@ -71,7 +78,7 @@ LightCurve::LightCurve(const LightCurve& tmp_light_curve)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Make time axis
-void LightCurve::make_time_axis(float tmin, float tmax, float dt)
+void LightCurve::make_time_axis(float tmin, float tmax, float dt, bool logscale)
 {
 	this->tmin = tmin;
 	this->tmax = tmax;
@@ -79,17 +86,27 @@ void LightCurve::make_time_axis(float tmin, float tmax, float dt)
 	num_time_bins = (tmax-tmin)/dt;
 
 	set_time_axis_length(num_time_bins);
-	make_time_axis();
+	make_time_axis(logscale);
 	// std::cout << "Light curve has been set back to zeros." << "\n";
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void LightCurve::make_time_axis()
+void LightCurve::make_time_axis(bool logscale)
 {
-	for(int i=0; i<num_time_bins; ++i)
+	if(logscale == false)
 	{
-		lc_time.at(i) = tmin+(dt*i);
+		for(int i=0; i < this->num_time_bins; ++i)
+		{
+			this->lc_time.at(i) = this->tmin+(this->dt*i);
+		}
+	}
+	else
+	{
+		for(float i=0; i < this->num_time_bins; ++i)
+		{
+			this->lc_time.at(i) =  this->tmin * ( (exp(this->dt*i) + exp(this->dt*(i+1)) ) /2.);
+		}
 	}
 	// Zero out light curve
 	ZeroLightCurve();

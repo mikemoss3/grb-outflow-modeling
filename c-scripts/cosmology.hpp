@@ -39,7 +39,7 @@ const double sigma_sb = 5.67*pow(10,-5.); // erg cm^-2 K^-4 s^-1, Stephan-Boltzm
 
 const double h_planck=6.6*1*pow(10.,-27.); // cm^2 g s^-1, Planck constant 
 
-const double a = 7.566 * pow(10.,-15.); // erg cm^-3 K^-4, Radiation constant
+const double a = 7.566 * pow(10.,-15.); // erg cm^-3 K^-4 = g cm^-1 s^-2 K^-4, Radiation constant
 
 const float omega_m = 0.3; // matter density of the universe
 const float omega_lam = 0.7; // dark energy density of the universe

@@ -28,7 +28,6 @@ Header file for DataAnalysis.cpp class
 #include "LightCurve.hpp"
 #include "ModelParams.hpp"
 #include "SynthGRB.hpp"
-#include "SynthGRBLibrary.hpp"
 #include "Response.hpp"
 #include "FitStats.hpp"
 #include "ObsGRB.hpp"

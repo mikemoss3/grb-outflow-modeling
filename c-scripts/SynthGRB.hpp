@@ -37,23 +37,35 @@ class SynthGRB
 public:
 	// SynthGRB constructor
 	SynthGRB();
-	SynthGRB(float tw, float dte, float eps_e, float eps_b, float zeta_int, float zeta_ext, double E_dot_iso, float theta, float r_open, float eps_th, float sigma, float p, std::string LorentzDist, std::string ShellDistParamsFile);
+	SynthGRB(float tw, float dte, 
+		double E_dot_iso, float theta, float r_open, float eps_th, float sigma,
+		float eps_e_int, float eps_b_int, float zeta_int, float p_int,
+		float eps_e_ext, float eps_b_ext, float zeta_ext, float p_ext,
+		float k_med, double rho_not,
+		std::string LorentzDist, std::string ShellDistParamsFile);
 	SynthGRB(ModelParams * input_model_params);
 
 	// GRB member variables 
 	// jet parameters variables definitions:
 	// float tw = 10; // sec, Duration of the wind
 	// float dte = 0.002; // sec, Time between successive shell launches
-	// float eps_e; //  Fraction of dissipated energy that goes into the electrons 
-	// float eps_b; // Fraction of dissipated energy that goes into the magnetic field 
-	// float zeta_int; // Fraction of electrons which are accelerated in internal and reverse shocks
-	// float zeta; // Fraction of electrons which are accelerated in forward shocks 
+
 	// double E_dot_iso; // erg/s, Injected isotropic energy rate
 	// float theta; // radians, Half-opening angle of the jet
 	// float r_open; // cm, Opening radius of the jet
 	// float eps_th; // Fraction of energy in the outflow in the form of thermal energy 
 	// float sigma; // Magnetization of the outflow 
-	// float p; // Power law index of the electron population 
+
+	// float eps_e_int; //  Fraction of dissipated energy that goes into the electrons  (in internal shocks)
+	// float eps_b_int; // Fraction of dissipated energy that goes into the magnetic field  (in internal shocks)
+	// float zeta_int; // Fraction of electrons which are accelerated in internal and reverse shocks (in internal shocks)
+	// float p_int; // Power law index of the electron population  (in internal shocks)
+
+	// float eps_e_ext; //  Fraction of dissipated energy that goes into the electrons (in the forward shock)
+	// float eps_b_ext; // Fraction of dissipated energy that goes into the magnetic field (in the forward shock)
+	// float zeta_ext; // Fraction of electrons which are accelerated in internal and reverse shocks(in the forward shock)
+	// float p_ext; // Power law index of the electron population (in the forward shock)
+
 	// std::string LorentzDist; // Distribution of the jet shells
 	// std::string ShellDistParamsFile; // File that contains the parameters to create the distribution of jet shells
 	ModelParams * p_model_params; // Stores all model parameters	
@@ -95,6 +107,40 @@ public:
 	// Perform simulation of jet dynamics using the loaded jet parameters
 	void SimulateJetDynamics();
 
+	// Evaluate a shell collision
+	void _shell_collision_int(double m1, double g1, double m2, double g2, double rad_coll,
+		double & tmp_te,
+		double & tmp_asyn,
+		double & tmp_beq,
+		double & tmp_gamma_e,
+		double & tmp_esyn_kev,
+		double & tmp_esyn_erg,
+		double & tmp_gamma_r,
+		double & tmp_e_diss,
+		double & tmp_delt,
+		double & tmp_lum_diss,
+		double & tmp_eps_star,
+		double & tmp_rho,
+		bool & tmp_eff,
+		string location);
+	void _shell_collision_ext(double m1r, double m1f, double & g1i, double g1, double m2, double g2, double rad_coll,
+		double & tmp_te,
+		double & tmp_asyn,
+		double & tmp_beq,
+		double & tmp_gamma_e,
+		double & tmp_esyn_kev,
+		double & tmp_esyn_erg,
+		double & tmp_gamma_r,
+		double & tmp_e_diss,
+		double & tmp_delt,
+		double & tmp_lum_diss,
+		double & tmp_eps_star,
+		double & tmp_rho,
+		bool & tmp_eff,
+		string location);
+
+
+
 	// Make the source spectrum using the emission data 
 	void make_source_spectrum(float energ_min = 50., float energ_max = 350., int num_energ_bins = 50, float tmin = 0., float tmax = 30.);
 	// Calls function to calculate the thermal spectrum rate for each energy bin
@@ -115,11 +161,11 @@ public:
 	void MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax);
 
 	// Calculate the synchrotron spectrum from the synchrotron energy and flux of the emission
-	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt, float alpha = -0.7, float beta = -2.5);
+	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt, double profile_factor = 1., float alpha = -0.7, float beta = -2.5);
 	// Synchrotron spectrum function form,
 	double SynchSpec(float energy, double Esyn, float alpha = -0.7, float beta = -2.5);
 	// Make the source light curve using the emission data
-	void make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt);
+	void make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt, bool logscale = false);
 
 	// Load SynthGRB from file
 	void LoadFromFile(std::string file_name);
