@@ -107,39 +107,6 @@ public:
 	// Perform simulation of jet dynamics using the loaded jet parameters
 	void SimulateJetDynamics();
 
-	// Evaluate a shell collision
-	void _shell_collision_int(double m1, double g1, double m2, double g2, double rad_coll,
-		double & tmp_te,
-		double & tmp_asyn,
-		double & tmp_beq,
-		double & tmp_gamma_e,
-		double & tmp_esyn_kev,
-		double & tmp_esyn_erg,
-		double & tmp_gamma_r,
-		double & tmp_e_diss,
-		double & tmp_delt,
-		double & tmp_lum_diss,
-		double & tmp_eps_star,
-		double & tmp_rho,
-		bool & tmp_eff,
-		string location);
-	void _shell_collision_ext(double m1r, double m1f, double & g1i, double g1, double m2, double g2, double rad_coll,
-		double & tmp_te,
-		double & tmp_asyn,
-		double & tmp_beq,
-		double & tmp_gamma_e,
-		double & tmp_esyn_kev,
-		double & tmp_esyn_erg,
-		double & tmp_gamma_r,
-		double & tmp_e_diss,
-		double & tmp_delt,
-		double & tmp_lum_diss,
-		double & tmp_eps_star,
-		double & tmp_rho,
-		bool & tmp_eff,
-		string location);
-
-
 
 	// Make the source spectrum using the emission data 
 	void make_source_spectrum(float energ_min = 50., float energ_max = 350., int num_energ_bins = 50, float tmin = 0., float tmax = 30.);
@@ -209,12 +176,14 @@ private:
 	std::vector<double> esyn_is; // erg, Synchrotron energy emitted by accelerated electron
 	std::vector<float> gamma_r_is; // Approximation of the combined Lorentz factor of the colliding shells
 	std::vector<double> e_diss_is; // erg, Dissipated energy during the collision 
+	std::vector<double> nu_c_is; // Hz, Frequency associated with the critical synchrotron Lorentz factor
+	std::vector<double> nu_m_is; // Hz, Frequency associated with the minimum Lorentz factor of the accelerated electron population
 	std::vector<int> shell_ind_is; // Downstream shell swept up in the internal shock
-	std::vector<double> eps_star_is; // Internal energy dissipated in a collision 
-	// std::vector<double> rho_is; // g cm^-3, Density of the collision region
 	std::vector<float> asyn_is; // Fraction of the energy in electrons which goes into synchrotron (as opposed to Inverse Compton)
 	std::vector<float> tau; // Optical depth at the location of the collision
 	std::vector<float> relvel; // Relative velocity between the two shells
+	// std::vector<double> eps_star_is; // Internal energy dissipated in a collision 
+	// std::vector<double> rho_is; // g cm^-3, Density of the collision region
 
 	// Initialize arrays to store external shock emission data
 	std::vector<float> te_fs; // sec, Time of emission (in the rest frame of the jet)
@@ -225,7 +194,9 @@ private:
 	std::vector<double> esyn_fs; // erg, Synchrotron energy emitted by the accelerated electrons in the FS
 	std::vector<float> gamma_r_fs; // Combined Lorentz factor after collision
 	std::vector<double> e_diss_fs; // Energy dissipated in a FS	
-	std::vector<double> eps_star_fs; // Internal energy dissipated in a collision 
+	std::vector<double> nu_c_fs; // Hz, Frequency associated with the critical synchrotron Lorentz factor
+	std::vector<double> nu_m_fs; // Hz, Frequency associated with the minimum Lorentz factor of the accelerated electron population
+	// std::vector<double> eps_star_fs; // Internal energy dissipated in a collision 
 	// std::vector<double> rho_fs; // g cm^-3, Density of the collision region
 	
 	std::vector<float> te_rs; // sec, Time of emission (in the rest frame of the jet)
@@ -236,8 +207,10 @@ private:
 	std::vector<double> esyn_rs; // erg, Synchrotron energy emitted by the accelerated electrons in the RS	
 	std::vector<float> gamma_r_rs; // Combined Lorentz factor after collision
 	std::vector<double> e_diss_rs; // Energy dissipated in a RS
+	std::vector<double> nu_c_rs; // Hz, Frequency associated with the critical synchrotron Lorentz factor
+	std::vector<double> nu_m_rs; // Hz, Frequency associated with the minimum Lorentz factor of the accelerated electron population
 	std::vector<int> shell_ind_rs; // The index of the shell which was crossed by the reverse shock
-	std::vector<double> eps_star_rs; // Internal energy dissipated in a collision 
+	// std::vector<double> eps_star_rs; // Internal energy dissipated in a collision 
 	// std::vector<double> rho_rs; // g cm^-3, Density of the collision region
 
 

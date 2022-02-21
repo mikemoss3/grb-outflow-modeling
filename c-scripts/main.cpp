@@ -95,13 +95,13 @@ int main(int argc, char const *argv[])
 
 	SynthGRB test_grb = SynthGRB();
 	test_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
-	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/shell_dist.txt");
+	// (*test_grb.p_jet_shells).WriteToTXT("data-file-dir/shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();
 	test_grb.write_out_jet_params("./data-file-dir/");
+
 	float tlo = tmin;
 	float thi = tmax;
-
 
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
 	test_grb.WriteSpectrumToTXT("data-file-dir/test_spec_total.txt");

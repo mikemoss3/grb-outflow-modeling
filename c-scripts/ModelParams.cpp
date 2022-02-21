@@ -136,7 +136,7 @@ void ModelParams::copy(ModelParams * p_model_params_in)
 void ModelParams::LoadFromTXT(std::string filename)
 {
 	// Array to store params 
-	string inputs[13];
+	string inputs[19];
 	int i = 0;
 
 	// Load in the file

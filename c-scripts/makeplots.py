@@ -418,7 +418,7 @@ def load_is_emission(file_name):
 	Method to load internal shock emission data from the given file name
 	"""
 
-	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),("SHIND",int),('ASYN',float),('TAU',float),('RELVEL',float)])
+	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),("NUC",float),("NUM",float),('ASYN',float),('TAU',float),('RELVEL',float),("SHIND",int)])
 
 	return np.genfromtxt(file_name,dtype=dtype)
 
@@ -429,7 +429,7 @@ def load_fs_emission(file_name):
 	Method to load forward shock emission data from the given file name
 	"""
 
-	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float)])
+	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),("NUC",float),("NUM",float)])
 
 	return np.genfromtxt(file_name,dtype=dtype)
 
@@ -440,13 +440,13 @@ def load_rs_emission(file_name):
 	Method to load reverse shock emission data from the given file name
 	"""
 
-	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),("SHIND",int)])
+	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),("NUC",float),("NUM",float),("SHIND",int)])
 
 	return np.genfromtxt(file_name,dtype=dtype)
 
 ##############################################################################################################################
 
-def plot_param_vs_time(emission_comp,param,ax=None,z=0, y_factor=1, label=None, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',disp_xax=True,disp_yax=True,color='C0',marker='.',frame="obs"):
+def plot_param_vs_time(emission_comp,param,ax=None,z=0, y_factor=1, label=None, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',disp_xax=True,disp_yax=True,color='C0',marker='.',frame="obs",markersize=7):
 	"""
 	Plot emission parameters as a function of time (in the observer frame)
 	"""
@@ -463,20 +463,24 @@ def plot_param_vs_time(emission_comp,param,ax=None,z=0, y_factor=1, label=None, 
 	ax_time = emission_comp[time_str] * (1+z)
 
 	# Find the indices of the start and stop time
-	ind_start, ind_stop = 0,-1 
+	ind_start, ind_stop = 0,-1
 	if Tmin is not None:
 		ind_start = np.argmax(ax_time>Tmin)
 	if Tmax is not None:
 		ind_stop = np.argmax(ax_time>Tmax)
-
-	# Load time axis and the parameter value axis 
-	ax_time = ax_time[ind_start:ind_stop] 
-	ax_param = emission_comp[param][ind_start:ind_stop]
+	
+		# Load time axis and the parameter value axis 
+		ax_time = ax_time[ind_start:ind_stop] 
+		ax_param = emission_comp[param][ind_start:ind_stop]
+	else:
+		# Load time axis and the parameter value axis 
+		ax_time = ax_time[ind_start:] 
+		ax_param = emission_comp[param][ind_start:]
 
 	# if label is None:
 	# 	label = param
 
-	ax.scatter(ax_time,ax_param*y_factor,label=label,c=color,marker=marker)
+	ax.scatter(x=ax_time,y=ax_param*y_factor,label=label,c=color,marker=marker,s=markersize)
 
 	if disp_yax is True:
 		ax.set_ylabel(param,fontsize=fontsize,fontweight=fontweight)
@@ -641,14 +645,14 @@ def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=No
 
 ##############################################################################################################################
 
-def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".", z=0, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None,frame="obs"):
+def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".", z=0, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None,frame="obs",markersize=7):
 
 
 	### First Plot ###
 
 	# T_a vs B_eq
 	plot_param_vs_time(shock_data,'BEQ', ax=ax0[0,0], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,label=label,frame=frame)
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,label=label,frame=frame,markersize=markersize)
 
 	# T_a vs Gamma_r
 	if guidelines == True:
@@ -664,15 +668,15 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 		ax0[0,1].plot(t,rhoconstline(t,tstart,g_norm_const),label=r"$t^{-3/8}$",color='k')
 
 	plot_param_vs_time(shock_data,'GAMMAR', ax=ax0[0,1], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,frame=frame)
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,frame=frame,markersize=markersize)
 
 	# T_a vs e_diss
 	plot_param_vs_time(shock_data,'EDISS', ax=ax0[1,0], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,frame=frame)
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,frame=frame,markersize=markersize)
 
 	# T_a vs E_syn
 	plot_param_vs_time(shock_data,'ESYN', ax=ax0[1,1], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,frame=frame)
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color,frame=frame,markersize=markersize)
 
 
 	# Plot Aesthetics
@@ -723,7 +727,7 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 
 	# T_a vs T_e
 	plot_param_vs_time(shock_data,'TE', ax=ax1[0], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color, label=label,frame=frame)
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color=color, label=label,frame=frame,markersize=markersize)
 
 	# T_a vs del T_a
 	# Make a copy of the axis in order to over plot two separate data sets
@@ -734,7 +738,7 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 
 	# T_a vs Gamma_e
 	plot_param_vs_time(shock_data,'GAMMAE', ax=ax1[1], z=z, Tmin=Tmin, Tmax=Tmax,
-			fontsize=fontsize, fontweight=fontweight, marker=marker,color=color,frame=frame)
+			fontsize=fontsize, fontweight=fontweight, marker=marker,color=color,frame=frame,markersize=markersize)
 
 	# Plot Aesthetics
 	# Format Top plot, T_a vs T_e
@@ -771,18 +775,35 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 
 ##############################################################################################################################
 
-def plot_together(is_data = None,fs_data=None, rs_data=None, z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',frame="obs"):
+def plot_together(is_data = None,fs_data=None, rs_data=None, z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',frame="obs",markregime=True,markersize=10):
 
 	fig0, ax0 = plt.subplots(2,2,sharex=True,figsize=(12,8))
 	fig1, ax1 = plt.subplots(2,1,sharex=True,figsize=(6,6))
 
-
 	if is_data is not None:
-		make_together_plots(shock_data=is_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame)
+		if (markregime == True):
+			fastcool_data = is_data[is_data['NUM']>is_data['NUC']]
+			make_together_plots(shock_data=fastcool_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			slowcool_data = is_data[is_data['NUM']<=is_data['NUC']]
+			make_together_plots(shock_data=slowcool_data, color="C0", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+		else:
+			make_together_plots(shock_data=is_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
 	if fs_data is not None:
-		make_together_plots(shock_data=fs_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame)
+		if (markregime == True):
+			fastcool_data = fs_data[fs_data['NUM']>fs_data['NUC']]
+			make_together_plots(shock_data=fastcool_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			slowcool_data = fs_data[fs_data['NUM']<=fs_data['NUC']]
+			make_together_plots(shock_data=slowcool_data, color="C1", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+		else:
+			make_together_plots(shock_data=fs_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
 	if rs_data is not None:
-		make_together_plots(shock_data=rs_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame)
+		if (markregime == True):
+			fastcool_data = rs_data[rs_data['NUM']>rs_data['NUC']]
+			make_together_plots(shock_data=fastcool_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			slowcool_data = rs_data[rs_data['NUM']<=rs_data['NUC']]
+			make_together_plots(shock_data=slowcool_data, color="C2", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+		else:
+			make_together_plots(shock_data=rs_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
 
 	if save_pref is not None:
 		fig0.savefig('figs/{}-all-shock-evo-fig0.png'.format(save_pref))
@@ -817,14 +838,15 @@ if __name__ == '__main__':
 	"""
 	Shell Lorentz Distribution
 	"""
-	
+	"""
 	ax_sd = plt.figure().gca()
 	plot_lor_dist('data-file-dir/shell_dist.txt', ax=ax_sd)	
+	"""
 
 	"""
 	Synthetic spectrum 
 	"""
-	
+	"""
 	ax_spec = plt.figure(figsize=(9,8)).gca()
 
 	## Synthetic spectra with each component
@@ -849,13 +871,13 @@ if __name__ == '__main__':
 
 	# ax_spec.set_xlim(0.1,1e5)
 	# ax_spec.set_ylim(1e48,1e52)
-	
+	"""
 	
 
 	"""
 	Synthetic light curve
 	"""
-	
+	"""
 	ax_lc = plt.figure().gca()
 	plot_light_curve("data-file-dir/test_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False)
 	# plot_light_curve("data-file-dir/test_light_curve_therm.txt",ax=ax_lc,z=0.5,label="Therm")
@@ -864,12 +886,12 @@ if __name__ == '__main__':
 	# Interactive light curve
 	# tbox = plot_light_curve_interactive("data-file-dir/test_light_curve.txt",z=z,label="Total")	
 	# tbox = plot_light_curve_interactive("data-file-dir/test_light_curve.txt",z=z,label="Total",with_comps=True)	
-	
+	"""
 	
 	"""
 	Jet dynamics plots 
 	"""
-	"""
+	
 	# therm_emission = load_therm_emission("data-file-dir/synthGRB_jet_params_therm.txt")
 	# plot_evo_therm(therm_emission,z=1)
 
@@ -885,7 +907,7 @@ if __name__ == '__main__':
 	
 	# Plot everything together:
 	plot_together(fs_data=fs_data,rs_data=rs_data,is_data=is_data)
-	"""
+	
 
 	"""
 	Display real observed data

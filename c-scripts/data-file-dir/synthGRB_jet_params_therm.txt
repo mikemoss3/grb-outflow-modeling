@@ -1,5 +1,5 @@
 # Thermal Dynamics
-# t_e 	 t_a 	 delt_a 	 T_phot 	 L_phot 	 R_phot
+# t_e (s) 	 t_a (s) 	 delt_a (s) 	 T_phot (K) 	 L_phot (erg/s) 	 R_phot (cm/c) 
 
 61.7113 	 0.00240707 	 0.00240698 	 4.10575e+07 	 4.32502e+45 	 61.7089
 61.7985 	 0.0224113 	 0.00241134 	 4.10179e+07 	 4.32084e+45 	 61.7761
