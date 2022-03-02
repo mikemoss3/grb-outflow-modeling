@@ -84,6 +84,7 @@ public:
 
 	// Initialize jet based on current jet parameters and shell distribution
 	void InitializeJet();
+	void InitializeJet(ShellDist * p_input_jet_shells);
 	// Load jet parameters from a text file
 	void LoadJetParamsFromTXT(std::string file_name);
 
@@ -94,6 +95,7 @@ public:
 	void set_model_params(ModelParams * new_mod_params);
 	// Set jet shells
 	void set_jet_shells();
+	void set_jet_shells(ShellDist * p_input_jet_shells);
 
 	// Set the source spectrum 
 	// This class can make the source spectrum using the given emission data, but it can be manually set here.
@@ -109,7 +111,7 @@ public:
 
 
 	// Make the source spectrum using the emission data 
-	void make_source_spectrum(float energ_min = 50., float energ_max = 350., int num_energ_bins = 50, float tmin = 0., float tmax = 30.);
+	void make_source_spectrum(float energ_min = 50., float energ_max = 350., int num_energ_bins = 50, float tmin = 0., float tmax = 30., std::string comp = "all");
 	// Calls function to calculate the thermal spectrum rate for each energy bin
 	void MakeThermalSpec(Spectrum * therm_spectrum, float tmin, float tmax);
 	// Calculate the thermal spectrum from the given temperature and flux of the emission
@@ -128,11 +130,14 @@ public:
 	void MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax);
 
 	// Calculate the synchrotron spectrum from the synchrotron energy and flux of the emission
-	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt, double profile_factor = 1., float alpha = -0.7, float beta = -2.5);
+	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt, float nu_c, float nu_m, float p, double B, float Gamma, double profile_factor = 1.);
 	// Synchrotron spectrum function form,
-	double SynchSpec(float energy, double Esyn, float alpha = -0.7, float beta = -2.5);
+	double SynchSpec(float energy, double Esyn, float nu_c, float nu_m, float p, double B, float Gamma);
+	// Broken Power Law spectrum function form, Defaults alpha = -1.5, beta = -2.5
+	double BPLSpec(float energy, double esyn, float alpha = -1.5, float beta = -2.5);
+
 	// Make the source light curve using the emission data
-	void make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt, bool logscale = false);
+	void make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt, std::string comp = "all", bool logscale = false);
 
 	// Load SynthGRB from file
 	void LoadFromFile(std::string file_name);

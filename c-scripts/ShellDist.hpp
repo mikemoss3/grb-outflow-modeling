@@ -51,6 +51,10 @@ public:
 	// Distribute the shell according to an oscillatory function described in Hascoet et al. 2013. 
 	void oscillatory(float dte, float median=333., float amp=2./3., float freq=5., float decay=0.5, bool fluctuations = false);
 
+	// Distribute the shells by injecting Gaussians at specific places. 
+	void grb030329(float dte, float gamma_ave, float decay, int num_gauss, float * means, float * sigmas, float * amps, bool fluctuations = false);
+
+
 	// Write shell distribution to a text file
 	void WriteToTXT(string filename);
 

@@ -7,7 +7,7 @@
 ### theta, rad  ###
 0.1
 ### r_open, cm ###
-1.e6
+3.e6
 ### eps_th, fraction  ###
 0.03
 ### sigma, dimensionless ###
@@ -17,15 +17,15 @@
 ### eps_b internal, fraction ###
 0.33 
 ### zeta internal, fraction ###
-1.e-3 
+1.e-3
 ### p internal, dimensionless ###
 2.2
 ### eps_e external, fraction ###
-0.33
+0.13
 ### eps_b external, fraction ###
-0.33
+1.e-3
 ### zeta external, fraction ###
-1.0
+1.
 ### p external, dimensionless ###
 2.2
 ### k, wind parameter, i.e., 0, 2 ###

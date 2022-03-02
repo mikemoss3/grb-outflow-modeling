@@ -105,6 +105,29 @@ void SynthGRB::InitializeJet()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Initialize jet based on current jet parameters and shell distribution
+void SynthGRB::InitializeJet(ShellDist * p_input_jet_shells)
+{
+	E_dot_kin = (*p_model_params).E_dot_iso/(1+(*p_model_params).sigma); // Fraction of energy in Kinetic
+	E_dot_therm = (*p_model_params).E_dot_iso*(*p_model_params).eps_th; // Fraction of energy in thermal
+
+	// Make shell distribution
+	set_jet_shells(p_input_jet_shells);
+
+	// Average Lorentz factor of all jet shells  
+	gamma_bar = 0.0;
+	for(int i=0; i<(*p_model_params).numshells; ++i) 
+	{
+	     gamma_bar += (*p_jet_shells).shell_gamma.at(i);
+	}
+	gamma_bar /= (*p_model_params).numshells;
+	// Average mass of each shell
+	m_bar = (*p_model_params).E_dot_iso*(*p_model_params).dte/gamma_bar/pow(c_cm,2.);
+	m_tot = (*p_model_params).E_dot_iso*(*p_model_params).tw/gamma_bar/pow(c_cm,2.);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Load jet parameters from a file
 void SynthGRB::LoadJetParamsFromTXT(std::string file_name)
 {
@@ -328,6 +351,14 @@ void SynthGRB::set_jet_shells()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Set jet shells 
+void SynthGRB::set_jet_shells(ShellDist * p_input_jet_shells)
+{
+	p_jet_shells = p_input_jet_shells;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Set the source spectrum 
 // This class can make the source spectrum using the given emission data, but it can be manually set here.
 void SynthGRB::set_source_spectrum(Spectrum *in_source_spectrum)
@@ -428,7 +459,7 @@ void SynthGRB::SimulateJetDynamics()
 	for(int i=0; i<(*p_model_params).numshells; ++i)
 	{
 		// Calculate the photospheric radius for each jet shell, Equation 9 of Hascoet 2013
-		r_phot.at(i) = (0.2*(*p_model_params).E_dot_iso / ( (1.+(*p_model_params).sigma)*8.*M_PI*pow(c_cm,4.) *pow( (*p_jet_shells).shell_gamma.at(i) ,3.) ) ); // units of lightseconds, cm/speed of light
+		r_phot.at(i) = (kappa_T*(*p_model_params).E_dot_iso / ( (1.+(*p_model_params).sigma)*8.*M_PI*pow(c_cm,4.) *pow( (*p_jet_shells).shell_gamma.at(i) ,3.) ) ); // units of lightseconds, cm/speed of light
 		// r_phot = 2.9*pow(10,13) *((*p_model_params).E_dot_iso/1e53) / ( cc.c*(1+(*p_model_params).sigma)* pow((*p_jet_shells).shell_gamma/100,3) ) # units of lightseconds, cm/(cm/s)
 
 		// Times when each shell will cross the photosphere
@@ -447,7 +478,8 @@ void SynthGRB::SimulateJetDynamics()
 
 		// Luminosity at photosphere, from equation 8 in Hascoet 2013
 		// L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * Phi; // erg/s, beamed
-		L_phot.at(i) = E_dot_therm * Phi/(*p_model_params).numshells; // erg/s, isotropic
+		L_phot.at(i) = E_dot_therm * Phi; // erg/s, isotropic
+		// L_phot.at(i) = E_dot_therm * Phi/(*p_model_params).numshells; // erg/s, isotropic
 		// L_phot.at(i) = pow((*p_jet_shells).shell_gamma.at(i),2.) * a * pow( T0*Phi/(*p_jet_shells).shell_gamma.at(i),4.) * c_cm * (M_PI * pow((*p_model_params).theta,2.) * pow(c_cm * r_phot.at(i),2.) );// erg/s, beamed (alternative expression)
 	
 		// Test expression
@@ -617,7 +649,6 @@ void SynthGRB::SimulateJetDynamics()
 
 		/* Calculate time until next RS */
 		// If the reverse shock has begun, calculate the time until the next RS event
-		// if( (rs_active == true) and ( (*p_jet_shells).shell_gamma.at(active_inds.at(0)) > (*p_jet_shells).shell_gamma.at(rs_shell_index)) )
 		if( (rs_active == true) and ( (*p_jet_shells).shell_gamma.at(active_inds.at(0)) > (*p_jet_shells).shell_gamma.at(rs_shell_index)) )
 		{
 			// Calculate when the outer most shell will collide with the external shock discontinuity, e.g., when a reverse shock will happen
@@ -801,7 +832,7 @@ void SynthGRB::SimulateJetDynamics()
 
 			// De-active the downstream shell now that it has been merged
 			(*p_jet_shells).shell_status.at(ind_s_ds) = 0;
-			
+
 
 			// If the emission is efficient, add the contribution
 			// E.g., if the emission time is less than the shell expansion (the dynamical time scale of the shell)		
@@ -885,16 +916,16 @@ void SynthGRB::SimulateJetDynamics()
 
 			// tmp_eps_star =  (fs_gamma_int - 1) * pow(c_cm,2.); // erg/g, Average energy dissipated for each proton in the collision of two shells
 			tmp_eps_star = tmp_e_diss /(2.*m_bar*m_swept_tot*tmp_gamma_r);
-			// tmp_eps_star = tmp_e_diss /(2.*m_bar*(tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_gamma_r);
+			// tmp_eps_star = tmp_e_diss /(m_bar*(m_swept+tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_gamma_r);
 
 			// The typical Lorentz factor of the electron distribution (Gamma_min)
-			// tmp_gamma_e = tmp_gamma_r * ((*p_model_params).p-2.) * (*p_model_params).eps_e * mp * tmp_eps_star / ((*p_model_params).p-1.) /(*p_model_params).zeta_ext / me / pow(c_cm,2.);
+			// tmp_gamma_e = ((*p_model_params).p_ext-2.) * (*p_model_params).eps_e_ext * mp * tmp_eps_star / ((*p_model_params).p_ext-1.) /(*p_model_params).zeta_ext / me / pow(c_cm,2.);
 			tmp_gamma_e = tmp_gamma_r * ((*p_model_params).p_ext-2.) * (*p_model_params).eps_e_ext * mp / ((*p_model_params).p_ext-1.) /(*p_model_params).zeta_ext / me;
 			// tmp_gamma_e = 15000;
 			
 			// The magnetic field in the forward shock
-			tmp_rho = (*p_model_params).rho_not/pow(tmp_fs_r*c_cm,(*p_model_params).k_med); // g/cm^3, comoving proton density 
-			tmp_beq = c_cm*tmp_gamma_r*sqrt(32. * M_PI * (*p_model_params).eps_b_ext * tmp_rho);
+			tmp_rho = tmp_gamma_r*(*p_model_params).rho_not/pow(tmp_fs_r*c_cm,(*p_model_params).k_med); // g/cm^3, comoving proton density 
+			tmp_beq = c_cm*tmp_gamma_r*sqrt(32. * M_PI * (*p_model_params).eps_b_ext * tmp_rho); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
 
 			// The synchrotron energy of the accelerated electrons 
 			tmp_esyn_kev = 50.*(tmp_gamma_r/300.)*(tmp_beq/1e3)*pow((tmp_gamma_e/100.),2.) / 1000.; // keV, Synchrotron energy in the rest frame
@@ -1045,8 +1076,6 @@ void SynthGRB::SimulateJetDynamics()
 			// The typical energy of an accelerated electron
 			tmp_esyn_kev = 50.*(tmp_gamma_r/300.)*(tmp_beq/1e3)*pow((tmp_gamma_e/100.),2.) / 1000.; // keV, Synchrotron energy in the source frame
 			tmp_esyn_erg = kev_to_erg * tmp_esyn_kev; // erg, Synchrotron energy in the rest frame 
-
-			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
 			
 			w = tmp_gamma_e*(tmp_esyn_erg/tmp_gamma_r)/(me * pow(c_cm,2.) ); // Indicates whether we are in the Klein-Nishina regime or Thompson (i.e., w>>1 or w<<1, respectively)
 			quadr_const = -(3./2.)*(0.2/M_PI/pow(c_cm*tmp_rs_r,2.)) * tmp_gamma_e * 100. * (E_dot_kin/pow(gamma_bar*c_cm,2.)) * pow(tmp_beq/1000.,-2.); // Constant in the quadratic equation
@@ -1065,7 +1094,7 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_asyn = 1. - alpha_ic; // Fraction of energy remaining for synchrotron electrons
 
 			// Duration of the emission event 
-			tmp_delt = rad_coll/2./pow(tmp_gamma_r,2.);
+			tmp_delt = tmp_rs_r/2./pow(tmp_gamma_r,2.);
 
 			tmp_lum_diss = tmp_e_diss * (*p_model_params).eps_e_int * tmp_asyn / tmp_delt; // erg / s;
 			
@@ -1073,6 +1102,9 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(tmp_beq,3.)/pow(tmp_delt,2.);
 			// Calculate nu_m
 			tmp_nu_m = (1./2./M_PI) * pow(((*p_model_params).p_int-2.)*(*p_model_params).eps_e_int/((*p_model_params).p_int-1.)/(*p_model_params).zeta_int,2.) * (qe*pow(mp,2.)/pow(me,3.)/pow(c_cm,5.)) * pow(tmp_eps_star,2.) * tmp_beq;
+
+			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
+			tmp_eff = (t_syn < ((1.+Q_IC)*tmp_rs_r/gamma_bar) );
 
 
 			// Update the mass of the reverse shock shell
@@ -1084,21 +1116,25 @@ void SynthGRB::SimulateJetDynamics()
 			// Deactivate internal shell that collided with RS
 			(*p_jet_shells).shell_status.at(active_inds.at(0)) = 0;
 
-			// Record necessary parameters to calculate the emission
-			te_rs.push_back(tmp_te); // sec, Time of emission 
-			ta_rs.push_back(tmp_te - tmp_rs_r); // sec, Arrival time of emission at observer
-			delt_rs.push_back(tmp_delt); // sec, Duration of the emission
-			beq_rs.push_back(tmp_beq); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
-			gamma_e_rs.push_back(tmp_gamma_e); // Lorentz factor of the electron population	
-			esyn_rs.push_back(tmp_esyn_kev); // erg, The typical synchrotron energy of the accelerated electrons
-			gamma_r_rs.push_back(tmp_gamma_r); // New Lorentz factor of the RS
-			e_diss_rs.push_back(tmp_lum_diss); // erg, Dissipated energy of the RS
-			nu_c_rs.push_back(tmp_nu_c); // Hz, Critical synchrotron frequency
-			nu_m_rs.push_back(tmp_nu_m); // Hz, Minimum electron frequency
-			shell_ind_rs.push_back(active_inds.at(0)); // The index of the shell which was crossed by the reverse shock
-			// eps_star_rs.push_back(tmp_eps_star); // erg / g, Internal energy dissipated in a collision 
-			// rho_rs.push_back(rho); // g cm^-3, Density of the collision region
-
+			// If the emission is efficient, add the contribution
+			// E.g., if the emission time is less than the shell expansion (the dynamical time scale of the shell)		
+			if ( tmp_eff )
+			{
+				// Record necessary parameters to calculate the emission
+				te_rs.push_back(tmp_te); // sec, Time of emission 
+				ta_rs.push_back(tmp_te - tmp_rs_r); // sec, Arrival time of emission at observer
+				delt_rs.push_back(tmp_delt); // sec, Duration of the emission
+				beq_rs.push_back(tmp_beq); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
+				gamma_e_rs.push_back(tmp_gamma_e); // Lorentz factor of the electron population	
+				esyn_rs.push_back(tmp_esyn_kev); // erg, The typical synchrotron energy of the accelerated electrons
+				gamma_r_rs.push_back(tmp_gamma_r); // New Lorentz factor of the RS
+				e_diss_rs.push_back(tmp_lum_diss); // erg, Dissipated energy of the RS
+				nu_c_rs.push_back(tmp_nu_c); // Hz, Critical synchrotron frequency
+				nu_m_rs.push_back(tmp_nu_m); // Hz, Minimum electron frequency
+				shell_ind_rs.push_back(active_inds.at(0)); // The index of the shell which was crossed by the reverse shock
+				// eps_star_rs.push_back(tmp_eps_star); // erg / g, Internal energy dissipated in a collision 
+				// rho_rs.push_back(rho); // g cm^-3, Density of the collision region
+			}
 		}
 		else
 		{
@@ -1147,7 +1183,7 @@ void SynthGRB::SimulateJetDynamics()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Make the source spectrum using the emission data
-void SynthGRB::make_source_spectrum(float energ_min, float energ_max, int num_energ_bins, float tmin, float tmax)
+void SynthGRB::make_source_spectrum(float energ_min, float energ_max, int num_energ_bins, float tmin, float tmax, std::string comp)
 {
 	// Release previous spectrum if it exists
 	if(p_source_spectrum != NULL)
@@ -1159,11 +1195,33 @@ void SynthGRB::make_source_spectrum(float energ_min, float energ_max, int num_en
 	(*p_source_spectrum).ZeroSpectrum(); // Set spectrum to zero.
 	
 
-	MakeThermalSpec(p_source_spectrum, tmin, tmax);
-
-	MakeISSpec(p_source_spectrum, tmin, tmax);
-
-	MakeExtShockSpec(p_source_spectrum, tmin, tmax);
+	if(comp.compare("all") == 0)
+	{
+		MakeThermalSpec(p_source_spectrum, tmin, tmax);
+		MakeISSpec(p_source_spectrum, tmin, tmax);		
+		MakeExtShockSpec(p_source_spectrum, tmin, tmax);
+	}
+	else if(comp.compare("TH") == 0)
+	{
+		MakeThermalSpec(p_source_spectrum, tmin, tmax);
+	}
+	else if(comp.compare("IS") == 0)
+	{
+		MakeISSpec(p_source_spectrum, tmin, tmax);
+	}
+	else if(comp.compare("FS") == 0)
+	{
+		MakeFSSpec(p_source_spectrum, tmin, tmax);
+	}
+	else if(comp.compare("RS") == 0)
+	{
+		MakeRSSpec(p_source_spectrum, tmin, tmax);
+	}
+	else
+	{
+		cout << "Please enter a valid component to plot a light curve for." << endl;
+		return;
+	}
 
 }
 
@@ -1173,7 +1231,7 @@ void SynthGRB::make_source_spectrum(float energ_min, float energ_max, int num_en
 // Calls function to calculate the thermal spectrum rate for each energy bin
 void SynthGRB::MakeThermalSpec(Spectrum * therm_spectrum, float tmin, float tmax)
 {
-
+	float num = 1e-3;
 	// For each thermal emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_therm.size(); ++i)
 	{
@@ -1184,10 +1242,18 @@ void SynthGRB::MakeThermalSpec(Spectrum * therm_spectrum, float tmin, float tmax
 		{
 			// Call function to calculate thermal spectrum rate
 			CalcThermalContribution(therm_spectrum, T_phot.at(i),L_phot.at(i));
-
+			num+=1;
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum.
 	}
+	
+	// Normalize by the number of shells crossing the photosphere during this time.
+	for(size_t i=0; i< (*therm_spectrum).spectrum_rate.size();++i)
+	{
+		(*therm_spectrum).spectrum_rate.at(i) /= num;	
+	}
+	(*therm_spectrum).spectrum_sum /= num;
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1255,9 +1321,6 @@ double SynthGRB::ThermalSpec(float energy, float temp, float alpha)
 // Calls function to calculate the spectrum rate of the internal shocks for each energy bin
 void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 {
-	float alpha = 0.; // Low energy power law slope 
-	float beta = -2.5; // high energy power law slope
-
 	// For each emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_is.size(); ++i)
 	{
@@ -1270,21 +1333,11 @@ void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 			if ( relvel.at(i) > 0.1 and tau.at(i) < 1)
 			{
 
-				// Decide if fast cooling or slow cooling
-				if(nu_m_is.at(i) > nu_c_is.at(i))
-				{
-					alpha = -0.7; // Fast Cooling
-				}
-				else
-				{
-					alpha = -1.5; // Slow Cooling
-				}
-
 				// Emission profile
 				double profile_factor = 2./pow(1. + ((tmax - ta_is.at(i))/delt_is.at(i)),3.);
 
 				// Call function to calculate spectrum count rate, assuming synchrotron emission
-				CalcSynchContribution(intsh_spectrum, esyn_is.at(i),e_diss_is.at(i),delt_is.at(i), profile_factor, alpha, beta);
+				CalcSynchContribution(intsh_spectrum, esyn_is.at(i),e_diss_is.at(i),delt_is.at(i), nu_c_is.at(i), nu_m_is.at(i), (*p_model_params).p_int, beq_is.at(i), gamma_r_is.at(i), profile_factor);
 			}	
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum. 
@@ -1308,9 +1361,6 @@ void SynthGRB::MakeExtShockSpec(Spectrum * extsh_spectrum, float tmin, float tma
 // Calls function to calculate the external shock spectrum rate for each energy bin
 void SynthGRB::MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 {
-	float alpha = 0; // Low energy power law slope 
-	float beta = -2.5; // high energy power law slope
-
 	// For each emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_fs.size(); ++i)
 	{
@@ -1318,21 +1368,11 @@ void SynthGRB::MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
 		if ( ta_fs.at(i) <= tmax and (ta_fs.at(i)+delt_fs.at(i)) >= tmin )
 		{
-			// Decide if fast cooling or slow cooling
-			if(nu_m_fs.at(i) > nu_c_fs.at(i))
-			{
-				alpha = -0.7; // Fast Cooling					
-			}
-			else
-			{
-				alpha = -1.5; // Slow Cooling
-			}
-
 			// Emission profile
 			double profile_factor = 2./pow(1. + ((tmax - ta_fs.at(i))/delt_fs.at(i)),3.);
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
-			CalcSynchContribution(extsh_spectrum, esyn_fs.at(i),e_diss_fs.at(i),delt_fs.at(i), profile_factor, alpha, beta);
+			CalcSynchContribution(extsh_spectrum, esyn_fs.at(i),e_diss_fs.at(i),delt_fs.at(i), nu_c_fs.at(i), nu_m_fs.at(i),(*p_model_params).p_ext, beq_fs.at(i), gamma_r_fs.at(i), profile_factor);
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum. 
 	}
@@ -1343,9 +1383,6 @@ void SynthGRB::MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 // Calls function to calculate the external shock spectrum rate for each energy bin
 void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 {
-	float alpha = 0; // Low energy power law slope 
-	float beta = -2.5; // high energy power law slope
-
 	// For each emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_rs.size(); ++i)
 	{
@@ -1353,21 +1390,11 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
 		if ( ta_rs.at(i) <= tmax and (ta_rs.at(i)+delt_rs.at(i)) >= tmin )
 		{
-			// Decide if fast cooling or slow cooling
-			if(nu_m_rs.at(i) > nu_c_rs.at(i))
-			{
-				alpha = -0.7; // Fast Cooling					
-			}
-			else
-			{
-				alpha = -1.5; // Slow Cooling
-			}
-
 			// Emission profile
 			double profile_factor = 2./pow(1. + ((tmax - ta_rs.at(i))/delt_rs.at(i)),3.);
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
-			CalcSynchContribution(extsh_spectrum, esyn_rs.at(i),e_diss_rs.at(i),delt_rs.at(i), profile_factor, alpha, beta);
+			CalcSynchContribution(extsh_spectrum, esyn_rs.at(i),e_diss_rs.at(i),delt_rs.at(i), nu_c_rs.at(i), nu_m_rs.at(i),(*p_model_params).p_int, beq_rs.at(i), gamma_r_rs.at(i), profile_factor);
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum. 
 	}
@@ -1377,9 +1404,8 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 /* Synchrotron spectrum member functions*/
 
 // Calculate the synchrotron spectrum from the synchrotron energy and flux of the emission
-void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, double e_diss, double delt, double profile_factor, float alpha, float beta)
+void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, double e_diss, double delt, float nu_c, float nu_m, float p, double B, float Gamma, double profile_factor)
 {
-	
 	// Calculate the normalization
 	double norm = 0.; // Set normalization to zero
 	int norm_num_bin= 20.*log10(1e6*(*synch_spectrum).energ_hi.back()/(*synch_spectrum).energ_lo.at(0)); // Number of energy bins to use to calculate normalization
@@ -1392,7 +1418,7 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 	{
 		en_curr = (norm_energy_axis.at(i+1) + norm_energy_axis.at(i) ) / 2.; // Set the current energy
 		// Calculate the contribution according to a Left-Riemann-Sum
-		norm += (norm_energy_axis.at(i+1)-en_curr) * en_curr * SynchSpec(en_curr, esyn, alpha, beta);
+		norm += (norm_energy_axis.at(i+1)-en_curr) * en_curr * SynchSpec(en_curr, esyn, nu_c, nu_m, p, B, Gamma);
 	}
 
 	// Calculate the rate of the thermal spectrum
@@ -1405,7 +1431,7 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 		// The current temp and energy bin define the count rate, the normalization found above is applied.
 		// This (*p_model_params).must still be (*p_model_params).multiplied by the energy dissipated during the emission event.
 		// The energy dissipated can be turned into Flux by dividing the energy dissipated by the observed emission duration (delt).
-		tmp_val = e_diss * profile_factor * SynchSpec(en_curr, esyn, alpha, beta) / norm;
+		tmp_val = e_diss * profile_factor * SynchSpec(en_curr, esyn, nu_c, nu_m, p, B, Gamma) / norm;
 		
 		// Add the contribution to the total spectrum according to a Center-Riemann-Sum
 		(*synch_spectrum).spectrum_sum += ((*synch_spectrum).energ_hi.at(i) - (*synch_spectrum).energ_lo.at(i)) * tmp_val;
@@ -1419,18 +1445,28 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Synchrotron spectrum function form,
-// Defaults alpha = -1.5, beta = -2.5
-double SynthGRB::SynchSpec(float energy, double esyn, float alpha, float beta)
+double SynthGRB::SynchSpec(float energy, double esyn, float nu_c, float nu_m, float p, double B, float Gamma)
 {
-	double param_list[4] = {esyn, alpha, beta,1.};
-	// return (1./esyn) * Band(energy, param_list );
+	// Synchrotron 
+	double param_list[6] = {nu_c*Gamma, nu_m*Gamma, p, B*Gamma, Gamma, 1.};
+	return Synchrotron(energy,  param_list);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Broken Power Law spectrum function form,
+// Defaults alpha = -1.5, beta = -2.5
+double SynthGRB::BPLSpec(float energy, double esyn, float alpha, float beta)
+{
+	// BPL 
+	double param_list[4] = {esyn, alpha, beta, 1.};
 	return (1./esyn) * BPL(energy,  param_list);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Make the source light curve using the emission data and specify the time step of the light curve
-void SynthGRB::make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt, bool logscale)
+void SynthGRB::make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt, std::string comp, bool logscale)
 {
 	// Release previous spectrum if it exists
 	if(p_source_light_curve != NULL)
@@ -1442,18 +1478,14 @@ void SynthGRB::make_source_light_curve(float energ_min, float energ_max, float T
 	(*p_source_light_curve).ZeroLightCurve(); // Reset spectrum
 
 	// Define the number of energy bins
-	float tmp_num_energ_bins = log10(energ_max/energ_min)*20;
+	float tmp_num_energ_bins = log10(energ_max/energ_min)*20.;
 
 	// For each time bin, calculate the photon rate.
 	for(int i=0; i < (*p_source_light_curve).num_time_bins-1; ++i)
 	{
 		// Find the spectrum sum for each emission event which occurs between (light_curve_time[i], light_curve_time[i+1]) 
-		make_source_spectrum(energ_min, energ_max, tmp_num_energ_bins, (*p_source_light_curve).lc_time.at(i), (*p_source_light_curve).lc_time.at(i+1) );
-		
-		// Ensure that the light curve rate is set to zero before adding values to it.
-		(*p_source_light_curve).lc_rate.at(i) = (*p_source_spectrum).spectrum_sum;
-		// (*p_source_light_curve).lc_rate.at(i) = (*p_source_spectrum).spectrum_sum / ((*p_source_light_curve).lc_time.at(i+1) - (*p_source_light_curve).lc_time.at(i));
-
+		make_source_spectrum(energ_min, energ_max, tmp_num_energ_bins, (*p_source_light_curve).lc_time.at(i), (*p_source_light_curve).lc_time.at(i+1), comp);		
+		(*p_source_light_curve).lc_rate.at(i) = (*p_source_spectrum).spectrum_sum; // Because we use ediss/delt to calculate the spectra, we don't need to normalize by the time bin of the light curve
 
 		// Apply distance corrections
 		// (*p_source_light_curve).lc_rate.at(i) /= 4 * M_PI * pow(lum_dist(z),2);
@@ -1544,7 +1576,7 @@ void SynthGRB::write_out_jet_params(std::string dir_path_name)
 	fs_params_file.open(dir_path_name+"synthGRB_jet_params_fs.txt"); // Open text file with this name
 	i=0;
 	fs_params_file << "# Forward Shock Dynamics" << endl;
-	fs_params_file << "# t_e (s) \t t_a (s) \t delt_a (s) \t B_eq (G) \t Gamma_e \t E_syn (keV) \t Gamma_r \t L_diss (erg/s) \t nu_c (Hz) \t nu_m (Hz)" << endl << endl;
+	fs_params_file << "# t_e (s) \t t_a (s) \t delt_a (s) \t B_eq (G) \t Gamma_e \t E_syn (keV) \t Gamma_r \t L_diss (erg/s) \t nu_c (Hz) \t nu_m (Hz) \t shell_ind" << endl << endl;
 	// For each time bin, write the time and count rate to the file.
 	while ( i < te_fs.size())
 	{
@@ -1567,6 +1599,8 @@ void SynthGRB::write_out_jet_params(std::string dir_path_name)
 		fs_params_file << nu_c_fs.at(i);
 		fs_params_file << " \t ";
 		fs_params_file << nu_m_fs.at(i);
+		fs_params_file << " \t ";
+		fs_params_file << 0;
 		// fs_params_file << " \t ";
 		// fs_params_file << eps_star_fs.at(i);
 		// fs_params_file << " \t ";

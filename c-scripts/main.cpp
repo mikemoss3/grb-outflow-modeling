@@ -38,43 +38,82 @@ int main(int argc, char const *argv[])
 
 	if(argv[1]!=NULL)
 	{
-		if( strcmp(argv[1], "quickplot")==0 )
+		if( strcmp(argv[1], "timechange")==0 )
 		{
 
-			float tmin = stof(argv[2]);
-			float tmax = stof(argv[3]);
+			float tmin = stof(argv[3]);
+			float tmax = stof(argv[4]);
 
-			float energ_min = 1e-5;
-			float energ_max = 1e6;
+			float energ_min = stof(argv[5]);
+			float energ_max = stof(argv[6]);
 			float num_energ_bins = 10.*log10(energ_max/energ_min);
 
 			SynthGRB synth_grb = SynthGRB();
 			synth_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
 			synth_grb.SimulateJetDynamics();
+
+			// Total spectrum
 			synth_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tmin, tmax);
 			synth_grb.WriteSpectrumToTXT("data-file-dir/quickplot_spectrum.txt");
 
+			// Make component spectra
+			if(strcmp(argv[2], "true")==0)
+			{
+				// Thermal Component
+				Spectrum * p_source_spectrum_therm = new Spectrum(energ_min, energ_max, num_energ_bins);
+				synth_grb.MakeThermalSpec(p_source_spectrum_therm, tmin, tmax);
+				(*p_source_spectrum_therm).WriteToTXT("data-file-dir/quickplot_spectrum_TH.txt");
+
+				// Internal Shock Component
+				Spectrum * p_source_spectrum_is = new Spectrum(energ_min, energ_max, num_energ_bins);
+				synth_grb.MakeISSpec(p_source_spectrum_is, tmin, tmax);
+				(*p_source_spectrum_is).WriteToTXT("data-file-dir/quickplot_spectrum_IS.txt");
+
+				// Forward Shock Component
+				Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
+				synth_grb.MakeFSSpec(p_source_spectrum_fs, tmin, tmax);
+				(*p_source_spectrum_fs).WriteToTXT("data-file-dir/quickplot_spectrum_FS.txt");
+
+				// Reverse Shock Component
+				Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
+				synth_grb.MakeRSSpec(p_source_spectrum_rs, tmin, tmax);
+				(*p_source_spectrum_rs).WriteToTXT("data-file-dir/quickplot_spectrum_RS.txt");
+
+			}
 			
-			// Thermal Component
-			Spectrum * p_source_spectrum_therm = new Spectrum(energ_min, energ_max, num_energ_bins);
-			synth_grb.MakeThermalSpec(p_source_spectrum_therm, tmin, tmax);
-			(*p_source_spectrum_therm).WriteToTXT("data-file-dir/quickplot_spectrum_TH.txt");
+			return 0; 
+		}
+		if( strcmp(argv[1], "energychange")==0 )
+		{
 
-			// Internal Shock Component
-			Spectrum * p_source_spectrum_is = new Spectrum(energ_min, energ_max, num_energ_bins);
-			synth_grb.MakeISSpec(p_source_spectrum_is, tmin, tmax);
-			(*p_source_spectrum_is).WriteToTXT("data-file-dir/quickplot_spectrum_IS.txt");
+			float tmin = stof(argv[3]);
+			float tmax = stof(argv[4]);
+			float dt = 0.1;
 
-			// Forward Shock Component
-			Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
-			synth_grb.MakeFSSpec(p_source_spectrum_fs, tmin, tmax);
-			(*p_source_spectrum_fs).WriteToTXT("data-file-dir/quickplot_spectrum_FS.txt");
+			float energ_min = stof(argv[5]);
+			float energ_max = stof(argv[6]);
 
-			// Reverse Shock Component
-			Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
-			synth_grb.MakeRSSpec(p_source_spectrum_rs, tmin, tmax);
-			(*p_source_spectrum_rs).WriteToTXT("data-file-dir/quickplot_spectrum_RS.txt");
+			SynthGRB synth_grb = SynthGRB();
+			synth_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
+			synth_grb.SimulateJetDynamics();;
 			
+			synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt);
+			synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve.txt");
+
+
+			// Make component spectra and light curves
+			if(strcmp(argv[2], "true")==0)
+			{
+				// Plot the other light curves components 
+				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "TH", false);
+				synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve_TH.txt");
+				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "IS", false);
+				synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve_IS.txt");
+				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "FS", false);
+				synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve_FS.txt");
+				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "RS", false);
+				synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve_RS.txt");
+			}
 
 			return 0; 
 		}
@@ -85,46 +124,74 @@ int main(int argc, char const *argv[])
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
 	
-	float energ_min = 8;
+	float energ_min = 1e-3;
 	float energ_max = 4e4;
+	float energ_min_lc = 15.;
+	float energ_max_lc = 350.;
 	float num_energ_bins = 200;
 
 	float tmin = 0.;
-	float tmax = 10.;
+	float tmax = 15.;
 	float dt = 0.1;
 
 	SynthGRB test_grb = SynthGRB();
 	test_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
-	// (*test_grb.p_jet_shells).WriteToTXT("data-file-dir/shell_dist.txt");
+
+	// int num_gauss = 3;
+	// float means[num_gauss] = {50., 125., 450.};
+	// float sigmas[num_gauss] = {10., 10., 10.};
+	// float amps[num_gauss] = {100., 75., 50.};
+	// float gamma_ave = 100.;
+	// float decay = 0.5;
+	// ShellDist * test_sd = new ShellDist( (*test_grb.p_model_params).numshells, (*test_grb.p_model_params).E_dot_iso);
+	// (*test_sd).grb030329((*test_grb.p_model_params).dte, gamma_ave, decay, num_gauss, means, sigmas, amps);
+	// test_grb.InitializeJet(test_sd);
+
+	
+	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();
 	test_grb.write_out_jet_params("./data-file-dir/");
 
-	float tlo = tmin;
-	float thi = tmax;
+	float tlo = 0.5; // The T90? essentially.
+	float thi = 9.5;
 
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
-	test_grb.WriteSpectrumToTXT("data-file-dir/test_spec_total.txt");
+	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_total.txt");
 
 	Spectrum * p_source_spectrum_therm = new Spectrum(energ_min, energ_max, num_energ_bins);
 	test_grb.MakeThermalSpec(p_source_spectrum_therm, tlo, thi);
-	(*p_source_spectrum_therm).WriteToTXT("data-file-dir/test_spec_therm.txt");
+	(*p_source_spectrum_therm).WriteToTXT("data-file-dir/synthGRB_spec_therm.txt");
 
 	Spectrum * p_source_spectrum_is = new Spectrum(energ_min, energ_max, num_energ_bins);
 	test_grb.MakeISSpec(p_source_spectrum_is, tlo, thi);
-	(*p_source_spectrum_is).WriteToTXT("data-file-dir/test_spec_is.txt");
+	(*p_source_spectrum_is).WriteToTXT("data-file-dir/synthGRB_spec_is.txt");
 
 	Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
 	test_grb.MakeFSSpec(p_source_spectrum_fs, tlo, thi);
-	(*p_source_spectrum_fs).WriteToTXT("data-file-dir/test_spec_fs.txt");
+	(*p_source_spectrum_fs).WriteToTXT("data-file-dir/synthGRB_spec_fs.txt");
 
 	Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
 	test_grb.MakeRSSpec(p_source_spectrum_rs, tlo, thi);
-	(*p_source_spectrum_rs).WriteToTXT("data-file-dir/test_spec_rs.txt");
+	(*p_source_spectrum_rs).WriteToTXT("data-file-dir/synthGRB_spec_rs.txt");
 	
-	test_grb.make_source_light_curve(8., 4e4, tlo, thi, dt);
-	// test_grb.make_source_light_curve(0.2, 10, 20, 1e4, dt/2, true);
-	test_grb.WriteLightCurveToTXT("data-file-dir/test_light_curve.txt");
+	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve.txt");
+
+	// Plot the other light curves
+	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "TH", false);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_TH.txt");
+	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "IS", false);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_IS.txt");
+	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "FS", false);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_FS.txt");
+	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "RS", false);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_RS.txt");
+
+	// test_grb.make_source_light_curve(0.2, 10, 0.1, 1e4, dt/2, "FS", true);
+	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, 10., 5e5, dt, "FS", true);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow.txt");
+	
 
 	return 0;
 		

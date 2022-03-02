@@ -9,11 +9,11 @@ RM=rm -f
 # -g : this flag adds debugging information to the executable file
 
 # Define source file names
-MAINSRCS=main.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp ObsGRB.cpp DataAnalysis.cpp
+MAINSRCS=main.cpp cosmology.cpp GammaFunction.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp ObsGRB.cpp DataAnalysis.cpp
 MAINOBS=$(subst .cpp,.o,$(MAINSRCS))
 
 # TSTSRCS=testbench.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp ObsGRB.cpp DataAnalysis.cpp
-TSTSRCS=testbench.cpp
+TSTSRCS=testbench.cpp GammaFunction.cpp utilfuncs.cpp Spectrum.cpp
 TSTOBJS=$(subst .cpp,.o,$(TSTSRCS))
 
 # Define executable file making methods
@@ -31,6 +31,7 @@ LightCurve.o: LightCurve.cpp LightCurve.hpp
 TTEs.o: TTEs.cpp TTEs.hpp LightCurve.hpp Spectrum.hpp
 Response.o: Response.cpp Response.hpp
 
+GammaFunction.o: GammaFunction.cpp GammaFunction.hpp
 utilfuncs.o: utilfuncs.cpp utilfuncs.hpp Spectrum.hpp Response.hpp cosmology.hpp
 
 ModelParams.o: ModelParams.cpp ModelParams.hpp
@@ -40,10 +41,10 @@ ObsGRB.o: ObsGRB.cpp ObsGRB.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp
 FitStats.o: FitStats.cpp FitStats.hpp
 DataAnalysis.o: DataAnalysis.cpp DataAnalysis.hpp FitStats.hpp SynthGRB.hpp ModelParams.hpp ObsGRB.hpp utilfuncs.hpp cosmology.hpp
 
-main.o: main.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
+main.o: main.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp GammaFunction.hpp cosmology.hpp
 
 # testbench.o: testbench.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
-testbench.o: testbench.cpp
+testbench.o: testbench.cpp utilfuncs.hpp GammaFunction.hpp Spectrum.hpp
 
 # Define cleaning methods
 clean:

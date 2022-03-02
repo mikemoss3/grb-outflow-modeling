@@ -20,6 +20,7 @@ Header file for utilfuncs.cpp
 #include <sstream>
 
 // Import Custom Libraries
+#include "GammaFunction.hpp"
 #include "cosmology.hpp"
 #include "Response.hpp"
 #include "Spectrum.hpp"

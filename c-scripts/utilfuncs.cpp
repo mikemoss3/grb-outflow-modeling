@@ -16,6 +16,7 @@ This file defines useful utility functions
 #include <sstream>
 
 // Import Custom Libraries
+#include "GammaFunction.hpp"
 #include "cosmology.hpp"
 #include "Response.hpp"
 #include "Spectrum.hpp"
@@ -281,63 +282,66 @@ double BB(float energy, double * param_list)
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Synchrotron spectrum function
-double Synchrotron(float energy, double * param_list)
+double Synchrotron(float energy,  double * param_list)
 {
     /*
     Compute the synchrotron spectrum at a particular energy 
     
-    param_list[0] = nu_c, Hz, the frequency associated with the critical Lorentz factor of the electron population
-    param_list[1] = nu_m, Hz, the frequency associated with the minimum Lorentz factor of the electron population
-    param_list[2] = p, the power law index of the electron population distribution
-    param_list[3] = norm, normalization of the spectral function
+    param_list[0] = nu_c, Hz, The frequency associated with the critical Lorentz factor of the electron population
+    param_list[1] = nu_m, Hz, The frequency associated with the minimum Lorentz factor of the electron population
+    param_list[2] = p, Power law index of the electron population distribution
+    param_list[3] = B, (erg/cm^3)^1/2, magnetic field in the emitting region
+    param_list[4] = Gamma, Bulk Lorentz factor of the emitting material 
+    param_list[5] = norm, normalization of the spectral function
 
+
+    Note: the lower branch (the power below min(nu_m,nu_c) naturally arises from this formulation)
     */
-    
     double nu_c = param_list[0];
     double nu_m = param_list[1];
     float p = param_list[2];
-    double norm = param_list[3];
+    double B = param_list[3];
+    float Gamma = param_list[4];
+    double norm = param_list[5];
 
+    float en_c = h_planck_kev*nu_c;
+    float en_m = h_planck_kev*nu_m;
+
+    double synch_norm_factors = 0;
+
+    double pow_middle_branch = 0;
+    double pow_upper_branch = 0;
 
     // Decide if the electron population is in the slow- of fast- cooling regimes
     if(nu_m < nu_c)
     {
         // Slow-cooling
 
-        // If the energy is below h*nu_m,
-        if(energy < h_planck*nu_m)
-        {
-            return pow(energy,-2./3.);
-        }
-        else if(energy < h_planck*nu_c)
-        {
-            // If the energy is between h*nu_m and h*nu_c
-            return pow(energy,-(p+1.)/2.);
-        }
-        else
-        {
-            // If the energy is above h*nu_c
-            return pow(energy,-(p+2.)/2.);
-        }   
+        synch_norm_factors = norm * (p - 1.) * pow( 1. - ( pow(nu_c/nu_m, -(p-1.)/2.) / p ) , -1.) * 3. * pow(3./2.,1./3.) * (pow(qe,3.)*B*Gamma/me/c_cm/c_cm);
+
+        // Calculate power between nu_m and nu_c 
+        pow_middle_branch = pow(energy/en_m,-(p+1.)/2.) * (1./2.) * synch_norm_factors * (gamma_inc(p/2. - 1./6.,energy/en_c) - gamma_inc(p/2. - 1./6.,energy/en_m)) ;
+        // Calculate power between nu_c and inf
+        pow_upper_branch = pow(energy/en_m,-(p+2.)/2.) * (1./2.) * synch_norm_factors * pow(nu_c/nu_m,1./2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_c)) ;
+        
+        // Return average power
+        return (pow_middle_branch + pow_upper_branch);
     }
     else
     {
         // Fast-cooling
 
-        // If the energy is below h*nu_c,
-        if(energy < h_planck*nu_m)
-        {
-            return pow(energy,-2./3.);
-        }
-        else if(energy < h_planck*nu_c)
-        {
-            // If the energy is between h*nu_c and h*nu_m
-            return pow(energy,-3./2.);
-        }
-        else
-        {
-            // If the energy is above h*nu_m
-            return pow(energy,-(p+2.)/2.);
-        }
+        synch_norm_factors = norm * pow( 1. - ( (p-1.) * pow(nu_m/nu_c, -1./2.) / p ) , -1.) * 3. * pow(3./2.,1./3.) * (pow(qe,3.)*B*Gamma/me/c_cm/c_cm);
+
+        // Calculate power between nu_c and nu_m 
+        // pow_middle_branch = pow(energy/en_c,-3./2.) * (1./2.) * synch_norm_factors *( gamma_inc(5./6.,energy/en_m) - gamma_inc(5./6.,energy/en_c) );
+        pow_middle_branch = pow(energy/en_c,-3./2.) * (1./2.) * synch_norm_factors * (nu_m/nu_c) *( gamma_inc(5./6.,energy/en_m) - gamma_inc(5./6.,energy/en_c) );
+        // Calculate power between nu_m and inf
+        // pow_upper_branch = pow(energy/en_m,-(p+2.)/2.) * (1./2.) * synch_norm_factors * pow(nu_c/nu_m,3./2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_m));
+        pow_upper_branch = pow(energy/en_m,-(p+2.)/2.) * (1./2.) * synch_norm_factors * pow(nu_c/nu_m,1./2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_m));
+        
+        // Return average power
+        return (pow_middle_branch + pow_upper_branch);
     }
 }
+

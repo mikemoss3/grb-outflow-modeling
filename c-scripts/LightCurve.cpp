@@ -83,7 +83,14 @@ void LightCurve::make_time_axis(float tmin, float tmax, float dt, bool logscale)
 	this->tmin = tmin;
 	this->tmax = tmax;
 	this->dt = dt;
-	num_time_bins = (tmax-tmin)/dt;
+	if(logscale == false)
+	{
+		this->num_time_bins = (tmax-tmin)/dt;
+	}
+	else
+	{
+		this->num_time_bins = ( log(tmax) - log(tmin) ) / dt;
+	}
 
 	set_time_axis_length(num_time_bins);
 	make_time_axis(logscale);

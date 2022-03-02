@@ -16,117 +16,61 @@ using namespace std;
 // #include "ObsGRB.hpp"
 // #include "Response.hpp"
 // #include "LightCurve.hpp"
-// #include "Spectrum.hpp"
+#include "Spectrum.hpp"
 // #include "cosmology.hpp"
-// #include "utilfuncs.hpp"
+#include "utilfuncs.hpp"
 // #include "DataAnalysis.hpp"
 // #include "TTEs.hpp"
 // #include "ModelParams.hpp"
 // #include "ShellDist.hpp"
-
-double BPL(float energy, double * param_list);
+#include "GammaFunction.hpp"
 
 int main(int argc, char const *argv[])
 {
 
-	std::vector<std::vector<std::vector<double>>> model_param_bounds;
-	model_param_bounds.push_back({{-2.,2.,5}});
-	model_param_bounds.push_back({{1.,1e5,5},{-2.,2.,5},{-1.,-4.,5}});
-	model_param_bounds.push_back({{1.,1e5,5},{-2.,2.,5},{-1.,-4.,5}});
 
+	float emin = 1e-8;
+	float emax = 1e3;
+	float num_en_bins = 200;
 
-	std::vector<std::vector<double>> param_combo_list;
-
-
-	// Number of models
-	int num_models = model_param_bounds.size();
-
-	// Number of total parameters
-	int num_params = 0;
-	for(int i=0; i < num_models; ++i)
-	{
-		num_params += model_param_bounds.at(i).size();
-	}
-
-	std::vector<std::vector<double>> param_space_grid;
-	// std::vector<std::vector<double>> param_space_grid[num_params];
-	// int np = 0;
-
-	// For each model, make a parameter space for each parameter
-	for(int i=0; i < num_models; ++i)
-	{
-		for(size_t j = 0; j < model_param_bounds.at(i).size(); ++j)
-		{
-			
-			std::vector<double> tmp_arr;
-			float step_size = ( model_param_bounds.at(i).at(j).at(1) - model_param_bounds.at(i).at(j).at(0) ) / model_param_bounds.at(i).at(j).at(2);
-
-			for(int k = 0; k <= model_param_bounds.at(i).at(j).at(2); ++k)
-			{
-				tmp_arr.push_back(model_param_bounds.at(i).at(j).at(0) + (k*step_size));
-				cout << (model_param_bounds.at(i).at(j).at(0) + (k*step_size)) << " ";
-			}
-			cout <<endl;
-			
-			param_space_grid.push_back(tmp_arr);
-			// ++np;
-		}
-	}	
-
-	// Find the the number of parameter combinations
-	int num_combos=1;
-	for(size_t i=0; i < param_space_grid.size(); ++i)
-	{
-		num_combos *= param_space_grid.at(i).size();
-	}
-	// Resize the parameter combination list
-	param_combo_list.resize(num_combos);
-
-	cout << "num_combos = " << num_combos << endl;
-
-	// To keep track of next element in each of the parameter
-	int* indices = new int[num_params];
-	// Initialize each to zero
-	for (int i = 0; i < num_params; ++i)
-	{
-		indices[i] = 0;
-	}
+	std::vector<float> energy_axis(num_en_bins);
 	
+	// Move to log space to define the energy interval with equally spaced points (in log space)
+	float log_emin = log10(emin);
+	float log_emax = log10(emax);
+	float log_de = (log_emax - log_emin) / num_en_bins;
 
-	// Find all parameter combinations
-	// while(1)
-	for(int k=0; k<num_combos; ++k)
+	// For each bin, calculate the energy axis
+	for(int i=0;i<num_en_bins;++i)
 	{
-		// Current combination
-		for (int i = 0; i < num_params; ++i)
-		{
-			param_combo_list.at(k).push_back( param_space_grid.at(i).at(indices[i]) );
-			cout << param_space_grid.at(i).at(indices[i]) << " ";
-		}
-		cout << endl;
-
-		// Find the "rightmost" parameter that has more elements left to use after this current element 
-		int next = num_params - 1;
-		while (next >= 0 && (indices[next] + 1 >= param_space_grid.at(next).size()))
-		{
-			--next;
-		}
-
-		// No such array is found so no more combinations left
-		// if (next < 0)
-		// 	return;
-
-		// If found move to next element in that array
-		++indices[next];
-
-		// For all arrays to the right of this array current index again points to first element
-		for (int i = next + 1; i < num_params; ++i)
-		{
-			indices[i] = 0;
-		}
+		energy_axis.at(i) = pow( 10., log_emin + (i*log_de));
 	}
 
 
+	double nu_1 = 5e+17;
+	double nu_2 = 1e+15;
+	float p = 2.5;
+	double B = 1000.;
+	float Gamma = 200.;
+
+
+	ofstream spec_file; // Construct file 
+
+	double param_list[6] = {nu_1, nu_2, p, B, Gamma, 1.}; // slow
+	spec_file.open("test_synch_spec_slow.txt"); // Open text file with this name
+
+	// double param_list[6] = {nu_2, nu_1, p, B, Gamma, 1.}; // fast
+	// spec_file.open("test_synch_spec_fast.txt"); // Open text file with this name
+
+	for(int i = 0; i < num_en_bins; ++i )
+	{
+		spec_file << energy_axis.at(i);
+		spec_file << "\t";
+		spec_file << Synchrotron(energy_axis.at(i),  param_list);
+		spec_file << endl;		
+	}
+
+	
 	return 0;
 }
 
