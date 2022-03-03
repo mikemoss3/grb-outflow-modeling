@@ -283,357 +283,241 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 
 ##############################################################################################################################
 
-def plot_light_curve_interactive(z=0, 
-	select_Tmin = None, select_Tmax = None, select_Emin = None, select_Emax = None, 
-	global_Tmin = None, global_Tmax = None, global_Emin = None, global_Emax = None, 
+def plot_light_curve_interactive(init_Tmin, init_Tmax, init_Emin, init_Emax, z=0, 
 	with_comps=False, label=None, ax=None, save_pref=None, fontsize=14,fontweight='bold',logscale=False):
 	"""
-	Method to plot the input light curve data files
+	Method to plot the input light curve data files (interactively!)
 
-	Attributes:
-	file_name = file name which contains spectrum data points 
-	label = optional label for the plotted light curve 
-	ax = the matplotlib.pyplot.axes instance to make the plot on
-	
-	Tmin, Tmax = indicates the minimum and maximum time range to plot. If None is supplied, the minimum and maximum times of the supplied data files are used
+	init_Tmin, init_Tmax 
+			= Sets the initial time selection interval for calculating the spectrum and also sets the initial time window for the light curve.
+			In addition, this will set the largest time interval the light curve will be displayed in.
+	init_Emin, init_Emax
+			= Sets the initial energy selection interval for calculating the light curve and also sets the initial energy window for the spectrum.
+			In addition, this will set the largest energy interval the spectrum will be displayed in.
 
-	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
-	xlabel, ylabel = indicate whether x- and y- labels should be included (boolean)
-	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
-	linestyle = style of the plotting line 
+	z = float > 0, redshift
+	with_comps = boolean, indicates whether the individual components should be displayed
 	"""
 
+	comp_indicator = "false"
 	if(with_comps == True):
 		comp_indicator = "true"
-
+	num_comps = 4
+	comp_suff = ["TH","IS","FS","RS"]
+	comp_colors = ['r','C0','C1','C2']
 
 	if(z<0):
 		print("Please provide a non-negative redshift.")
 		return;
-	else:
-		# Make plot instance if it doesn't exist
-		fig, ax = plt.subplots(1,2,figsize=(16, 8))	
-		
-		# Load light curve data
-		lc_data_tot = np.genfromtxt("data-file-dir/quickplot_light_curve.txt",dtype=[("TIME",float),("RATE",float)])
+	
+	# Make initial data
+	subprocess.run(["./main","timechange", comp_indicator, "{}".format(init_Tmin), "{}".format(init_Tmax), "{}".format(init_Emin), "{}".format(init_Emax) ])
+	subprocess.run(["./main","energychange", comp_indicator, "{}".format(init_Tmin), "{}".format(init_Tmax), "{}".format(init_Emin), "{}".format(init_Emax) ])
 
-		# Plot light curve data
+	# Make plot instance if it doesn't exist
+	fig, ax = plt.subplots(1,2,figsize=(16, 8))	
+	
+	# Load initial light curve data
+	lc_data_tot = np.genfromtxt("data-file-dir/quickplot_light_curve.txt",dtype=[("TIME",float),("RATE",float)])
 
+	# Plot initial light curve
+	if(z>0):
+		lc_tot_line, = ax[0].step(lc_data_tot['TIME']*(1+z),lc_data_tot['RATE']/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color="k")
+	else: 
+		# If z = 0, return luminosity
+		lc_tot_line, = ax[0].step(lc_data_tot['TIME'],lc_data_tot['RATE'],label=label,marker=" ",where="mid",color="k")
+
+	# If components are desired
+	if(with_comps == True):
+		# Load component data
+		lc_comp_data = [0] * num_comps
+		for i in range(num_comps):
+			lc_comp_data[i] = np.genfromtxt("data-file-dir/quickplot_light_curve_{}.txt".format(comp_suff[i]),dtype=[("TIME",float),("RATE",float)])
+
+		# Plot component light curves
+		lc_comp_lines = [0] * num_comps
 		if(z>0):
-			line_lc_TOT, = ax[0].step(lc_data_tot['TIME']*(1+z),lc_data_tot['RATE']/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color="k")
+			for i in range(num_comps):
+				lc_comp_lines[i], = ax[0].step(lc_comp_data[i]['TIME']*(1+z),lc_comp_data[i]['RATE']/(4*np.pi*lum_dis(z)**2),color=comp_colors[i],marker=" ",where="mid")
 		else: 
 			# If z = 0, return luminosity
-			line_lc_TOT, = ax[0].step(lc_data_tot['TIME'],lc_data_tot['RATE'],label=label,marker=" ",where="mid",color="k")
+			for i in range(num_comps):
+				lc_comp_lines[i], = ax[0].step(lc_comp_data[i]['TIME'],lc_comp_data[i]['RATE'],color=comp_colors[i],marker=" ",where="mid")
 
+
+	# Plot initial spectrum 
+	spec_tot_line = plot_spec("data-file-dir/quickplot_spectrum.txt",ax=ax[1],z=z,joined=True,color='k',label='TOT')
+	# If components are desired, plot initial component spectra 
+	if(with_comps == True):
+		spec_comp_lines = [0] * num_comps
+		for i in range(num_comps):
+			spec_comp_lines[i] = plot_spec("data-file-dir/quickplot_spectrum_{}.txt".format(comp_suff[i]),ax=ax[1],z=z,joined=True,color=comp_colors[i],label="TH")
+	add_FermiGBM_band(ax[1])
+
+	# Display time selection interval
+	selected_Tmin_line = ax[0].axvline(x=init_Tmin,color='k')
+	selected_Tmax_line = ax[0].axvline(x=init_Tmax,color='k')
+
+	# Display energy selection interval on plot
+	selected_Emin_line = ax[1].axvline(x=init_Emin,color='k')
+	selected_Emax_line = ax[1].axvline(x=init_Emax,color='k')
+
+	# Make time selection and time window text boxes
+	fig.canvas.mpl_disconnect(fig.canvas.manager.key_press_handler_id)
+	
+	axbox_time_select = plt.axes([0.2, 0.08, 0.2, 0.04])
+	txtbox_time_select = TextBox(ax=axbox_time_select, label='Time Selection', initial="{0:.2f}, {1:.2f}".format(init_Tmin, init_Tmax) )
+
+	axbox_time_window = plt.axes([0.2, 0.035, 0.2, 0.04])
+	txtbox_time_window = TextBox(ax=axbox_time_window, label='Time Window', initial="{0:.2f}, {1:.2f}".format(init_Tmin, init_Tmax) )
+
+	# Make energy selection and energy window text boxes
+	axbox_energy_select = plt.axes([0.65, 0.08, 0.2, 0.04])
+	txtbox_energy_select = TextBox(ax=axbox_energy_select, label='Energy ', initial="{0:.2f}, {1:.2f}".format(init_Emin,init_Emax) )
+
+	axbox_energy_window = plt.axes([0.65, 0.035, 0.2, 0.04])
+	txtbox_energy_window = TextBox(ax=axbox_energy_window, label='Energy ', initial="{0:.2f}, {1:.2f}".format(init_Emin,init_Emax) )
+
+
+	# Make update functions
+	
+	def submit_time_select(val):
+		"""
+		Function call when a time selection is given, this will alter the displayed spectra
+		"""
+		# val will be separated into two values, split by the comma
+		x = val.split(", ")
+
+		selected_Tmin = float(x[0])
+		selected_Tmax = float(x[1])
+
+		# Update the time selection indicating lines
+		selected_Tmin_line.set_xdata(selected_Tmin)
+		selected_Tmax_line.set_xdata(selected_Tmax)
+
+		# Compute the new spectrum for this time selection
+		subprocess.run(["./main","timechange", comp_indicator, "{}".format(selected_Tmin), "{}".format(selected_Tmax), "{}".format(init_Emin), "{}".format(init_Emax) ])
+
+		# If components are desired, plot initial component spectra 
 		if(with_comps == True):
-			
-			lc_data_TH = np.genfromtxt("data-file-dir/quickplot_light_curve_TH.txt",dtype=[("TIME",float),("RATE",float)])
-			lc_data_IS = np.genfromtxt("data-file-dir/quickplot_light_curve_IS.txt",dtype=[("TIME",float),("RATE",float)])
-			lc_data_FS = np.genfromtxt("data-file-dir/quickplot_light_curve_FS.txt",dtype=[("TIME",float),("RATE",float)])
-			lc_data_RS = np.genfromtxt("data-file-dir/quickplot_light_curve_RS.txt",dtype=[("TIME",float),("RATE",float)])
+			for i in range(num_comps):
+				# Load component spectra data
+				tmp_comp_data = np.genfromtxt("data-file-dir/quickplot_spectrum_{}.txt".format(comp_suff[i]),dtype=[("ENERGY",float),("RATE",float),("UNC",float)])
+				# Update plotted data 
+				spec_comp_lines[i].set_xdata(tmp_comp_data['ENERGY']/(1+z))
+				spec_comp_lines[i].set_ydata(tmp_comp_data['RATE'] * tmp_comp_data['ENERGY']**2 )
 
-			if(z>0):
-				line_lc_TH, = ax[0].step(lc_data_TH['TIME']*(1+z),lc_data_TH['RATE']/(4*np.pi*lum_dis(z)**2),color="r",marker=" ",where="mid")
-				line_lc_IS, = ax[0].step(lc_data_IS['TIME']*(1+z),lc_data_IS['RATE']/(4*np.pi*lum_dis(z)**2),color="C0",marker=" ",where="mid")
-				line_lc_FS, = ax[0].step(lc_data_FS['TIME']*(1+z),lc_data_FS['RATE']/(4*np.pi*lum_dis(z)**2),color="C1",marker=" ",where="mid")
-				line_lc_RS, = ax[0].step(lc_data_RS['TIME']*(1+z),lc_data_RS['RATE']/(4*np.pi*lum_dis(z)**2),color="C2",marker=" ",where="mid")
-			else: 
-				# If z = 0, return luminosity
-				line_lc_TH, = ax[0].step(lc_data_TH['TIME'],lc_data_TH['RATE'],color="r",marker=" ",where="mid")
-				line_lc_IS, = ax[0].step(lc_data_IS['TIME'],lc_data_IS['RATE'],color="C0",marker=" ",where="mid")
-				line_lc_FS, = ax[0].step(lc_data_FS['TIME'],lc_data_FS['RATE'],color="C1",marker=" ",where="mid")
-				line_lc_RS, = ax[0].step(lc_data_RS['TIME'],lc_data_RS['RATE'],color="C2",marker=" ",where="mid")
+		# Load spectrum data
+		tmp_comp_data = np.genfromtxt("data-file-dir/quickplot_spectrum.txt",dtype=[("ENERGY",float),("RATE",float),("UNC",float)])
+		# Update plotted spectrum data
+		spec_tot_line.set_xdata(tmp_comp_data['ENERGY']/(1+z))
+		spec_tot_line.set_ydata(tmp_comp_data['RATE']* tmp_comp_data['ENERGY']**2)
 
+		# Redraw the figure to implement updates
+		ax[0].redraw_in_frame()
+		ax[1].redraw_in_frame()
+		fig.canvas.draw_idle()
 
-		global_Tmin = np.min(lc_data_tot['TIME']) # sec
-		global_Tmax = np.max(lc_data_tot['TIME']) # sec
-		global_Emin = 8. # keV
-		global_Emax = 1e4 # keV
+		
+	def submit_energy_select(val):
+		"""
+		Function call when a energy selection is given, this will edit the observed light curve 
+		"""
+		# val will be separated into two values, split by the comma
+		x = val.split(", ")
 
-		subprocess.run(["./main","energychange", comp_indicator, "{}".format(global_Tmin), "{}".format(global_Tmax), "{}".format(global_Emin), "{}".format(global_Emax)])
-		subprocess.run(["./main","timechange", comp_indicator, "{}".format(global_Tmin), "{}".format(global_Tmax), "{}".format(global_Emin), "{}".format(global_Emax)])
+		selected_Emin = float(x[0])
+		selected_Emax = float(x[1])
 
-		line_TOT = plot_spec("data-file-dir/quickplot_spectrum.txt",ax=ax[1],z=z,joined=True,color='k',label='TOT')
+		# Update the energy selection indicating lines
+		selected_Emin_line.set_xdata(selected_Emin)
+		selected_Emax_line.set_xdata(selected_Emax)
+
+		# Compute the new light curve for this energy selection
+		subprocess.run(["./main","energychange", comp_indicator, "{}".format(init_Tmin), "{}".format(init_Tmax), "{}".format(selected_Emin), "{}".format(selected_Emax) ])
+
+		# If components are desired, plot initial component spectra 
 		if(with_comps == True):
-			line_TH = plot_spec("data-file-dir/quickplot_spectrum_TH.txt",ax=ax[1],z=z,joined=True,color='r',label="TH")
-			line_IS = plot_spec("data-file-dir/quickplot_spectrum_IS.txt",ax=ax[1],z=z,joined=True,color='C0',label="IS")
-			line_FS = plot_spec("data-file-dir/quickplot_spectrum_FS.txt",ax=ax[1],z=z,joined=True,color='C1',label="FS")
-			line_RS = plot_spec("data-file-dir/quickplot_spectrum_RS.txt",ax=ax[1],z=z,joined=True,color='C2',label="RS")
-		
-		add_FermiGBM_band(ax[1])
-
-		fig.canvas.mpl_disconnect(fig.canvas.manager.key_press_handler_id)
-		axbox_time = plt.axes([0.2, 0.08, 0.2, 0.04])
-		text_box_time = TextBox(ax=axbox_time, label='Time ', initial="{0:.2f}, {1:.2f}".format(global_Tmin,global_Tmax) )
-		
-		# fig.canvas.mpl_disconnect(fig.canvas.manager.key_press_handler_id)
-		axbox_energy = plt.axes([0.6, 0.08, 0.2, 0.04])
-		text_box_energy = TextBox(ax=axbox_energy, label='Energy ', initial="{0:.2f}, {1:.2f}".format(global_Emin,global_Emax) )
-
-		# Create the Vertical lines to represent the time selection on the light curve plot 
-		lower_time_lim_line = ax[0].axvline(global_Tmin, color='k')
-		upper_time_lim_line = ax[0].axvline(global_Tmax, color='k')
-		lower_time_lim_line.set_xdata(global_Tmin)
-		upper_time_lim_line.set_xdata(global_Tmax)
-
-		# Create the Vertical lines to represent the energy selection on the spectrum plot 
-		lower_energy_lim_line = ax[1].axvline(global_Emin, color='k')
-		upper_energy_lim_line = ax[1].axvline(global_Emax, color='k')
-		lower_energy_lim_line.set_xdata(global_Emin)
-		upper_energy_lim_line.set_xdata(global_Emax)
-
-
-		# Plot aesthetics
-		# For axis labels
+			for i in range(num_comps):
+				# Load component light curve data
+				tmp_comp_data = np.genfromtxt("data-file-dir/quickplot_light_curve_{}.txt".format(comp_suff[i]),dtype=[("TIME",float),("RATE",float)])
+				# Update plotted data 
+				if(z>0):
+					lc_comp_lines[i].set_xdata(tmp_comp_data['TIME']*(1+z))
+					lc_comp_lines[i].set_ydata(tmp_comp_data['RATE']/(4*np.pi*lum_dis(z)**2))
+				else:
+					lc_comp_lines[i].set_xdata(tmp_comp_data['TIME'])
+					lc_comp_lines[i].set_ydata(tmp_comp_data['RATE'])
+		# Load light curve data
+		tmp_comp_data = np.genfromtxt("data-file-dir/quickplot_light_curve.txt",dtype=[("TIME",float),("RATE",float)])
+		# Update plotted spectrum data
 		if(z>0):
-			ax[0].set_ylabel(r'Rate (ph cm$^{-2}$ s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
+			lc_tot_line.set_xdata(tmp_comp_data['TIME']*(1+z))
+			lc_tot_line.set_ydata(tmp_comp_data['RATE']/(4*np.pi*lum_dis(z)**2))
 		else:
-			ax[0].set_ylabel(r'Rate (ph s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
-		ax[0].set_xlabel('Obs Time (sec)',fontsize=fontsize,fontweight=fontweight)
+			lc_tot_line.set_xdata(tmp_comp_data['TIME'])
+			lc_tot_line.set_ydata(tmp_comp_data['RATE'])
 
 
-		plot_aesthetics(ax[0],fontsize=fontsize,fontweight=fontweight)
-		fig.canvas.draw()
+		# Redraw the figure to implement updates
+		ax[0].redraw_in_frame()
+		ax[1].redraw_in_frame()
+		fig.canvas.draw_idle()
 
-		if select_Tmin is None:
-			select_Tmin = global_Tmin # sec
-		if select_Tmax is None:
-			select_Tmax = global_Tmax # sec
-		if select_Emin is None:
-			select_Emin = global_Emin # keV
-		if select_Emax is None:
-			select_Emax = global_Emax # keV 
+	def submit_time_window(val):
+		"""
+		Function call when a time window is given
+		"""
+		# val will be separated into two values, split by the comma
+		x = val.split(", ")
+
+		window_Tmin = float(x[0])
+		window_Tmax = float(x[1])
+
+		# Update the time window
+		ax[0].set_xlim(window_Tmin,window_Tmax)
+
+		# Redraw the figure to implement updates
+		ax[0].redraw_in_frame()
+		ax[1].redraw_in_frame()
+		fig.canvas.draw_idle()
 		
-		def submit_time(val, global_Tmin, global_Tmax, global_Emin, global_Emax):
-			# val will be separated into two values, split by the comma
-			x = val.split(", ")
+	def submit_energy_window(val):
+		"""
+		Function call when a energy window is given
+		"""
+		# val will be separated into two values, split by the comma
+		x = val.split(", ")
 
-			select_Tmin = float(x[0])
-			select_Tmax = float(x[1])
+		window_Emin = float(x[0])
+		window_Emax = float(x[1])
 
-			select_Emin = lower_energy_lim_line.get_data()[0]
-			select_Emax = upper_energy_lim_line.get_data()[0]
+		# Update the energy window
+		ax[1].set_xlim(window_Emin,window_Emax)
 
-			# Update the position of the vertical lines
-			lower_time_lim_line.set_xdata(select_Tmin)
-			upper_time_lim_line.set_xdata(select_Tmax)
+		# Redraw the figure to implement updates
+		ax[0].redraw_in_frame()
+		ax[1].redraw_in_frame()
+		fig.canvas.draw_idle()
 
-			subprocess.run(["./main","timechange", comp_indicator, "{}".format(select_Tmin), "{}".format(select_Tmax), "{}".format(global_Emin), "{}".format(global_Emax) ])
+		
 
-			spec_data = np.genfromtxt("data-file-dir/quickplot_spectrum.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
-			spec_data["ENERG"] /= (1+z)
-			spec_data["RATE"] /= (1+z)
-			line_TOT.set_xdata(spec_data["ENERG"])
-			line_TOT.set_ydata( spec_data["RATE"]*(spec_data['ENERG']**2) )
+	# Call functions to update selection intervals
+	txtbox_time_select.on_submit(submit_time_select)
+	txtbox_energy_select.on_submit(submit_energy_select)
+	
+	# Call functions to update windows
+	txtbox_time_window.on_submit(submit_time_window)
+	txtbox_energy_window.on_submit(submit_energy_window)
 
-			if(with_comps == True):
-				spec_data_TH = np.genfromtxt("data-file-dir/quickplot_spectrum_TH.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
-				spec_data_IS = np.genfromtxt("data-file-dir/quickplot_spectrum_IS.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
-				spec_data_FS = np.genfromtxt("data-file-dir/quickplot_spectrum_FS.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
-				spec_data_RS = np.genfromtxt("data-file-dir/quickplot_spectrum_RS.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
+	fig.subplots_adjust(bottom=0.25,wspace=0.4)
 
-				spec_data_TH["ENERG"] /= (1+z)
-				spec_data_TH["RATE"] /= (1+z)
-				line_TH.set_xdata(spec_data_TH["ENERG"])
-				line_TH.set_ydata(spec_data_TH["RATE"]*(spec_data_TH['ENERG']**2) )
+	# plt.tight_layout()
+	if save_pref is not None:
+		plt.savefig('figs/{}-light-curve.png'.format(save_pref))
 
-				spec_data_IS["ENERG"] /= (1+z)
-				spec_data_IS["RATE"] /= (1+z)
-				line_IS.set_xdata(spec_data_IS["ENERG"])
-				line_IS.set_ydata(spec_data_IS["RATE"]*(spec_data_IS['ENERG']**2) )
+	return txtbox_time_select, txtbox_time_window, txtbox_energy_select, txtbox_energy_window
 
-				spec_data_FS["ENERG"] /= (1+z)
-				spec_data_FS["RATE"] /= (1+z)
-				line_FS.set_xdata(spec_data_FS["ENERG"])
-				line_FS.set_ydata(spec_data_FS["RATE"]*(spec_data_FS['ENERG']**2) )
-
-				spec_data_RS["ENERG"] /= (1+z)
-				spec_data_RS["RATE"] /= (1+z)
-				line_RS.set_xdata(spec_data_RS["ENERG"])
-				line_RS.set_ydata(spec_data_RS["RATE"]*(spec_data_RS['ENERG']**2) )
-
-			update_light_curve = False
-			# Change time axis if necessary
-			
-			if(select_Tmin < global_Tmin):
-				global_Tmin = select_Tmin
-				update_light_curve = True
-			if(select_Tmax > global_Tmax ):
-				global_Tmax = select_Tmax
-				update_light_curve = True
-			ax[0].set_xlim(global_Tmin-0.1, global_Tmax+0.1)
-
-			if(update_light_curve == True):
-				subprocess.run(["./main","energychange", comp_indicator, "{}".format(global_Tmin), "{}".format(global_Tmax), "{}".format(select_Emin), "{}".format(select_Emax) ])
-				
-				lc_data_tot = np.genfromtxt("data-file-dir/quickplot_light_curve.txt",dtype=[("TIME",float),("RATE",float)])
-				if(z>0):
-					lc_data_tot['TIME']*=(1+z)
-					lc_data_tot['RATE']/=(4*np.pi*lum_dis(z)**2)
-
-				line_lc_TOT.set_xdata(lc_data_tot['TIME'])
-				line_lc_TOT.set_ydata( lc_data_tot["RATE"])
-
-				if(with_comps == True):
-					lc_data_TH = np.genfromtxt("data-file-dir/quickplot_light_curve_TH.txt",dtype=[("TIME",float),("RATE",float)])
-					lc_data_IS = np.genfromtxt("data-file-dir/quickplot_light_curve_IS.txt",dtype=[("TIME",float),("RATE",float)])
-					lc_data_FS = np.genfromtxt("data-file-dir/quickplot_light_curve_FS.txt",dtype=[("TIME",float),("RATE",float)])
-					lc_data_RS = np.genfromtxt("data-file-dir/quickplot_light_curve_RS.txt",dtype=[("TIME",float),("RATE",float)])
-
-					if(z>0):
-						lc_data_TH['TIME']*=(1+z)
-						lc_data_TH['RATE']/=(4*np.pi*lum_dis(z)**2)
-						lc_data_IS['TIME']*=(1+z)
-						lc_data_IS['RATE']/=(4*np.pi*lum_dis(z)**2)
-						lc_data_FS['TIME']*=(1+z)
-						lc_data_FS['RATE']/=(4*np.pi*lum_dis(z)**2)
-						lc_data_RS['TIME']*=(1+z)
-						lc_data_RS['RATE']/=(4*np.pi*lum_dis(z)**2)
-
-					line_lc_TH.set_xdata(lc_data_TH["TIME"])
-					line_lc_TH.set_ydata(lc_data_TH["RATE"])
-
-					line_lc_IS.set_xdata(lc_data_IS["TIME"])
-					line_lc_IS.set_ydata(lc_data_IS["RATE"])
-
-					line_lc_FS.set_xdata(lc_data_FS["TIME"])
-					line_lc_FS.set_ydata(lc_data_FS["RATE"])
-
-					line_lc_RS.set_xdata(lc_data_RS["TIME"])
-					line_lc_RS.set_ydata(lc_data_RS["RATE"])
-
-
-			# Redraw the figure to ensure it updates
-			ax[1].redraw_in_frame()
-			ax[0].redraw_in_frame()
-
-			# Redraw the figure to ensure it updates
-			fig.canvas.draw_idle()
-
-			return global_Tmin, global_Tmax, global_Emin, global_Emax
-
-
-		def submit_energy(val, global_Tmin, global_Tmax, global_Emin, global_Emax):
-			# val will be separated into two values, split by the comma
-			x = val.split(", ")
-
-			select_Tmin = lower_time_lim_line.get_data()[0]
-			select_Tmax = upper_time_lim_line.get_data()[0]
-
-			select_Emin = float(x[0])
-			select_Emax = float(x[1])
-			
-			# Update the position of the vertical lines
-			lower_energy_lim_line.set_xdata(select_Emin)
-			upper_energy_lim_line.set_xdata(select_Emax)
-
-			subprocess.run(["./main","energychange", comp_indicator, "{}".format(global_Tmin), "{}".format(global_Tmax), "{}".format(select_Emin), "{}".format(select_Emax)])
-
-			lc_data_tot = np.genfromtxt("data-file-dir/quickplot_light_curve.txt",dtype=[("TIME",float),("RATE",float)])
-
-			if(z>0):
-				lc_data_tot['TIME']*=(1+z)
-				lc_data_tot['RATE']/=(4*np.pi*lum_dis(z)**2)
-
-			line_lc_TOT.set_xdata(lc_data_tot['TIME'])
-			line_lc_TOT.set_ydata( lc_data_tot["RATE"])
-
-			if(with_comps == True):
-				lc_data_TH = np.genfromtxt("data-file-dir/quickplot_light_curve_TH.txt",dtype=[("TIME",float),("RATE",float)])
-				lc_data_IS = np.genfromtxt("data-file-dir/quickplot_light_curve_IS.txt",dtype=[("TIME",float),("RATE",float)])
-				lc_data_FS = np.genfromtxt("data-file-dir/quickplot_light_curve_FS.txt",dtype=[("TIME",float),("RATE",float)])
-				lc_data_RS = np.genfromtxt("data-file-dir/quickplot_light_curve_RS.txt",dtype=[("TIME",float),("RATE",float)])
-
-				if(z>0):
-					lc_data_TH['TIME']*=(1+z)
-					lc_data_TH['RATE']/=(4*np.pi*lum_dis(z)**2)
-					lc_data_IS['TIME']*=(1+z)
-					lc_data_IS['RATE']/=(4*np.pi*lum_dis(z)**2)
-					lc_data_FS['TIME']*=(1+z)
-					lc_data_FS['RATE']/=(4*np.pi*lum_dis(z)**2)
-					lc_data_RS['TIME']*=(1+z)
-					lc_data_RS['RATE']/=(4*np.pi*lum_dis(z)**2)
-
-				line_lc_TH.set_xdata(lc_data_TH["TIME"])
-				line_lc_TH.set_ydata(lc_data_TH["RATE"])
-
-				line_lc_IS.set_xdata(lc_data_IS["TIME"])
-				line_lc_IS.set_ydata(lc_data_IS["RATE"])
-
-				line_lc_FS.set_xdata(lc_data_FS["TIME"])
-				line_lc_FS.set_ydata(lc_data_FS["RATE"])
-
-				line_lc_RS.set_xdata(lc_data_RS["TIME"])
-				line_lc_RS.set_ydata(lc_data_RS["RATE"])
-
-			update_spectrum = False
-			# Change time energy if necessary
-			if(select_Emin < global_Emin):
-				global_Emin = select_Emin
-				update_spectrum = True
-			if(select_Emax > global_Emax):
-				global_Emax = select_Emax
-				update_spectrum = True
-			ax[1].set_xlim(global_Emin/2, global_Emax*2)
-
-			if(update_spectrum == True):
-				subprocess.run(["./main","timechange", comp_indicator, "{}".format(select_Tmin), "{}".format(select_Tmax), "{}".format(global_Emin), "{}".format(global_Emax) ])
-				
-				spec_data = np.genfromtxt("data-file-dir/quickplot_spectrum.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
-				spec_data["ENERG"] /= (1+z)
-				spec_data["RATE"] /= (1+z)
-				line_TOT.set_xdata(spec_data["ENERG"])
-				line_TOT.set_ydata( spec_data["RATE"]*(spec_data['ENERG']**2) )
-
-				if(with_comps == True):
-					spec_data_TH = np.genfromtxt("data-file-dir/quickplot_spectrum_TH.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
-					spec_data_IS = np.genfromtxt("data-file-dir/quickplot_spectrum_IS.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
-					spec_data_FS = np.genfromtxt("data-file-dir/quickplot_spectrum_FS.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
-					spec_data_RS = np.genfromtxt("data-file-dir/quickplot_spectrum_RS.txt",dtype=[("ENERG",float),("RATE",float),("UNC",float)])
-
-					spec_data_TH["ENERG"] /= (1+z)
-					spec_data_TH["RATE"] /= (1+z)
-					line_TH.set_xdata(spec_data_TH["ENERG"])
-					line_TH.set_ydata(spec_data_TH["RATE"]*(spec_data_TH['ENERG']**2) )
-
-					spec_data_IS["ENERG"] /= (1+z)
-					spec_data_IS["RATE"] /= (1+z)
-					line_IS.set_xdata(spec_data_IS["ENERG"])
-					line_IS.set_ydata(spec_data_IS["RATE"]*(spec_data_IS['ENERG']**2) )
-
-					spec_data_FS["ENERG"] /= (1+z)
-					spec_data_FS["RATE"] /= (1+z)
-					line_FS.set_xdata(spec_data_FS["ENERG"])
-					line_FS.set_ydata(spec_data_FS["RATE"]*(spec_data_FS['ENERG']**2) )
-
-					spec_data_RS["ENERG"] /= (1+z)
-					spec_data_RS["RATE"] /= (1+z)
-					line_RS.set_xdata(spec_data_RS["ENERG"])
-					line_RS.set_ydata(spec_data_RS["RATE"]*(spec_data_RS['ENERG']**2) )
-
-
-			# Redraw the figure to ensure it updates
-			ax[0].redraw_in_frame()
-			ax[1].redraw_in_frame()
-
-			# Redraw the figure to ensure it updates
-			fig.canvas.draw_idle()
-
-			return global_Tmin, global_Tmax, global_Emin, global_Emax
-			
-		# text_box_time.on_submit(submit_time)
-		# text_box_energy.on_submit(submit_energy)
-
-		text_box_time.on_submit(lambda val: submit_time(val, global_Tmin, global_Tmax, global_Emin, global_Emax))
-		text_box_energy.on_submit(lambda val: submit_energy(val, global_Tmin, global_Tmax, global_Emin, global_Emax))
-
-		fig.subplots_adjust(bottom=0.25,wspace=0.4)
-
-		# plt.tight_layout()
-		if save_pref is not None:
-			plt.savefig('figs/{}-light-curve.png'.format(save_pref))
-
-		# return text_box_time, text_box_energy
 
 ##############################################################################################################################
 
@@ -1339,9 +1223,9 @@ if __name__ == '__main__':
 	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
 
 	# Interactive light curve
-	# tbox = plot_light_curve_interactive("data-file-dir/light_curve.txt",z=z,label="Total")	
-	# tbox = plot_light_curve_interactive("data-file-dir/light_curve.txt",z=z,label="Total",with_comps=True)	
-	# tbox = plot_light_curve_interactive(z=z,label="Total",with_comps=True)	
+	tbox = plot_light_curve_interactive(
+		init_Tmin = 0, init_Tmax = 10, init_Emin = 8, init_Emax = 1e4,
+		z=z,label="Total",with_comps=True)
 	
 
 	# Afterglow light curve
