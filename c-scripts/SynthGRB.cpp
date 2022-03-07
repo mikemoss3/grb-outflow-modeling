@@ -13,6 +13,7 @@ SynthGRB class which holds and interfaces LightCurve, Spectrum, and Response obj
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <iterator>
 #include <sstream>
 #include "fitsio.h"
 
@@ -90,29 +91,6 @@ void SynthGRB::InitializeJet()
 
 	// Make shell distribution
 	set_jet_shells();
-
-	// Average Lorentz factor of all jet shells  
-	gamma_bar = 0.0;
-	for(int i=0; i<(*p_model_params).numshells; ++i) 
-	{
-	     gamma_bar += (*p_jet_shells).shell_gamma.at(i);
-	}
-	gamma_bar /= (*p_model_params).numshells;
-	// Average mass of each shell
-	m_bar = (*p_model_params).E_dot_iso*(*p_model_params).dte/gamma_bar/pow(c_cm,2.);
-	m_tot = (*p_model_params).E_dot_iso*(*p_model_params).tw/gamma_bar/pow(c_cm,2.);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Initialize jet based on current jet parameters and shell distribution
-void SynthGRB::InitializeJet(ShellDist * p_input_jet_shells)
-{
-	E_dot_kin = (*p_model_params).E_dot_iso/(1+(*p_model_params).sigma); // Fraction of energy in Kinetic
-	E_dot_therm = (*p_model_params).E_dot_iso*(*p_model_params).eps_th; // Fraction of energy in thermal
-
-	// Make shell distribution
-	set_jet_shells(p_input_jet_shells);
 
 	// Average Lorentz factor of all jet shells  
 	gamma_bar = 0.0;
@@ -342,19 +320,139 @@ void SynthGRB::set_jet_shells()
 
 			// Make shell distribution with input parameters
 			bool fluc;
-			istringstream(inputs[3]) >> fluc; 
-			(*p_jet_shells).oscillatory((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), stof(inputs[1]), fluc);
+			istringstream(inputs[4]) >> fluc; 
+			(*p_jet_shells).oscillatory((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), stof(inputs[3]), fluc);
 		}
-		
 	}
-}
+	if((*p_model_params).LorentzDist == "gauss_inject")
+	{
+		// Load shell distribution parameters from (*p_model_params).ShellDistParamsFile
+		if((*p_model_params).ShellDistParamsFile == "Default")
+		{
+			// Make shell distribution with default arguments
+			(* p_jet_shells).gauss_inject((*p_model_params).dte);	
+		}
+		else
+		{
+			// Array to store params 
+			string inputs[7];
+			std::vector<std::vector<float>> vec_vec(3);
+			int i = 0;
+			int k = 0;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// Load from designated file
+			ifstream file_jet_params((*p_model_params).ShellDistParamsFile);
+			string line_jet_params;
+			if ( file_jet_params.is_open() ) 
+			{
+				while(getline(file_jet_params, line_jet_params))
+				{
+					// If it is a commented line, just pass by
+					if(line_jet_params[0] == '#')
+					{ continue; }
+					else if(i < 3 )
+					{
+						inputs[i] = line_jet_params;
+						++i;
+					}
+					else if( i < 6)
+					{
+						std::vector<float> tmp_v;
+						// Build an istream that holds the input string
+						std::istringstream iss(line_jet_params);
 
-// Set jet shells 
-void SynthGRB::set_jet_shells(ShellDist * p_input_jet_shells)
-{
-	p_jet_shells = p_input_jet_shells;
+
+						// Iterate over the istream, using >> to grab floats and push_back to store them in the vector
+						std::copy(std::istream_iterator<float>(iss),std::istream_iterator<float>(), std::back_inserter(tmp_v));
+						vec_vec.at(k) = tmp_v;
+
+						++i;
+						++k;
+					}
+					else
+					{
+						inputs[i] = line_jet_params;
+						++i;
+					}
+
+				}
+
+				// Close files and free memory 
+				file_jet_params.close();
+			}
+			else std::cout << "Unable to open file.";
+
+			// Make shell distribution with input parameters
+			bool fluc;
+			istringstream(inputs[6]) >> fluc; 
+			(*p_jet_shells).gauss_inject((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), vec_vec.at(0), vec_vec.at(1), vec_vec.at(2), fluc);
+		}
+	}
+	if((*p_model_params).LorentzDist == "square_inject")
+	{
+		// Load shell distribution parameters from (*p_model_params).ShellDistParamsFile
+		if((*p_model_params).ShellDistParamsFile == "Default")
+		{
+			// Make shell distribution with default arguments
+			(* p_jet_shells).square_inject((*p_model_params).dte);	
+		}
+		else
+		{
+			// Array to store params 
+			string inputs[7];
+			std::vector<std::vector<float>> vec_vec(3);
+			int i = 0;
+			int k = 0;
+
+			// Load from designated file
+			ifstream file_jet_params((*p_model_params).ShellDistParamsFile);
+			string line_jet_params;
+			if ( file_jet_params.is_open() ) 
+			{
+				while(getline(file_jet_params, line_jet_params))
+				{
+					// If it is a commented line, just pass by
+					if(line_jet_params[0] == '#')
+					{ continue; }
+					else if(i < 3 )
+					{
+						inputs[i] = line_jet_params;
+						++i;
+					}
+					else if( i < 6)
+					{
+						std::vector<float> tmp_v;
+						// Build an istream that holds the input string
+						std::istringstream iss(line_jet_params);
+
+
+						// Iterate over the istream, using >> to grab floats and push_back to store them in the vector
+						std::copy(std::istream_iterator<float>(iss),std::istream_iterator<float>(), std::back_inserter(tmp_v));
+						vec_vec.at(k) = tmp_v;
+
+						++i;
+						++k;
+					}
+					else
+					{
+						inputs[i] = line_jet_params;
+						++i;
+					}
+
+				}
+
+				// Close files and free memory 
+				file_jet_params.close();
+			}
+			else std::cout << "Unable to open file.";
+
+			// Make shell distribution with input parameters
+			bool fluc;
+			istringstream(inputs[6]) >> fluc; 
+			(*p_jet_shells).square_inject((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), vec_vec.at(0), vec_vec.at(1), vec_vec.at(2), fluc);
+		}
+	}
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

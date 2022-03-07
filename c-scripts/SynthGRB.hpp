@@ -84,7 +84,6 @@ public:
 
 	// Initialize jet based on current jet parameters and shell distribution
 	void InitializeJet();
-	void InitializeJet(ShellDist * p_input_jet_shells);
 	// Load jet parameters from a text file
 	void LoadJetParamsFromTXT(std::string file_name);
 
@@ -95,7 +94,6 @@ public:
 	void set_model_params(ModelParams * new_mod_params);
 	// Set jet shells
 	void set_jet_shells();
-	void set_jet_shells(ShellDist * p_input_jet_shells);
 
 	// Set the source spectrum 
 	// This class can make the source spectrum using the given emission data, but it can be manually set here.

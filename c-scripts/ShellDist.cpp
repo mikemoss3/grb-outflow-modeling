@@ -196,7 +196,7 @@ void ShellDist::oscillatory(float dte, float median, float amp, float freq, floa
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Distribute the shells by injecting Gaussians at specific places. 
-void ShellDist::grb030329(float dte, float gamma_ave, float decay, int num_gauss, float * means, float * sigmas, float * amps, bool fluctuations)
+void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_gauss, std::vector<float> means, std::vector<float> sigmas, std::vector<float> amps, bool fluctuations)
 {
 	/*
 	Distribute the Lorentz factors of the shells into a step function. 
@@ -230,6 +230,72 @@ void ShellDist::grb030329(float dte, float gamma_ave, float decay, int num_gauss
 		for(double i = 0; i<numshells; ++i)
 		{
 			shell_gamma.at(i) += amps[k]*exp( - pow(i - means[k],2.) / (2.*pow(sigmas[k],2.)) );
+		}
+
+	}
+
+	// Find the average Lorentz factor in the outflow
+	double gamma_bar = 0.0;
+	for(double i = 0; i<numshells; ++i)
+	{
+		gamma_bar += shell_gamma.at(i);
+	}
+	gamma_bar /= numshells;
+
+
+	for(float i=0; i<numshells; ++i)
+	{
+		// Set the Mass for each shell 
+		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
+		
+		// Calculate the launch time of each shell
+		shell_te.at(i) = -i*dte;
+
+		// Calculate the shell position based on when the shell will be launched
+		// Notice this is actually R/c 
+		shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+
+		// Activate all shells
+		shell_status.at(i) = 1;
+	}
+
+	// Eliminate possible divide by zero error (still insignificantly small).
+	shell_radius.at(0) = 1./c_cm;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Distribute the shells by injecting uniform distributions at specific places. 
+void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_squares, std::vector<float> starts, std::vector<float> durations, std::vector<float> amps, bool fluctuations)
+{
+	/*
+	Distribute the Lorentz factors of the shells into a step function. 
+	Params: 
+	dte = time between shell launches, this can be specific by a single float to apply a constant time step through out the jet evolution or can be a array of the shell emission times
+
+	means = 
+	sigmas = 
+	amps = 
+
+	decay = used to modulate the decay rate, number multiplied by the half life time scale
+	*/
+
+
+	// Initially, we set all Lorentz factors to the input average value
+	for(double i = 0; i<numshells; ++i)
+	{
+		shell_gamma.at(i) = gamma_ave * exp(-decay*i/numshells);
+	}
+
+	// Set the Lorentz factors for each section of the step distribution
+
+	// Now, add a square starting at each value in the "starts" array	
+	for(int k=0; k < num_squares; ++k)
+	{
+		for(double i = starts[k]; i< (starts[k] + durations[k]); ++i)
+		{
+			shell_gamma.at(i) += amps[k];
 		}
 
 	}

@@ -52,7 +52,9 @@ public:
 	void oscillatory(float dte, float median=333., float amp=2./3., float freq=5., float decay=0.5, bool fluctuations = false);
 
 	// Distribute the shells by injecting Gaussians at specific places. 
-	void grb030329(float dte, float gamma_ave, float decay, int num_gauss, float * means, float * sigmas, float * amps, bool fluctuations = false);
+	void gauss_inject(float dte, float gamma_ave = 1.1, float decay = 0.5, int num_gauss = 2, std::vector<float> means = {50, 100}, std::vector<float> sigmas = {10, 10}, std::vector<float> amps = {100, 50}, bool fluctuations = false);
+	// Distribute the shells by injecting Squares at specific places. 
+	void square_inject(float dte, float gamma_ave = 1.1, float decay = 0.5, int num_squares = 2, std::vector<float> starts = {50, 200}, std::vector<float> durations = {50, 50} , std::vector<float> amps = {100, 50}, bool fluctuations = false);
 
 
 	// Write shell distribution to a text file
