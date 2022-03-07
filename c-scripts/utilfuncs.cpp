@@ -335,7 +335,7 @@ double Synchrotron(float energy,  double * param_list)
         synch_norm_factors = norm * pow( 1. - ( (p-1.) * pow(nu_m/nu_c, -1./2.) / p ) , -1.) * 3. * pow(3./2.,1./3.) * (pow(qe,3.)*B*Gamma/me/c_cm/c_cm);
 
         // Calculate power between nu_c and nu_m 
-        pow_middle_branch = pow(energy/en_c,-3./2.) * pow(energy,-1.) * (1./2.) * synch_norm_factors *( gamma_inc(5./6.,energy/en_m) - gamma_inc(5./6.,energy/en_c) );
+        pow_middle_branch = pow(energy/en_c,-1./2.) * pow(energy,-1.) * (1./2.) * synch_norm_factors *( gamma_inc(5./6.,energy/en_m) - gamma_inc(5./6.,energy/en_c) );
         // Calculate power between nu_m and inf
         pow_upper_branch = pow(energy/en_m,-p/2.) * pow(energy,-1.) * (1./2.) * synch_norm_factors * pow(nu_c/nu_m,1./2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_m));
         
