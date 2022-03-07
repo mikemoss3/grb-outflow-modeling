@@ -1,9 +1,9 @@
 ### tw, sec ###
-23.
+10.
 ### dte, sec  ###
 0.02
 ### E_dot_iso, erg/s  ###
-2.e52
+1.e53
 ### theta, rad  ###
 0.1
 ### r_open, cm ###
@@ -30,7 +30,7 @@
 2.2
 ### k, wind parameter, i.e., 0, 2 ###
 0
-### rho_not, density normalization (for k = 0, g cm^-3, i.e., mp*n0 | for k = 2, g cm^-1, i.e., A_star * 5.e11 ) ###
+### rho_not, density normalization (for k = 0, g cm^-3, i.e., n0*mp = n0*1.672e-24 | for k = 2, g cm^-1, i.e., A_star * 5.e11 ) ###
 1.672e-24
 ### LorentzDist, i.e., step, smoothstep, osci ###
 square_inject

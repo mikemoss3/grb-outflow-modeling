@@ -123,7 +123,7 @@ int main(int argc, char const *argv[])
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
-	
+
 	float energ_min = 1e-3;
 	float energ_max = 4e4;
 	float energ_min_lc = 15.;
@@ -131,7 +131,7 @@ int main(int argc, char const *argv[])
 	float num_energ_bins = 200;
 
 	float tmin = 0.;
-	float tmax = 30.;
+	float tmax = 10.;
 	float dt = 0.1;
 
 	SynthGRB test_grb = SynthGRB();
@@ -177,7 +177,7 @@ int main(int argc, char const *argv[])
 	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "RS", false);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_RS.txt");
 
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, 10., 5e5, dt, "FS", true);
+	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, 0.1, 5e5, dt, "FS", true);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt");
 	// test_grb.make_source_light_curve(0.2, 10, 10, 5e5, dt, "FS", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt");
@@ -186,7 +186,7 @@ int main(int argc, char const *argv[])
 	
 
 	return 0;
-		
+	
 	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -477,9 +477,6 @@ int main(int argc, char const *argv[])
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-	
 
 
 
