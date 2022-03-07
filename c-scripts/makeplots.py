@@ -63,17 +63,23 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 	masscum = np.cumsum(flipped_mass_arr)
 	massfraccum = masscum/masscum[-1]
 
-	# Plot distribution
-	line, = ax.step(massfraccum,flipped_gamma_arr,where='pre',linestyle=linestyle,label=label)
+	# Plot distribution as a function of the shell number 
+	line, = ax[0].step(np.linspace(start=0,stop=len(shell_dist['GAMMA']),num=len(shell_dist['GAMMA'])),shell_dist['GAMMA'],where='pre',linestyle=linestyle,label=label)
+	ax[0].invert_xaxis()
+	# Plot distribution as a function of the mass fraction
+	line, = ax[1].step(massfraccum,flipped_gamma_arr,where='pre',linestyle=linestyle,label=label)
 
 	if xlabel is True:
-		ax.set_xlabel(r'M/M$_{tot}$',fontsize=fontsize,fontweight=fontweight)
+		ax[0].set_xlabel('Shell Ind.',fontsize=fontsize,fontweight=fontweight)
+		ax[1].set_xlabel(r'M/M$_{tot}$',fontsize=fontsize,fontweight=fontweight)
 	if ylabel is True:
-		ax.set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
+		ax[0].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
+		ax[1].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
 
-	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax[0],fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax[1],fontsize=fontsize,fontweight=fontweight)
 	if label is not None:
-		ax.legend(fontsize=fontsize)
+		ax[0].legend(fontsize=fontsize)
 
 	if save_pref is not None :
 		plt.savefig('figs/{}-lorentz-dist.png'.format(save_pref))
@@ -115,26 +121,26 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, n
 		# Plot spectrum data
 		if nuFnu is True:
 			if unc is True:
-				line, = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,color=color)
 			else:
 				line, = ax.plot(spec_data['ENERG'],spec_data['RATE']*(spec_data['ENERG']**2),label=label,color=color)
 		else:
 			if unc is True:
-				line, = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label,color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label,color=color)
 			else:
 				line, = ax.plot(spec_data['ENERG'],spec_data['RATE'],label=label,color=color)
 	else:
 		# Plot spectrum data
 		if nuFnu is True:
 			if unc is True:
-				line, = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color)
 			else:
-				line, = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color)
 		else:
 			if unc is True:
-				line, = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label,fmt=" ",marker="+",color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label,fmt=" ",marker="+",color=color)
 			else:
-				line, = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],label=label,fmt=" ",marker="+",color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],label=label,fmt=" ",marker="+",color=color)
 
 	# Plot aesthetics
 	ax.set_xscale('log')
@@ -1175,10 +1181,11 @@ if __name__ == '__main__':
 	"""
 	Shell Lorentz Distribution
 	"""
-	"""
-	ax_sd = plt.figure().gca()
-	plot_lor_dist('data-file-dir/shell_dist.txt', ax=ax_sd)	
-	"""
+	
+	# ax_sd = plt.figure().gca()
+	fig, ax_sd = plt.subplots(1,2,figsize=(16, 6))	
+	plot_lor_dist('data-file-dir/shell_dist.txt', ax=ax_sd)
+	
 
 	"""
 	Synthetic spectrum 
@@ -1187,11 +1194,11 @@ if __name__ == '__main__':
 	ax_spec = plt.figure(figsize=(9,8)).gca()
 
 	## Synthetic spectra with each component
-	plot_spec("data-file-dir/spec_therm.txt",ax=ax_spec,z=z,label="Thermal",color="r")
-	plot_spec("data-file-dir/spec_is.txt",ax=ax_spec,z=z,label="IS",color="C0")
-	plot_spec("data-file-dir/spec_fs.txt",ax=ax_spec,z=z,label="FS",color="C1")
-	plot_spec("data-file-dir/spec_rs.txt",ax=ax_spec,z=z,label="RS",color="C2")
-	plot_spec("data-file-dir/spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
+	plot_spec("data-file-dir/synthGRB_spec_therm.txt",ax=ax_spec,z=z,label="Thermal",color="r")
+	plot_spec("data-file-dir/synthGRB_spec_is.txt",ax=ax_spec,z=z,label="IS",color="C0")
+	plot_spec("data-file-dir/synthGRB_spec_fs.txt",ax=ax_spec,z=z,label="FS",color="C1")
+	plot_spec("data-file-dir/synthGRB_spec_rs.txt",ax=ax_spec,z=z,label="RS",color="C2")
+	plot_spec("data-file-dir/synthGRB_spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
 
 	## Synthetic spectrum before convolusion
 	# plot_spec("data-file-dir/spec_source.txt",ax=ax_spec,unc=False,label="Source")
@@ -1215,30 +1222,31 @@ if __name__ == '__main__':
 	Synthetic light curve
 	"""
 	
-	# ax_lc = plt.figure().gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,label="TH",color="r")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,label="IS",color="C0")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,label="FS",color="C1")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,label="RS",color="C2")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
+	ax_lc = plt.figure().gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,label="TH",color="r")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,label="IS",color="C0")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,label="FS",color="C1")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,label="RS",color="C2")
+	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
 
 	# Interactive light curve
-	tbox = plot_light_curve_interactive(
-		init_Tmin = 0, init_Tmax = 10, init_Emin = 8, init_Emax = 1e4,
-		z=z,label="Total",with_comps=True)
+	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 10, init_Emin = 8, init_Emax = 1e4,z=z,label="Total",with_comps=True)
 	
 
 	# Afterglow light curve
-	# ax_afg_lc = plt.figure().gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_afg_lc,z=z,label="Prompt",logscale=True,color="k")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow.txt",ax=ax_afg_lc,z=z,label="Afterglow",logscale=True,color="C1")
-	
+	ax_afg_lc = plt.figure().gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_afg_lc,z=z,label="Prompt",logscale=True,color="k")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt",ax=ax_afg_lc,z=z,label="AG: GBM",logscale=True,color="C1")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt",ax=ax_afg_lc,z=z,label="AG: XRT",logscale=True,color="C4")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt.txt",ax=ax_afg_lc,z=z,label="AG: OPT",logscale=True,color="C5")
+	ax_afg_lc.set_ylim(1e43,1e49)
+	ax_afg_lc.set_xlim(1)
 	
 	"""
 	Jet dynamics plots 
 	
 	"""
-	
+	"""
 	# therm_emission = load_therm_emission("data-file-dir/synthGRB_jet_params_therm.txt")
 	# plot_evo_therm(therm_emission,z=1)
 	
@@ -1252,7 +1260,7 @@ if __name__ == '__main__':
 	# plot_evo_ext_shock(fs_data=fs_data)		
 	
 	# Plot everything together:
-	# fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
+	fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
 
 	
 	# Plot nu_c and nu_m: 
@@ -1263,7 +1271,8 @@ if __name__ == '__main__':
 	# # plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1")
 	# plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16)
 	# add_FermiGBM_band(ax_synch_reg,axis="y")
-	
+	"""
+
 	"""
 	Display real observed data
 	"""

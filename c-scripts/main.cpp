@@ -131,22 +131,11 @@ int main(int argc, char const *argv[])
 	float num_energ_bins = 200;
 
 	float tmin = 0.;
-	float tmax = 15.;
+	float tmax = 30.;
 	float dt = 0.1;
 
 	SynthGRB test_grb = SynthGRB();
 	test_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
-
-	// int num_gauss = 3;
-	// float means[num_gauss] = {50., 125., 450.};
-	// float sigmas[num_gauss] = {10., 10., 10.};
-	// float amps[num_gauss] = {100., 75., 50.};
-	// float gamma_ave = 100.;
-	// float decay = 0.5;
-	// ShellDist * test_sd = new ShellDist( (*test_grb.p_model_params).numshells, (*test_grb.p_model_params).E_dot_iso);
-	// (*test_sd).grb030329((*test_grb.p_model_params).dte, gamma_ave, decay, num_gauss, means, sigmas, amps);
-	// test_grb.InitializeJet(test_sd);
-
 	
 	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/shell_dist.txt");
 
@@ -188,9 +177,12 @@ int main(int argc, char const *argv[])
 	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "RS", false);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_RS.txt");
 
-	// test_grb.make_source_light_curve(0.2, 10, 0.1, 1e4, dt/2, "FS", true);
 	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, 10., 5e5, dt, "FS", true);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow.txt");
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt");
+	// test_grb.make_source_light_curve(0.2, 10, 10, 5e5, dt, "FS", true);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt");
+	// test_grb.make_source_light_curve(1e-3, 5e-3, 10, 5e5, dt, "FS", true);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt.txt");
 	
 
 	return 0;

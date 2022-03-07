@@ -13,7 +13,7 @@ MAINSRCS=main.cpp cosmology.cpp GammaFunction.cpp utilfuncs.cpp Spectrum.cpp Lig
 MAINOBS=$(subst .cpp,.o,$(MAINSRCS))
 
 # TSTSRCS=testbench.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp ObsGRB.cpp DataAnalysis.cpp
-TSTSRCS=testbench.cpp GammaFunction.cpp utilfuncs.cpp Spectrum.cpp
+TSTSRCS=testbench.cpp GammaFunction.cpp utilfuncs.cpp Spectrum.cpp ShellDist.cpp SynthGRB.cpp LightCurve.cpp ModelParams.cpp cosmology.cpp
 TSTOBJS=$(subst .cpp,.o,$(TSTSRCS))
 
 # Define executable file making methods
@@ -44,7 +44,7 @@ DataAnalysis.o: DataAnalysis.cpp DataAnalysis.hpp FitStats.hpp SynthGRB.hpp Mode
 main.o: main.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp GammaFunction.hpp cosmology.hpp
 
 # testbench.o: testbench.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp cosmology.hpp
-testbench.o: testbench.cpp utilfuncs.hpp GammaFunction.hpp Spectrum.hpp
+testbench.o: testbench.cpp utilfuncs.hpp GammaFunction.hpp Spectrum.hpp ShellDist.hpp SynthGRB.hpp LightCurve.hpp ModelParams.hpp cosmology.hpp
 
 # Define cleaning methods
 clean:
