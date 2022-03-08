@@ -592,7 +592,9 @@ void SynthGRB::SimulateJetDynamics()
 	bool fs_relativ = true; // Indicates whether the forward shock is still relativistic.
 	bool fs_active = false; // Indicates whether the FS is active or not
 	bool rs_active = false; // Indicates whether the RS is active or not
-
+	bool anim_lor_dist = true;
+	int num_shocks = 0;
+	float num_fs_shocks = 0.;
 	// Declare and initialize variables for 
 	// Internal Shock processes
 	
@@ -756,6 +758,7 @@ void SynthGRB::SimulateJetDynamics()
 		/* Internal Shock Dynamics and Emission*/
 		if((t_IS_lowest < t_FS_sweep) & (t_IS_lowest < t_RS_coll))
 		{
+			num_shocks +=1;
 
 			// Move to the emission time of the shell collision (in the rest frame of the jet)
 			tmp_te += t_IS_lowest;
@@ -767,6 +770,9 @@ void SynthGRB::SimulateJetDynamics()
 					(*p_jet_shells).shell_radius.at(i) += beta((*p_jet_shells).shell_gamma.at(i)) * t_IS_lowest;
 				}
 			}
+
+			// De-active the downstream shell now that it has been merged
+			(*p_jet_shells).shell_status.at(ind_s_ds) = 0;
 
 			// Sweep up some mass into the FS
 			//  If the FS hasn't begun yet, use the outer most shell to sweep up mass
@@ -795,7 +801,8 @@ void SynthGRB::SimulateJetDynamics()
 
 					// Turn the outermost shell into the FS
 					fs_shell_index = active_inds.at(0);
-					(*p_jet_shells).shell_status.at(fs_shell_index) = 0; // Deactivate the shell so it does not participate in any further IS calculations
+					(*p_jet_shells).shell_status.at(fs_shell_index) = 2; // Deactivate the shell so it does not participate in any further IS calculations
+					// cout << "test = " << (*p_jet_shells).shell_status.at(fs_shell_index) << endl;
 					(*p_jet_shells).shell_mass.at(fs_shell_index) += m_swept_tot;
 
 					// Turn the second outermost shell into the RS
@@ -831,6 +838,7 @@ void SynthGRB::SimulateJetDynamics()
 
 			}
 
+			// cout << "test 2 = " << (*p_jet_shells).shell_status.at(fs_shell_index) << endl;
 
 			// For ease of reading, make variables for the masses and Lorentz factors of the two colliding shells
 			// Down stream shell
@@ -856,7 +864,6 @@ void SynthGRB::SimulateJetDynamics()
 					}
 				}
 			}
-
 
 
 			// Approximate the resulting Lorentz factor from the collision
@@ -928,9 +935,6 @@ void SynthGRB::SimulateJetDynamics()
 			// Set the mass of the merged shell (i.e., add the mass of the two shells)
 			(*p_jet_shells).shell_mass.at(ind_s_us) += (*p_jet_shells).shell_mass.at(ind_s_ds);
 
-			// De-active the downstream shell now that it has been merged
-			(*p_jet_shells).shell_status.at(ind_s_ds) = 0;
-
 
 			// If the emission is efficient, add the contribution
 			// E.g., if the emission time is less than the shell expansion (the dynamical time scale of the shell)		
@@ -956,11 +960,19 @@ void SynthGRB::SimulateJetDynamics()
 				// eps_star_is.push_back(tmp_eps_star); // erg / g,s Internal energy dissipated in a collision 
 				// rho_is.push_back(rho); // g cm^-3, Density of the collision region
 			}
+			// cout << "test 4 = " << (*p_jet_shells).shell_status.at(fs_shell_index) << endl;
 		}		
 		/* Forward Shock Dynamics and Emission*/
 		else if((fs_active == true ) & (t_FS_sweep < t_RS_coll))
-		{
-			
+		{			
+
+			num_fs_shocks += q;
+			if(num_fs_shocks > 1)
+			{
+				num_shocks += 1;
+				num_fs_shocks = 0.;
+			}
+
 			// Move to the emission time of the shell collision (in the rest frame of the jet)
 			tmp_te += t_FS_sweep;
 
@@ -1089,6 +1101,7 @@ void SynthGRB::SimulateJetDynamics()
 		/* Reverse Shock Dynamics and Emission*/
 		else if((rs_active == true ))
 		{
+			num_shocks +=1;
 
 			// Move to the emission time of the shell collision (in the rest frame of the jet)
 			tmp_te += t_RS_coll;
@@ -1241,7 +1254,7 @@ void SynthGRB::SimulateJetDynamics()
 
 			// Turn the outermost shell into the FS
 			fs_shell_index = active_inds.at(0);
-			(*p_jet_shells).shell_status.at(fs_shell_index) = 0; // Deactivate the shell so it does not participate in any further IS calculations
+			(*p_jet_shells).shell_status.at(fs_shell_index) = 2; // Deactivate the shell so it does not participate in any further IS calculations
 			(*p_jet_shells).shell_mass.at(fs_shell_index) += m_swept_tot;
 
 			// Turn the second outermost shell into the RS
@@ -1255,6 +1268,11 @@ void SynthGRB::SimulateJetDynamics()
 		}
 
 
+		// if(fs_active == true)
+		// {
+		// 	cout << "test here = " << (*p_jet_shells).shell_status.at(fs_shell_index) << endl;
+		// 	return;
+		// }
 
 		// Check if any more collisions will occur
 		if(_check_if_sorted())
@@ -1262,7 +1280,7 @@ void SynthGRB::SimulateJetDynamics()
 			ord_lorentz = true;
 			// std::cout << "At time t=" << tmp_te << " s, all shells have been launched and Lorentz factors are ordered.\n";
 		}
-		// Check if the FS is still relativistic 
+		// Check if the FS is no longer relativistic 
 		if((*p_jet_shells).shell_gamma.at(fs_shell_index) < 2)
 		{
 			fs_relativ = false;
@@ -1273,6 +1291,11 @@ void SynthGRB::SimulateJetDynamics()
 		{
 			rs_active = false;
 			// std::cout << "At time t=" << tmp_te << " s, all shells have passed through the reverse shock.\n";
+		}
+		if( (anim_lor_dist == true ) & (num_shocks % 200 == 0))
+		{
+			(*p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt", true);
+			num_shocks +=1;
 		}
 	}
 }

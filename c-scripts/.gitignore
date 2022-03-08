@@ -1,3 +1,4 @@
 # Files to ignore
 figs/*
 data-file-dir/*
+log.txt

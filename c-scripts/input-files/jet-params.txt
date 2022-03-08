@@ -1,9 +1,9 @@
 ### tw, sec ###
-10.
+30.
 ### dte, sec  ###
 0.02
 ### E_dot_iso, erg/s  ###
-1.e53
+1.e52
 ### theta, rad  ###
 0.1
 ### r_open, cm ###
@@ -33,6 +33,6 @@
 ### rho_not, density normalization (for k = 0, g cm^-3, i.e., n0*mp = n0*1.672e-24 | for k = 2, g cm^-1, i.e., A_star * 5.e11 ) ###
 1.672e-24
 ### LorentzDist, i.e., step, smoothstep, osci ###
-square_inject
+gauss_inject
 ### ShellDistParamsFile, i.e., ./input-files/jet-shells-"LorentzDist".txt ###
-./input-files/jet-shells-square_inject.txt
+./input-files/jet-shells-gauss_inject.txt

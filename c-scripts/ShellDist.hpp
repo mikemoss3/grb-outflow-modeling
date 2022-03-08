@@ -58,7 +58,7 @@ public:
 
 
 	// Write shell distribution to a text file
-	void WriteToTXT(string filename);
+	void WriteToTXT(string filename, bool append=false);
 
 };
 

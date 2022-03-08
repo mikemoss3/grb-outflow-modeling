@@ -124,26 +124,26 @@ int main(int argc, char const *argv[])
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
 
-	float energ_min = 1e-3;
+	float energ_min = 8;
 	float energ_max = 4e4;
 	float energ_min_lc = 15.;
 	float energ_max_lc = 350.;
 	float num_energ_bins = 200;
 
 	float tmin = 0.;
-	float tmax = 10.;
+	float tmax = 23.;
 	float dt = 0.1;
 
 	SynthGRB test_grb = SynthGRB();
 	test_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
 	
-	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/shell_dist.txt");
+	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();
 	test_grb.write_out_jet_params("./data-file-dir/");
 
-	float tlo = 0.5; // The T90? essentially.
-	float thi = 9.5;
+	float tlo = tmin; // The T90? essentially.
+	float thi = tmax;
 
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
 	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_total.txt");
@@ -183,7 +183,6 @@ int main(int argc, char const *argv[])
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt");
 	// test_grb.make_source_light_curve(1e-3, 5e-3, 10, 5e5, dt, "FS", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt.txt");
-	
 
 	return 0;
 	

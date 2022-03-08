@@ -333,12 +333,21 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Write shell distribution to a text file
-void ShellDist::WriteToTXT(string filename)
+void ShellDist::WriteToTXT(string filename, bool append)
 {
+
 	// write out thermal params
 	ofstream shell_dist_file; // Construct file 
-	shell_dist_file.open(filename); // Open text file with this name
+	if(append == false)
+	{
+		shell_dist_file.open(filename); // Open text file with this name
+	}
+	else
+	{
+		shell_dist_file.open(filename, std::ios_base::app); // Append to text file with this name 
+	}
 	size_t i=0;
+	shell_dist_file << "// Next step" << "\n";
 	// For each shell, write the shell parameters to file.
 	while ( i < shell_radius.size())
 	{
