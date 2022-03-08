@@ -137,6 +137,7 @@ int main(int argc, char const *argv[])
 	SynthGRB test_grb = SynthGRB();
 	test_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
 	
+	// test_grb.anim_lor_dist = true;
 	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();

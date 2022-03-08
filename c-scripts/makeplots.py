@@ -1352,8 +1352,7 @@ if __name__ == '__main__':
 	"""
 	
 	# plot_lor_dist('data-file-dir/synthGRB_shell_dist.txt')
-	ani = plot_lor_dist_anim('data-file-dir/synthGRB_shell_dist.txt')
-	
+	# ani = plot_lor_dist_anim('data-file-dir/synthGRB_shell_dist.txt')
 
 	"""
 	Synthetic spectrum 

@@ -82,6 +82,8 @@ public:
 	float m_bar; // Average mass of each shell
 	double m_tot; // Average mass of each shell
 
+	bool anim_lor_dist = false; // Indicates whether snapshots of the Lorentz distribution should be recorded
+
 	// Initialize jet based on current jet parameters and shell distribution
 	void InitializeJet();
 	// Load jet parameters from a text file

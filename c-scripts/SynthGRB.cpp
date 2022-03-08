@@ -592,9 +592,8 @@ void SynthGRB::SimulateJetDynamics()
 	bool fs_relativ = true; // Indicates whether the forward shock is still relativistic.
 	bool fs_active = false; // Indicates whether the FS is active or not
 	bool rs_active = false; // Indicates whether the RS is active or not
-	bool anim_lor_dist = true;
-	int num_shocks = 0;
-	float num_fs_shocks = 0.;
+	int num_shocks = 0; // Current number of shocks that have occurred 
+	float num_fs_shocks = 0.; // Current number of forward shocks that have occurred times q, when q*num_fs_shocks = 50, increment num_shocks
 	// Declare and initialize variables for 
 	// Internal Shock processes
 	
@@ -758,6 +757,7 @@ void SynthGRB::SimulateJetDynamics()
 		/* Internal Shock Dynamics and Emission*/
 		if((t_IS_lowest < t_FS_sweep) & (t_IS_lowest < t_RS_coll))
 		{
+			// Keep track of the number of internal shocks that occur, this is used for taking snapshots of the Lorentz distribution
 			num_shocks +=1;
 
 			// Move to the emission time of the shell collision (in the rest frame of the jet)
@@ -965,7 +965,7 @@ void SynthGRB::SimulateJetDynamics()
 		/* Forward Shock Dynamics and Emission*/
 		else if((fs_active == true ) & (t_FS_sweep < t_RS_coll))
 		{			
-
+			// Keep track of the number of forward shocks that occur, this is used for taking snapshots of the Lorentz distribution
 			num_fs_shocks += q;
 			if(num_fs_shocks > 1)
 			{
@@ -1101,6 +1101,7 @@ void SynthGRB::SimulateJetDynamics()
 		/* Reverse Shock Dynamics and Emission*/
 		else if((rs_active == true ))
 		{
+			// Keep track of the number of reverse shocks that occur, this is used for taking snapshots of the Lorentz distribution
 			num_shocks +=1;
 
 			// Move to the emission time of the shell collision (in the rest frame of the jet)
@@ -1294,6 +1295,7 @@ void SynthGRB::SimulateJetDynamics()
 		}
 		if( (anim_lor_dist == true ) & (num_shocks % 200 == 0))
 		{
+			// Append the current Lorentz distribution to the data file
 			(*p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt", true);
 			num_shocks +=1;
 		}
