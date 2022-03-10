@@ -4,6 +4,8 @@ Contact: mikejmoss3@gmail.com
 
 This purpose of this project is to investigate GRB prompt emission by using theoretical descriptions of the acceleration mechanisms and emission processes occurring within the jet to simulate the internal and external jet dynamics in order to calculate the emitted spectra and light curves.
 
+There is a manual that outlines how to use the simulation code and plotting functions located at writeups/code-manual/code-manual.pdf
+
 Directory Descriptions:
 c-scripts/ -- contains all files for simulations (a description of how to use the code is below)
 instr-files/ -- useful instrument response matrix files are be stored here  
