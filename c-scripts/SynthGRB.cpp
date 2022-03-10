@@ -594,6 +594,7 @@ void SynthGRB::SimulateJetDynamics()
 	bool rs_active = false; // Indicates whether the RS is active or not
 	int num_shocks = 0; // Current number of shocks that have occurred 
 	float num_fs_shocks = 0.; // Current number of forward shocks that have occurred times q, when q*num_fs_shocks = 50, increment num_shocks
+	
 	// Declare and initialize variables for 
 	// Internal Shock processes
 	
