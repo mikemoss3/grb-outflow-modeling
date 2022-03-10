@@ -1,0 +1,263 @@
+% \documentclass[linenumbers,twocolumn]{aastex631}
+\documentclass[linenumbers]{aastex631}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{ulem}
+\usepackage{listings}
+\usepackage{verbatim}
+\usepackage{fancyvrb}
+\usepackage{hyperref}
+
+% Editing commands
+\newcommand{\mm}[1]{{\textcolor{purple}{\bf #1}}}
+
+% Make upright subscripts and superscripts in Mathmode.
+\def\subinrm#1{\sb{\mathrm{#1}}}
+{\catcode`\_=13 \global\let_=\subinrm}
+\mathcode`_="8000
+\def\supinrm#1{\sp{\mathrm{#1}}}
+{\catcode`\^=13 \global\let^=\supinrm}
+\mathcode`^="8000
+\def\upsubscripts{\catcode`\_=12 } \def\normalsubscripts{\catcode`\_=8 }
+\def\upsupscripts{\catcode`\^=12 } \def\normalsupscripts{\catcode`\^=7 }
+
+\newcommand{\vdag}{(v)^\dagger}
+\newcommand\aastex{AAS\TeX}
+\newcommand\latex{La\TeX}
+
+% Code block coloring
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% Sets the Table of Contents title to center and normalize size
+\newcommand{\contentsname}{\centerline {\normalsize Table of Contents}}
+
+% Title
+\shorttitle{GRB Prompt Simulation Manual}
+\shortauthors{Michael Moss}
+
+\begin{document}
+
+\upsubscripts
+\upsupscripts
+
+\title{Gamma-ray Burst Prompt Emission Simulation Code Manual}
+
+\author{Michael Moss}
+\affiliation{The Department of Physics, The George Washington University, 725 21st NW, Washington, DC 20052, USA}
+\affiliation{Astrophysics Science Division, NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
+\affiliation{Sorbonne Universit\'e, CNRS, UMR 7095, Institut d'Astrophysique de Paris, 98 bis Arago, 75014 Paris, France}
+
+
+\correspondingauthor{Michael Moss}
+\email{mikejmoss3@gmail.com}
+
+\tableofcontents
+
+\newpage
+\section{Introduction}
+
+The code outlined in this document aims to simulate the Gamma-Ray Burst (GRB) prompt emission by assuming shells of material are ejected from a central engine with varying speeds and then using semi-analytical descriptions of emission process to calculate the expected spectra and light curves.
+
+\section{Code Structure}
+
+The core of the simulation code resides in SynthGRB.cpp which is responsible for calculating the dynamics and emission of each simulation. 
+
+\begin{enumerate}
+    \item Classes
+    \item Classes methods
+    \item Schematic
+\end{enumerate}
+
+\section{Performing GRB Prompt Simulations} \label{sec: simulations}
+
+Below I will outline the necessary steps to generate the instantaneous jet dynamics parameters, a spectrum, and a light curve for a given set of input parameters..
+
+In order to run a simulation, a user will edit main.cpp. The first thing to be done is to create a SynthGRB object. A SynthGRB object can be initialized three separate ways, 
+
+\begin{lstlisting}[language = C++, caption = SynthGRB Constructors, label={lst: SynthGRB constructor}]
+    // Definitions
+    SynthGRB(float tw, float dte, 
+        double E_dot_iso, float theta, float r_open, float eps_th, float sigma,
+        float eps_e_int, float eps_b_int, float zeta_int, float p_int,
+        float eps_e_ext, float eps_b_ext, float zeta_ext, float p_ext,
+        float k_med, double rho_not,
+        std::string LorentzDist, std::string ShellDistParamsFile);
+    SynthGRB(ModelParams * input_model_params);
+    SynthGRB();
+
+    // Example function calls
+    example_grb = SynthGRB();
+\end{lstlisting}
+
+The first constructor requires user input for the wind duration, time between shell launching, shell Lorentz distribution, and all microphysical parameters at the time of initialization. The second constructor will load all of this information from a given ModelParams object. The third constructor will take the default values for all input arguments, but these can immediately be reset by the user. To load all of the input parameters from a file a user can include the line,
+
+\begin{lstlisting}[language = C++, caption = Loading Jet Parameters from a Given Text File, label={lst: LoadJetParamsFromTXT}]
+    // Definitions
+    SynthGRB::LoadJetParamsFromTXT(std::string file_name);
+    
+    // Example function calls
+    example_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
+\end{lstlisting}
+
+In the example above, all input parameters are given in the "input-files/jet-params.txt" (where input-files/ is a directory within the simulation code directory). Here is what the parameter file looks like,
+
+\lstinputlisting[caption = Jet Parameters Defined in a Text File, label={lst: jet params text file}]{jet-params.txt}
+
+All lines that begin with the `$\#$' character will be ignored when being read by SynthGRB. The parameters included in the text file must match the order of the parameters as defined in the first SynthGRB constructor list above. When a SynthGRB is initialized or when a new set of jet parameters are loaded from a file, the SynthGRB object will immediately uses the ShellDist class to calculate and store the initial radius, initial Lorentz factor, initial mass, ejection time of all shells which will be propagated in the jet dynamics simulation. 
+
+To perform a jet dynamics simulation a user simply has to call the SynthGRB class method, 
+
+\begin{lstlisting}[language = C++, caption = Perform Jet Dynamics Simulation, label={lst: perform simulation}]
+    // Definitions
+    SynthGRB::SimulateJetDynamics();
+
+    // Example function calls
+    example_grb.SimulateJetDynamics();
+
+\end{lstlisting}
+
+All jet dynamics data will be stored in memory within the SynthGRB class. After the jet dynamics have been calculated, a spectrum and light curve can be calculated by calling the methods below, 
+
+\begin{lstlisting}[language = C++, caption = Create Spectrum and Light Curve from Jet Simulation, label={lst: create spectrum and light curve}]
+    // Definitions
+    SynthGRB::make_source_spectrum(float energ_min = 50., float energ_max = 350., int num_energ_bins = 50, float tmin = 0., float tmax = 30., std::string comp = "all");
+    SynthGRB::make_source_light_curve(float energ_min, float energ_max, float Tstart, float Tend, float dt, std::string comp = "all", bool logscale = false);
+    
+    // Example function calls
+    example_grb.make_source_spectrum();
+    example_grb.make_source_light_curve();
+\end{lstlisting}
+
+A user can then write out all of the data using the functions below. These functions do not need to be called at the end, each data set can be written out to text as soon as the relevant calculation has been made (e.g., the jet parameters can be written out directly after the jet dynamics simulation).
+
+\begin{lstlisting}[language = C++, caption = Write Out Data to Text Files, label={lst: write to text files}]
+    // Definitions
+    ShellDist::WriteToTXT(std::string out_file_name);
+    SynthGRB::write_out_jet_params(std::string dir_path_name);
+    SynthGRB::WriteSpectrumToTXT(std::string out_file_name);
+    SynthGRB::WriteLightCurveToTXT(std::string out_file_name);
+
+    // Example function calls
+    (*example_grb.p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt");
+    example_grb.write_out_jet_params("./data-file-dir/");
+    example_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_total.txt");
+    example_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve.txt");
+\end{lstlisting}
+
+\section{Handling Simulation Data} \label{sec: plotting}
+
+The plotting is done completely in Python and uses text files created by the C++ code described in Section \ref{sec: simulations}. We can plot the initial Lorentz distribution like so, 
+
+\begin{lstlisting}[language = Python, caption = Plotting Lorentz Distributions, label={lst: plot lor dist }]
+    # Definitions
+    def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',linestyle='solid', separator_string = "// Next step\n")
+
+    # Example function calls
+    plot_lor_dist('data-file-dir/synthGRB_shell_dist.txt')
+\end{lstlisting}
+
+The above method will plot the given Lorentz factor distribution saved in the text file with path name "file_name". Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string". If more than one snapshot is provided, the snapshots can be scrolled through with the left and right arrow keys. The Lorentz distribution file must contain the columns: 
+\begin{enumerate}
+    \item RADIUS - Radius of the shell
+    \item GAMMA - Lorentz factor of the shell
+    \item MASS - Mass of the shell
+    \item TE - Time of emission of the shell
+    \item STATUS - Status of the shell, this is used by the simulation code to indicate if a shell is still active or not.
+\end{enumerate}
+
+To plot the evolution of the instantaneous jet dynamics we must first load the data. Once the data is loaded, the evolution of the thermal, internal shock, and external shock components can be plotted separately, but it is useful to view the internal and external shock components on the same plots.
+
+\begin{lstlisting}[language = Python, caption = Plotting Instantaneous Jet Dynamics Parameters, label={lst: plot jet dynamics}]
+    # Definitions
+    def load_therm_emission(file_name)
+    def load_is_emission(file_name)
+    def load_fs_emission(file_name)
+    def load_rs_emission(file_name)
+
+    def plot_param_vs_time(emission_comp,param,frame="obs",ax=None,z=0, y_factor=1, label=None, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',disp_xax=True,disp_yax=True,
+    color='C0',marker='.',markersize=7,alpha=1)
+    def plot_evo_therm(thermal_emission,frame="obs",ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold')
+    def plot_evo_int_shock(is_emission,frame="obs",ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold')
+    def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',markregime=True,markersize=10)
+
+    # Example function calls
+    th_data = load_is_emission("data-file-dir/synthGRB_jet_params_th.txt")
+    is_data = load_is_emission("data-file-dir/synthGRB_jet_params_is.txt")
+    fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_fs.txt")
+    rs_data = load_rs_emission("data-file-dir/synthGRB_jet_params_rs.txt")
+
+    plot_evo_therm(th_emission)
+    plot_evo_int_shock(is_data)
+    plot_evo_ext_shock(fs_data=fs_data,rs_data=rs_data)
+    fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
+\end{lstlisting}
+
+A plot of the spectrum can be created simply by specifying the text file which contains the spectrum. The spectrum text file must contain three columns; (i) lower bound of energy bin, (ii) count rate, (iii) uncertainty in the count rate. The FermiGBM and SwiftBAT energy bands can also be added to these plots.
+
+\begin{lstlisting}[language = Python, caption = Plotting Spectra, label={lst: plot spectra}]
+    # Definitions
+    def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, nuFnu=True, unc=False, Emin=None, Emax=None, save_pref=None,fontsize=14,fontweight='bold')
+    def add_FermiGBM_band(ax,fontsize=12,axis="x")
+
+    # Example function calls
+    ax_spec = plt.figure(figsize=(9,8)).gca()
+    plot_spec("data-file-dir/synthGRB_spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
+    add_FermiGBM_band(ax_spec)
+\end{lstlisting}
+
+Similar to plotting a spectrum, a plot of a light curve can be created by specifying the text file which contains the light curve. The light curve text file must contain two columns, one for the time bin and the second for the count rate. 
+
+\begin{lstlisting}[language = Python, caption = Plotting Light Curves, label={lst: plot light curves}]
+    # Definitions
+    def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, save_pref=None,color="C0", fontsize=14,fontweight='bold', logscale=False)
+
+    # Example function calls
+    ax_lc = plt.figure().gca()
+    plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
+\end{lstlisting}
+
+Lastly, an interactive plot can be made to look at the light curves and spectra generated by the simulation code using the following lines of code. The initial times and energies will set the absolute maximum range of the times and energies that can be viewed. To increase the time or energy interval being plotted, the function should be called again and the initial time or energy interval should be increased. 
+
+\begin{lstlisting}[language = Python, caption = Plotting Interactive Synthetic Spectra/Light Curves, label={lst: plot interactive }]
+    # Definitions
+    def plot_light_curve_interactive(init_Tmin, init_Tmax, init_Emin, init_Emax, z=0, with_comps=False, label=None, ax=None, save_pref=None, fontsize=14,fontweight='bold',logscale=False)
+
+    # Example function calls
+    tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 20, init_Emin = 8, init_Emax = 1e4,z=z,label="Total",with_comps=True)
+\end{lstlisting}
+
+\newpage
+\bibliographystyle{aasjournal}
+\bibliography{bibliograpy-list}
+
+
+\end{document}
