@@ -21,6 +21,9 @@ kev_to_erg = 1.6022*np.power(10.,-9.)
 planck_kev = 4.136 * np.power(10,-18.) # keV Hz^-1
 
 def plot_aesthetics(ax,fontsize=14,fontweight='bold'):
+	"""
+	This function is used to make bold and increase the font size of all plot tick markers
+	"""
 
 	for tick in ax.xaxis.get_major_ticks():
 	    tick.label1.set_fontsize(fontsize=fontsize)
@@ -37,16 +40,27 @@ def plot_aesthetics(ax,fontsize=14,fontweight='bold'):
 
 ##############################################################################################################################
 
-def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',linestyle='solid'):
+def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',linestyle='solid', separator_string = "// Next step\n"):
 	"""
-	Method to plot the given Lorentz factor distribution
+	Method to plot the given Lorentz factor distribution saved in the text file with path name "file_name".
+	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string".
+	If more than one snapshot is provided, the snapshots can be scrolled through with the left and right arrow keys. 
+
+	The Lorentz distribution file must contain the columns: 
+	RADIUS - Radius of the shell
+	GAMMA - Lorentz factor of the shell
+	MASS - Mass of the shell
+	TE - Time of emission of the shell
+	STATUS - Status of the shell, this is used by the simulation code to indicate if a shell is still active or not. 
 
 	Attributes:
 	ax = the matplotlib.pyplot.axes instance to make the plot on
 	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
 	xlabel, ylabel = indicate whether x- and y- labels should be included (boolean)
+	label = optional label for the data set
 	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
 	linestyle = style of the plotting line 
+	separator_string = the string between each snapshot of the Lorentz distribution
 	"""
 
 	# Load data
@@ -126,18 +140,27 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 
 ##############################################################################################################################
 
-def plot_lor_dist_anim(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',linestyle='solid'):
+def plot_lor_dist_anim(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',linestyle='solid', separator_string = "// Next step\n"):
 	"""
-	Method to plot the given Lorentz factor distribution
+	Method to make an animated gif of the Lorentz factor distribution saved in the text file with path name "file_name".
+	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string"
+
+	The Lorentz distribution file must contain the columns: 
+	RADIUS - Radius of the shell
+	GAMMA - Lorentz factor of the shell
+	MASS - Mass of the shell
+	TE - Time of emission of the shell
+	STATUS - Status of the shell, this is used by the simulation code to indicate if a shell is still active or not. 
 
 	Attributes:
 	ax = the matplotlib.pyplot.axes instance to make the plot on
 	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
 	xlabel, ylabel = indicate whether x- and y- labels should be included (boolean)
+	label = optional label for the data set
 	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
 	linestyle = style of the plotting line 
+	separator_string = the string between each snapshot of the Lorentz distribution
 	"""
-
 	# Load data
 	lor_dist_list = load_lor_dist(file_name)
 
@@ -218,7 +241,17 @@ def plot_lor_dist_anim(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,
 
 def load_lor_dist(file_name, string_match = "// Next step\n"):
 	"""
-	Method to load Lorentz factor distribution
+	Method to load Lorentz factor distribution from the file specified by "file_name"
+
+	The Lorentz distribution file must contain the columns: 
+	RADIUS - Radius of the shell
+	GAMMA - Lorentz factor of the shell
+	MASS - Mass of the shell
+	TE - Time of emission of the shell
+	STATUS - Status of the shell, this is used by the simulation code to indicate if a shell is still active or not. 
+	
+	Attributes:
+	separator_string = the string between each snapshot of the Lorentz distribution
 	"""
 	
 	# Function to find all line numbers that match the "string_match" input argument
@@ -255,6 +288,7 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, n
 
 	Attributes:
 	file_name = file name which contains spectrum data points 
+	z = redshift to shift the spectrum to
 	joined = boolean, indicates whether the points are joined or not.
 	label = optional label for the plotted spectra 
 	ax = the matplotlib.pyplot.axes instance to make the plot on
@@ -339,6 +373,13 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, n
 ##############################################################################################################################
 
 def add_FermiGBM_band(ax,fontsize=12,axis="x"):
+	"""
+	Method to add two shaded boxes to indicate the Fermi/GBM (NaI and BGO) observation bands to a matplotlib.pyplot.axes instance
+
+	Attributes:
+	axis = Defines which axis the energy axis (in keV)
+	"""
+
 	# Grab the current ymin and ymax, this is used to set the lower and upper bounds of the vertical lines which indicate instrument observation energy range
 	curr_ymin, curr_ymax = ax.get_ylim()
 	curr_xmin, curr_xmax = ax.get_xlim()
@@ -370,6 +411,13 @@ def add_FermiGBM_band(ax,fontsize=12,axis="x"):
 ##############################################################################################################################
 
 def add_SwiftBAT_band(ax,fontsize=12,axis="x"):
+	"""
+	Method to add two shaded boxes to indicate the Swift/BAT observation band to a matplotlib.pyplot.axes instance
+
+	Attributes:
+	axis = Defines which axis the energy axis (in keV)
+	"""
+
 	# Grab the current ymin and ymax, this is used to set the lower and upper bounds of the vertical lines which indicate instrument observation energy range
 	curr_ymin, curr_ymax = ax.get_ylim()
 	curr_xmin, curr_xmax = ax.get_xlim()
@@ -399,6 +447,7 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 
 	Attributes:
 	file_name = file name which contains spectrum data points 
+	z = redshift to shift the light curve to
 	label = optional label for the plotted light curve 
 	ax = the matplotlib.pyplot.axes instance to make the plot on
 	
@@ -408,6 +457,7 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 	xlabel, ylabel = indicate whether x- and y- labels should be included (boolean)
 	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
 	linestyle = style of the plotting line 
+	logscale = boolean, Indicates whether the time x- and y- axes should be in log scale 
 	"""
 
 	if(z<0):
@@ -466,6 +516,10 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_Emin, init_Emax, z=0
 
 	z = float > 0, redshift
 	with_comps = boolean, indicates whether the individual components should be displayed
+	
+	label = optional label for the plotted light curve 
+	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
+	logscale = boolean, Indicates whether the time x- and y- axes should be in log scale 
 	"""
 
 	comp_indicator = "false"
@@ -740,10 +794,33 @@ def load_rs_emission(file_name):
 
 ##############################################################################################################################
 
-def plot_param_vs_time(emission_comp,param,ax=None,z=0, y_factor=1, label=None, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',disp_xax=True,disp_yax=True,
-	color='C0',marker='.',alpha=1,frame="obs",markersize=7):
+def plot_param_vs_time(emission_comp,param,frame="obs",ax=None,z=0, y_factor=1, label=None, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',disp_xax=True,disp_yax=True,
+	color='C0',marker='.',markersize=7,alpha=1):
 	"""
-	Plot emission parameters as a function of time (in the observer frame)
+	Plot emission parameters as a function of time
+
+	Attributes:
+	emission_comp = the emission data to be plotted
+	param = which param to plot against the time axis
+	frame = string, should be given as "obs" or "source"
+		"obs" indicates that the observed time will be used 
+		"source" indicate that the emitted time will be used
+
+	ax = the matplotlib.pyplot.axes instance to make the plot on
+	z = redshift to shift the light curve to
+	y_factor = value to multiply the "param" axis by 
+
+	label = optional label for the plotted light curve 
+	
+	Tmin, Tmax = indicates the minimum and maximum time range to plot. If None is supplied, the minimum and maximum times of the supplied data files are used
+
+	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
+	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
+	disp_xax, disp_yax = boolean, indicate whether x- and y- ticks/labels should be displayed
+	color = color of the data
+	marker = marker of the data
+	markersize = markersize of the data marker
+	alpha = transparency of the data
 	"""
 
 	time_str = "TA"
@@ -755,30 +832,11 @@ def plot_param_vs_time(emission_comp,param,ax=None,z=0, y_factor=1, label=None, 
 		ax = plt.figure().gca()
 
 	# Multiply by 1+z for the time axis and apply the supplied factor on the y-axis 
-	ax_time = emission_comp[time_str] * (1+z)
+	# Take only the time elements between Tmin and Tmax
+	ax_time = emission_comp[time_str][(emission_comp[time_str]>Tmin) & (emission_comp[time_str] < Tmax)] * (1+z)
 
 	# Multiply by input factor
-	ax_param = emission_comp[param]*y_factor
-
-	# Find the indices of the start and stop time
-	ind_start, ind_stop = 0,-1
-	if Tmin is not None:
-		ind_start = np.argmax(ax_time>Tmin)
-	if(Tmax is not None):
-		if ( Tmax < np.max(emission_comp[time_str]) ):
-			ind_stop = np.argmax(ax_time>Tmax)
-
-			# Load time axis and the parameter value axis 
-			ax_time = ax_time[ind_start:ind_stop]
-			ax_param = ax_param[ind_start:ind_stop]
-		else:
-			# Load time axis and the parameter value axis 
-			ax_time = ax_time[ind_start:] 
-			ax_param = ax_param[ind_start:]
-	else:
-		# Load time axis and the parameter value axis 
-		ax_time = ax_time[ind_start:] 
-		ax_param = ax_param[ind_start:]
+	ax_param = emission_comp[param][(emission_comp[time_str]>Tmin) & (emission_comp[time_str] < Tmax)] * y_factor
 
 	ax.scatter(x=ax_time,y=ax_param,label=label,c=color,marker=marker,s=markersize, picker=True,alpha=alpha)
 
@@ -797,9 +855,23 @@ def plot_param_vs_time(emission_comp,param,ax=None,z=0, y_factor=1, label=None, 
 
 ##############################################################################################################################
 
-def plot_evo_therm(thermal_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',frame="obs"):
+def plot_evo_therm(thermal_emission,frame="obs",ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold'):
 	"""
-	Plot evolution of thermal emission parameters 
+	Plot evolution of thermal emission parameters
+
+	Attributes:
+	thermal_emission = the emission data to be plotted
+	frame = string, should be given as "obs" or "source"
+		"obs" indicates that the observed time will be used 
+		"source" indicate that the emitted time will be used
+
+	ax = the matplotlib.pyplot.axes instance to make the plot on
+	z = redshift to shift the light curve to
+	
+	Tmin, Tmax = indicates the minimum and maximum time range to plot. If None is supplied, the minimum and maximum times of the supplied data files are used
+
+	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
+	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
 	"""
 
 	# Make plot instance if it doesn't exist
@@ -837,9 +909,23 @@ def plot_evo_therm(thermal_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=N
 
 ##############################################################################################################################
 
-def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',frame="obs"):
+def plot_evo_int_shock(is_emission,frame="obs",ax=None,z=0,Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold'):
 	"""
 	Plot evolution of internal shock emission parameters 
+
+	Attributes:
+	is_emission = the emission data to be plotted
+	frame = string, should be given as "obs" or "source"
+		"obs" indicates that the observed time will be used 
+		"source" indicate that the emitted time will be used
+
+	ax = the matplotlib.pyplot.axes instance to make the plot on
+	z = redshift to shift the light curve to
+	
+	Tmin, Tmax = indicates the minimum and maximum time range to plot. If None is supplied, the minimum and maximum times of the supplied data files are used
+
+	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
+	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
 	"""
 
 	if ax is None:
@@ -957,8 +1043,33 @@ def plot_evo_int_shock(is_emission,ax=None,z=0,Tmin=None, Tmax=None,save_pref=No
 
 ##############################################################################################################################
 
-def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".", z=0, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None,frame="obs",markersize=7):
+def make_together_plots(shock_data, ax0, ax1,frame="obs", z=0, label=None, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None,color="C1",marker=".",markersize=7):
+	"""
+	Plot making method called by plot_together()
 
+	Attributes:
+	shock_data = the emission data to be plotted
+	ax0 = first axis instance
+	ax1 = second axis instance
+	frame = string, should be given as "obs" or "source"
+		"obs" indicates that the observed time will be used 
+		"source" indicate that the emitted time will be used
+
+	z = redshift to shift the light curve to
+
+	label = optional label for the plotted light curve
+	
+	Tmin, Tmax = indicates the minimum and maximum time range to plot. If None is supplied, the minimum and maximum times of the supplied data files are used
+
+	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
+	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
+	
+	guidelines = boolean, whether or not to include guidelines for the afterglow behavior (indicating whether a wind or constant medium )
+
+	color = color of the data
+	marker = marker of the data
+	markersize = markersize of the data marker
+	"""
 
 	### First Plot ###
 
@@ -1095,7 +1206,30 @@ def make_together_plots(shock_data, ax0, ax1, label=None, color="C1",marker=".",
 
 ##############################################################################################################################
 
-def plot_together(is_data = None,fs_data=None, rs_data=None, z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',frame="obs",markregime=True,markersize=10):
+def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',markregime=True,markersize=10):
+	"""
+	Make diagnostics plots for the instantaneous jet dynamics parameters. This will create six plots. All shock emission data provided will be included within these six plots.
+
+	Attributes:
+	is_data = the internal emission data to be plotted
+	fs_data = the forward shock emission data to be plotted
+	rs_data = the reverse shock emission data to be plotted
+
+	frame = string, should be given as "obs" or "source"
+		"obs" indicates that the observed time will be used 
+		"source" indicate that the emitted time will be used
+
+	z = redshift to shift the light curve to
+	
+	Tmin, Tmax = indicates the minimum and maximum time range to plot. If None is supplied, the minimum and maximum times of the supplied data files are used
+
+	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
+	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
+	
+	markregime = boolean, indicates whether fast and slow cooling regimes should be indicated on the plot by different markers
+	markersize = markersize of the data marker
+	"""
+
 
 	fig0, ax0 = plt.subplots(2,2,sharex=True,figsize=(12,8))
 	fig1, ax1 = plt.subplots(2,1,sharex=True,figsize=(6,6))
@@ -1234,9 +1368,11 @@ def plot_together(is_data = None,fs_data=None, rs_data=None, z=0, Tmin=None, Tma
 
 ##############################################################################################################################
 
-def plot_observables(is_emission,th_emission,ax=None,z=0, save_pref=None,fontsize=14,fontweight='bold',frame="obs"):
+def plot_observables(is_emission,th_emission,frame="obs",ax=None,z=0, save_pref=None,fontsize=14,fontweight='bold'):
 	"""
 	Plot observables
+
+	This isn't done yet, so don't pay attention to it
 	"""
 
 	if ax is None:
@@ -1283,19 +1419,50 @@ def plot_observables(is_emission,th_emission,ax=None,z=0, save_pref=None,fontsiz
 
 ##############################################################################################################################
 
-def plot_synch_cooling_regime(emission,ax=None,z=0,label=None, color="C0", markers=[".","^"], markersize=None, alpha=1, save_pref=None, Tmin=None, Tmax=None, fontsize=14,fontweight='bold',frame="obs"):
+def plot_synch_cooling_regime(emission,frame="obs",ax=None,z=0,label=None, color="C0", markers=[".","^"], markersize=None, alpha=1, save_pref=None, Tmin=None, Tmax=None, fontsize=14,fontweight='bold'):
 	"""
 	Plot nu_c and nu_m vs time
+
+	Attributes:
+	is_data = the internal emission data to be plotted
+	fs_data = the forward shock emission data to be plotted
+	rs_data = the reverse shock emission data to be plotted
+
+	frame = string, should be given as "obs" or "source"
+		"obs" indicates that the observed time will be used 
+		"source" indicate that the emitted time will be used
+
+	ax = axis to plot the data on
+
+	z = redshift to shift the light curve to
+	
+	label = optional label for the plotted light curve
+
+	color = color of the data
+	marker = marker of the data
+	markersize = markersize of the data marker
+	alpha = transparency of the data points 
+
+	Tmin, Tmax = indicates the minimum and maximum time range to plot. If None is supplied, the minimum and maximum times of the supplied data files are used
+
+	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
+	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
 	"""
+
+	time_str = "TA"
+	if(frame=="source"):
+		time_str = "TE"
+
+	y_factor = planck_kev*emission['GAMMAR'][(emission[time_str]>Tmin) & (emission[time_str] < Tmax)]
 
 	# Make plot instance if it doesn't exist
 	if ax is None:
 		ax = plt.figure(figsize=(10,8)).gca()
 
 	# Plot temperature of the thermal component vs time (in observer frame)
-	plot_param_vs_time(emission,'NUC', ax=ax, z=z, y_factor=planck_kev*emission['GAMMAR'],Tmin=Tmin, Tmax=Tmax, marker=markers[0],
+	plot_param_vs_time(emission,'NUC', ax=ax, z=z, y_factor=y_factor,Tmin=Tmin, Tmax=Tmax, marker=markers[0],
 		markersize=markersize, color=color, label=label, fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
-	plot_param_vs_time(emission,'NUM', ax=ax, z=z, y_factor=planck_kev*emission['GAMMAR'],Tmin=Tmin, Tmax=Tmax, marker=markers[1],
+	plot_param_vs_time(emission,'NUM', ax=ax, z=z, y_factor=y_factor,Tmin=Tmin, Tmax=Tmax, marker=markers[1],
 		markersize=markersize, color=color, fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
 
 	ax.set_xlabel(r't$_{obs}$',fontsize=fontsize,fontweight=fontweight)
@@ -1325,7 +1492,7 @@ def plot_synch_cooling_regime(emission,ax=None,z=0,label=None, color="C0", marke
 
 def lum_dis(z: float):
 	""" 
-	Caclulate luminosity distance for redshift z
+	Caclulate luminosity distance for a given redshift z
 	"""
 	if(z == 0):
 		return 1
@@ -1388,32 +1555,32 @@ if __name__ == '__main__':
 	"""
 	Synthetic light curve
 	"""
-	"""
-	ax_lc = plt.figure().gca()
-	plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,label="TH",color="r")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,label="IS",color="C0")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,label="FS",color="C1")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,label="RS",color="C2")
-	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
+	
+	# ax_lc = plt.figure().gca()
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,label="TH",color="r")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,label="IS",color="C0")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,label="FS",color="C1")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,label="RS",color="C2")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
 
-	# Interactive light curve
+	# # Interactive light curve
 	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 20, init_Emin = 8, init_Emax = 1e4,z=z,label="Total",with_comps=True)
 	
 
-	# Afterglow light curve
-	ax_afg_lc = plt.figure().gca()
-	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_afg_lc,z=z,label="Prompt",logscale=True,color="k")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt",ax=ax_afg_lc,z=z,label="AG: GBM",logscale=True,color="C1")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt",ax=ax_afg_lc,z=z,label="AG: XRT",logscale=True,color="C4")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt.txt",ax=ax_afg_lc,z=z,label="AG: OPT",logscale=True,color="C5")
-	ax_afg_lc.set_ylim(1e43,1e49)
-	ax_afg_lc.set_xlim(0.1)
-	"""
+	# # Afterglow light curve
+	# ax_afg_lc = plt.figure().gca()
+	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_afg_lc,z=z,label="Prompt",logscale=True,color="k")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt",ax=ax_afg_lc,z=z,label="AG: GBM",logscale=True,color="C1")
+	# # plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt",ax=ax_afg_lc,z=z,label="AG: XRT",logscale=True,color="C4")
+	# # plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt.txt",ax=ax_afg_lc,z=z,label="AG: OPT",logscale=True,color="C5")
+	# ax_afg_lc.set_ylim(1e43,1e49)
+	# ax_afg_lc.set_xlim(0.1)
+	
 	"""
 	Jet dynamics plots 
 	
 	"""
-	"""
+	
 	# therm_emission = load_therm_emission("data-file-dir/synthGRB_jet_params_therm.txt")
 	# plot_evo_therm(therm_emission,z=1)
 	
@@ -1427,55 +1594,18 @@ if __name__ == '__main__':
 	# plot_evo_ext_shock(fs_data=fs_data)		
 	
 	# Plot everything together:
-	fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
+	# fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
 	# fig0, fig1 = plot_together(fs_data=fs_data)
 
 	
-	# Plot nu_c and nu_m: 
+	# # Plot nu_c and nu_m: 
 	# ax_synch_reg = plt.figure(figsize=(10,8)).gca()
-	# fig, ax_synch_reg = plt.subplots()
 	# markers = [".","^"]
 	# plot_synch_cooling_regime(is_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="IS",color="C0",markers=markers,alpha=0.8,markersize=16)
 	# # plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1")
 	# plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16)
 	# add_FermiGBM_band(ax_synch_reg,axis="y")
-	"""
-	
-	"""
-	Display real observed data
-	"""
-	"""
-	ax_spec = plt.figure(figsize=(8,4)).gca()
-	plot_spec("data-file-dir/190114C_n4_tte_spec_bak.txt",ax=ax_spec,unc=False,label="BGD")
-	plot_spec("data-file-dir/190114C_n4_tte_spec_rise.txt",ax=ax_spec,unc=False,label="Rise")
-	plot_spec("data-file-dir/190114C_n4_tte_spec_peak.txt",ax=ax_spec,unc=False,label="Peak")
-	plot_spec("data-file-dir/190114C_n4_tte_spec_fall.txt",ax=ax_spec,unc=False,label="Fall")
 
-	ax_lc = plt.figure().gca()
-	plot_light_curve("data-file-dir/190114C_n4_tte_light_curve.txt",ax=ax_lc)
-	"""
-
-	"""
-	Multiple Synthetic spectrum 
-	"""
-	
-	"""
-	## Model spectrum before convolusion
-	ax_spec_preconv = plt.figure(figsize=(8,4)).gca()
-	plot_spec("data-file-dir/spec_model_1.txt",ax=ax_spec_preconv,unc=True,label="NaI")
-	plot_spec("data-file-dir/spec_model_2.txt",ax=ax_spec_preconv,unc=True,label="BGO")
-
-	add_FermiGBM_band(ax_spec_preconv)
-
-	## Synthetic spectrum after convolusion
-	ax_spec_postconv = plt.figure(figsize=(8,4)).gca()
-	plot_spec("data-file-dir/spec_obs_1.txt",ax=ax_spec_postconv,unc=True,label="NaI")
-	plot_spec("data-file-dir/spec_obs_2.txt",ax=ax_spec_postconv,unc=True,label="BGO")
-	plot_spec("data-file-dir/spec_model_conv_1.txt",ax=ax_spec_postconv,unc=False,label="Model NaI",joined=True)
-	plot_spec("data-file-dir/spec_model_conv_2.txt",ax=ax_spec_postconv,unc=False,label="Model BGO",joined=True)
-
-	add_FermiGBM_band(ax_spec_postconv)
-	"""
 
 	"""
 	Observables
