@@ -831,6 +831,11 @@ def plot_param_vs_time(emission_comp,param,frame="obs",ax=None,z=0, y_factor=1, 
 	if ax is None:
 		ax = plt.figure().gca()
 
+	if Tmin is None:
+		Tmin = 0
+	if Tmax is None:
+		Tmax = np.max(emission_comp[time_str])*(1+z)
+
 	# Multiply by 1+z for the time axis and apply the supplied factor on the y-axis 
 	# Take only the time elements between Tmin and Tmax
 	ax_time = emission_comp[time_str][(emission_comp[time_str]>Tmin) & (emission_comp[time_str] < Tmax)] * (1+z)
@@ -1311,11 +1316,13 @@ def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tm
 	if is_data is not None:
 		if (markregime == True):
 			fastcool_data = is_data[is_data['NUM']>is_data['NUC']]
-			make_together_plots(shock_data=fastcool_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			if len(fastcool_data) > 0:
+				make_together_plots(shock_data=fastcool_data,label="IS - FC", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
 			data_holder.append(fastcool_data)
 
 			slowcool_data = is_data[is_data['NUM']<=is_data['NUC']]
-			make_together_plots(shock_data=slowcool_data, color="C0", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			if len(slowcool_data) > 0:
+				make_together_plots(shock_data=slowcool_data,label="IS - SC", color="C0", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
 			data_holder.append(slowcool_data)
 
 		else:
@@ -1325,11 +1332,13 @@ def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tm
 	if fs_data is not None:
 		if (markregime == True):
 			fastcool_data = fs_data[fs_data['NUM']>fs_data['NUC']]
-			make_together_plots(shock_data=fastcool_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			if len(fastcool_data) > 0:
+				make_together_plots(shock_data=fastcool_data,label="FS - FC", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
 			data_holder.append(fastcool_data)
 			
 			slowcool_data = fs_data[fs_data['NUM']<=fs_data['NUC']]
-			make_together_plots(shock_data=slowcool_data, color="C1", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			if len(slowcool_data) > 0:
+				make_together_plots(shock_data=slowcool_data,label="FS - SC", color="C1", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
 			data_holder.append(slowcool_data)
 
 		else:
@@ -1339,11 +1348,13 @@ def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tm
 	if rs_data is not None:
 		if (markregime == True):
 			fastcool_data = rs_data[rs_data['NUM']>rs_data['NUC']]
-			make_together_plots(shock_data=fastcool_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			if len(fastcool_data) > 0:
+				make_together_plots(shock_data=fastcool_data,label="RS - FC", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
 			data_holder.append(fastcool_data)
 
 			slowcool_data = rs_data[rs_data['NUM']<=rs_data['NUC']]
-			make_together_plots(shock_data=slowcool_data, color="C2", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			if len(slowcool_data) > 0:
+				make_together_plots(shock_data=slowcool_data,label="RS - SC", color="C2", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
 			data_holder.append(slowcool_data)
 
 		else:
@@ -1489,7 +1500,6 @@ def plot_synch_cooling_regime(emission,frame="obs",ax=None,z=0,label=None, color
 
 ##############################################################################################################################
 
-
 def lum_dis(z: float):
 	""" 
 	Caclulate luminosity distance for a given redshift z
@@ -1518,7 +1528,7 @@ if __name__ == '__main__':
 	Shell Lorentz Distribution
 	"""
 	
-	# plot_lor_dist('data-file-dir/synthGRB_shell_dist.txt')
+	plot_lor_dist('data-file-dir/synthGRB_shell_dist.txt')
 	# ani = plot_lor_dist_anim('data-file-dir/synthGRB_shell_dist.txt')
 
 	"""
@@ -1564,17 +1574,17 @@ if __name__ == '__main__':
 	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
 
 	# # Interactive light curve
-	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 20, init_Emin = 8, init_Emax = 1e4,z=z,label="Total",with_comps=True)
+	tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 20, init_Emin = 8, init_Emax = 1e4,z=z,label="Total",with_comps=True)
 	
 
 	# # Afterglow light curve
-	# ax_afg_lc = plt.figure().gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_afg_lc,z=z,label="Prompt",logscale=True,color="k")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt",ax=ax_afg_lc,z=z,label="AG: GBM",logscale=True,color="C1")
-	# # plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt",ax=ax_afg_lc,z=z,label="AG: XRT",logscale=True,color="C4")
-	# # plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt.txt",ax=ax_afg_lc,z=z,label="AG: OPT",logscale=True,color="C5")
-	# ax_afg_lc.set_ylim(1e43,1e49)
-	# ax_afg_lc.set_xlim(0.1)
+	ax_afg_lc = plt.figure().gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_afg_lc,z=z,label="Prompt",logscale=True,color="k")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt",ax=ax_afg_lc,z=z,label="AG: GBM",logscale=True,color="C1")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt",ax=ax_afg_lc,z=z,label="AG: XRT",logscale=True,color="C4")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt.txt",ax=ax_afg_lc,z=z,label="AG: OPT",logscale=True,color="C5")
+	ax_afg_lc.set_ylim(1e43,1e49)
+	ax_afg_lc.set_xlim(0.1)
 	
 	"""
 	Jet dynamics plots 
@@ -1594,7 +1604,7 @@ if __name__ == '__main__':
 	# plot_evo_ext_shock(fs_data=fs_data)		
 	
 	# Plot everything together:
-	# fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
+	fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
 	# fig0, fig1 = plot_together(fs_data=fs_data)
 
 	
