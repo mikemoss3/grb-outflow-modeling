@@ -446,16 +446,9 @@ $v_{rel,i}$ & Relative collision speed between the slow and fast shells of the $
 
 Similar to how the thermal spectrum is created, the non-thermal spectrum generated from the GRB prompt emission simulations for a particular time-interval is created from the summation of spectra created by each emission event which occurred within time-interval.
 
-The spectrum used for each emission event is therefor an important consideration. A simple first step is to assume a Broken Power Law (BPL) where the low and high energy power law indices are given by $\alpha=-1$ and $\beta\leq-2.5$. The value of alpha is an active discussion within the field and ranges between -0.6 to -1.5. The peak energy of the distribution can be determined by synchrotron energy calculated in the simulation, $E_{synch}$.
+The spectrum used for each emission event is therefor an important consideration. A simple first step is to assume a Broken Power Law (BPL) where the low and high energy power law indices are taken to be the typical observed values, $\alpha=-1$ and $\beta\leq-2.5$, respectively. The peak energy of the distribution can be determined by synchrotron energy calculated in the simulation, $E_{synch}$.
 
-Alternatively, if we assume that synchrotron emission is produced by internal shocks events in the jet, we can use a standard definition of the synchrotron spectrum \citep{1998ApJ...497L..17S}. The variable parameters in this definition are the minimum Lorentz factor of the electron population and the cyclotron Lorentz factor, $\Gamma_m$ and $\Gamma_c$, respectively. These can be defined in terms of the parameters used in our simulations.
-
-\begin{align}
-	\Gamma_m &= \frac{p-2}{p-1} \frac{\epsilon_e}{\zeta} \frac{m_p}{m_e} \left(\frac{\epsilon}{c^2}\right) \\
-	\Gamma_c &= \frac{const}{B^2 t'_{dyn}} \Rightarrow \frac{R}{\Gamma c}
-\end{align}
-
-where $\epsilon/c^2 = (\Gamma_{int} -1)$. These Lorentz factors can be directly turned to frequencies, $\nu_m$ and $\nu_c$, respectively. 
+Alternatively, if we assume that synchrotron emission is produced during internal shocks events in the jet, we can use a standard definition of the synchrotron spectrum \citep{1998ApJ...497L..17S} (see Appendix \ref{app: derive synch} for the derivation of the Synchrotron spectrum).
 
 
 \section{Light Curve Generation} \label{sec:light curve}
@@ -824,7 +817,7 @@ This is obviously not feasible.
 
 Below is a list of the classes and libraries created for the GRB prompt emission simulation code.
 
-\begin{deluxetable*}{ll}
+\begin{deluxetable}{ll}
 \tablecaption{ Custom classes and libraries created for the GRB prompt emission simulation code. \label{tab: custom packages}}
 \tablewidth{0pt}
 \tablehead{
@@ -845,13 +838,13 @@ SynthGRBLibrary.cpp & Creates multiple SynthGRB's based on user defined paramete
 ObsGRB.cpp & Contains methods to store and manipulate observed GRB data. \\
 DataAnalysis.cpp & Contains all methods used for data manipulation and fitting. \\
 \enddata
-\end{deluxetable*}
+\end{deluxetable}
 
 \section{Packages Used}
 
 In Table \ref{tab: standard packages} I list the standard C++ and Python packages used.
 
-\begin{deluxetable*}{ll}
+\begin{deluxetable}{ll}
 \tablecaption{A list of the standard C++ packages used in the simulation code and Python packages used for plotting. \label{tab: standard packages}}
 \tablewidth{0pt}
 \tablehead{
@@ -866,7 +859,85 @@ fstream & \\
 vector & \\
 sstream & \\
 \enddata
-\end{deluxetable*}
+\end{deluxetable}
+
+\section{Synchrotron Spectrum Derivation} \label{app: derive synch}
+
+When electrons travel through a magnetic field, they are accelerated along the magnetic field lines and produce Synchrotron emission. Following the derivation outlined in \citet{1986rpa..book.....R}, the spectral power of a single electron emitting synchrotron emission can be written as,
+
+\begin{align}
+	P_{\nu}( \chi ) &= \sqrt{3} \frac{q_e^3 B \gamma_e}{m_e c^2} \chi \int_\chi^\infty \kappa_{5/3}(\xi ) d\xi \\
+\end{align}
+
+Following \citet{1973plas.book.....K}, this can approximated as, 
+
+\begin{align}
+	& = 3 \left( \frac{3}{2}\right)^{1/3} \frac{q_e^3 B \Gamma}{m_e c^2} \chi^{1/3} \exp{-\chi}
+\end{align}
+
+\mm{make figure of single electron synchrotron power spectra}
+where 
+
+\begin{align}
+	B &= \text{ is the magnetic field strength}\\
+	\gamma_e &= \text{ is the Lorentz factor the accelerated electron}\\
+	\kappa_{5/3} &= \text{ is the modified Bessel function}\\
+	\Gamma &= \text{ is the bulk Lorentz factor of the material}\\
+	\chi &= \frac{\nu}{\nu_e}\\
+	\nu &= \text{ is the observing frequency}\\
+	\nu_e &= \text{ is the characteristic synchrotron frequency associated with $\gamma_e$}\\
+\end{align}
+
+The relation between a synchrotron electron with Lorentz factor $\gamma_e$ can be associated with a frequency using the relation, 
+
+\begin{align}
+	\nu_e = \frac{q_e^3 B \Gamma}{2\pi m_e c} \gamma_e \label{eq: nu-gamma relation}
+\end{align}
+
+To calculate the power spectra for a population of electrons, we first assume that the electrons are distributed according to a power law distribution with a power law index p, $N(\gamma_e) d\gamma_e = n_o \gamma_e^{-p} d\gamma_e$ for $\gamma_e > \gamma_m$ where $\gamma_m$ is the minimum Lorentz factor of the electron population and $n_o$ is the total number density of the electron distribution,
+
+\begin{align}
+	n_o = \int_{\gamma_m}^{\infty} N(\gamma_e) d\gamma_e
+\end{align}
+
+Corrections must then be made to account for the electrons in the population that have efficiently cooled. Efficient synchrotron cooling occurs when the synchrotron cooling time scale of an electron is shorter than the dynamic cooling timescale of the system. The synchrotron cooling time can be found by taking the ratio of the electron rest mass energy to the total Synchrotron power emitted by the same electron.
+
+\mm{derive total synchrotron power emitted, see R$\&$L}
+
+\begin{align}
+	t_{c} = \frac{E}{P_{tot}} = \frac{\Gamma \gamma_e m_e c^2}{\left(\frac{4}{3} \sigma_T c \beta^2 \Gamma^2 \gamma_e^2 \frac{B^2}{8\pi}\right)} \approx \frac{m_e c^2}{\frac{4}{3}\sigma_T c \Gamma \gamma_e B^2}
+\end{align} 
+
+The typical Lorentz factor of an electron in an electron population distribution as a power law, $\gamma_e$, can be adequately represented by the minimum Lorentz factor of the population, $\gamma_m$. when $\gamma_m > \gamma_c$, all electrons in the population have cooling frequencies above the critical synchrotron cooling frequency and therefore they are efficiently cooling. This is known as the ``fast-cooling'' regime. Alternatively, when $\gamma_m < \gamma_c$, some of the electrons have cooling frequencies below the synchrotron cooling frequency and will cool adiabatically, which is inefficient. This is knows as the ``slow-cooling'' regime. \mm{make figure of cooling regimes.} 
+
+\mm{derive the corrected electron populations}
+
+We can write the corrected power law distributions as, 
+
+Slow cooling regime:
+\begin{align}
+	&\gamma_m < \gamma_e < \gamma_c,\quad N(\gamma_e)d\gamma_e = n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(p-1)}\right)^{-1} \left(\frac{\gamma_e}{\gamma_m}\right)^{-p} d\left(\frac{\gamma_e}{\gamma_m})\right)\\
+	&\gamma_m < \gamma_c < \gamma_e,\quad N(\gamma_e)d\gamma_e = n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(p-1)}\right)^{-1} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(-p-1)}\left(\frac{\gamma_e}{\gamma_c}\right)^{-p-1} d\left(\frac{\gamma_e}{\gamma_c})\right)
+\end{align}
+
+Fast cooling regime:
+\begin{align}
+	&\gamma_c < \gamma_e < \gamma_c,\quad N(\gamma_e)d\gamma_e = n_o \left(1 - \frac{(p-1)}{p} \left(\frac{\gamma_m}{\gamma_c}\right)^{-1)}\right)^{-1} \left(\frac{\gamma_e}{\gamma_c}\right)^{-2} d\left(\frac{\gamma_e}{\gamma_c})\right)\\
+	&\gamma_c < \gamma_m < \gamma_e,\quad N(\gamma_e)d\gamma_e = n_o \left(1 - \frac{(p-1)}{p} \left(\frac{\gamma_m}{\gamma_c}\right)^{-1}\right)^{-1} \left(\frac{\gamma_m}{\gamma_c}\right)^{-1}\left(\frac{\gamma_e}{\gamma_m}\right)^{-p-1} d\left(\frac{\gamma_e}{\gamma_m})\right)
+\end{align}
+
+We can now calculate the power for each of the four branches of the population by integrating the power spectra over the entire electron population, 
+
+\begin{align}
+	P_\nu = \int_{\gamma_e}^{\infty} N(\gamma_e) P_\nu(\chi) d\gamma_e
+\end{align}
+
+In the following derivations, we will be transforming between Lorentz factors and the associated frequency (see Eq. \ref{eq: nu-gamma relation}), one useful substitution will be
+
+\begin{align}
+	\frac{\gamma_1}{\gamma_2} &= \left(\frac{\nu_1}{\nu_2}\right)^{1/2} \\
+	d\left(\frac{\gamma_1}{\gamma_2}\right) &= d\left(\frac{\nu_1}{\nu_2}\right)^{1/2} = \frac{1}{2} \left(\frac{\gamma_1}{\gamma_2}\right)^{-1/2} d\left(\frac{\gamma_1}{\gamma_2}\right)
+\end{align}
 
 
 \end{appendix}
