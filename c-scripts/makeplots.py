@@ -40,7 +40,7 @@ def plot_aesthetics(ax,fontsize=14,fontweight='bold'):
 
 ##############################################################################################################################
 
-def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',linestyle='solid', separator_string = "// Next step\n"):
+def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', linestyle="solid",separator_string = "// Next step\n"):
 	"""
 	Method to plot the given Lorentz factor distribution saved in the text file with path name "file_name".
 	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string".
@@ -64,11 +64,11 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 	"""
 
 	# Load data
-	lor_dist_list = load_lor_dist(file_name)
+	lor_time_list, lor_dist_list = load_lor_dist(file_name)
 
 	# Make plot instance if it doesn't exist
 	if ax is None:
-		fig, ax = plt.subplots(1,2,figsize=(16, 6))	
+		fig, ax = plt.subplots(1,3,figsize=(20, 6))	
 
 	ind = np.array([0])
 	def on_press(event):
@@ -76,9 +76,19 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 			ind[0] +=1
 		elif event.key == 'left':
 			ind[0] -=1
-		# Update shell index plot 
-		line_shell_ind.set_xdata(np.linspace(start=0,stop=len(lor_dist_list[ind[0]]['GAMMA']),num=len(lor_dist_list[ind[0]]['GAMMA'])))
-		line_shell_ind.set_ydata(lor_dist_list[ind[0]]['GAMMA'])
+
+		# Loop back to beginning 
+		if(ind[0] == len(lor_time_list)):
+			ind[0] = 0
+		# Loop to the end
+		if(ind[0] == -1):
+			ind[0] = len(lor_time_list)-1
+		
+		# Update ejection time plot 
+		# line_shell_ind.set_xdata(lor_dist_list[ind[0]]['TE'])
+		# line_shell_ind.set_ydata(lor_dist_list[ind[0]]['GAMMA'])
+		line_shell_ind.set_offsets(np.transpose([lor_dist_list[ind[0]]['TE'],lor_dist_list[ind[0]]['GAMMA']]))
+		# ax[0].set_xlim(np.min(lor_dist_list[ind[0]]['TE']),np.max(lor_dist_list[ind[0]]['GAMMA']))
 
 		# Update cumulative mass fraction plot 
 		flipped_mass_arr = np.flip(lor_dist_list[ind[0]]['MASS'])
@@ -92,6 +102,12 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 		line_mass_frac_zoom.set_xdata(massfraccum)
 		line_mass_frac_zoom.set_ydata(flipped_gamma_arr)
 
+		# Update radius plot 
+		line_rad.set_offsets(np.transpose([lor_dist_list[ind[0]]['RADIUS'],lor_dist_list[ind[0]]['GAMMA']]))
+		ax[2].set_xlim(np.min(lor_dist_list[ind[0]]['RADIUS']), np.max(lor_dist_list[ind[0]]['RADIUS']))
+
+		ax[1].set_title("Time = {} sec".format(lor_time_list[ind[0]]),fontsize=fontsize,fontweight=fontweight)
+
 		# Redraw the figure to implement updates
 		ax[0].redraw_in_frame()
 		ax[1].redraw_in_frame()
@@ -100,8 +116,7 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 	fig.canvas.mpl_connect('key_press_event', on_press)
 
 	# Plot distribution as a function of the shell number 
-	line_shell_ind, = ax[0].step(np.linspace(start=0,stop=len(lor_dist_list[0]['GAMMA']),num=len(lor_dist_list[0]['GAMMA'])),lor_dist_list[0]['GAMMA'],where='pre',linestyle=linestyle,label=label)
-	ax[0].invert_xaxis()
+	line_shell_ind = ax[0].scatter(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],marker=marker,label=label)
 	ax[0].set_ylim(0)
 
 	# Plot the Lorentz distribution as a function of the mass fraction
@@ -113,25 +128,33 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 	massfraccum = masscum/masscum[-1]
 
 	# Plot distribution as a function of the mass fraction
-	line_mass_frac, = ax[1].step(massfraccum,flipped_gamma_arr,where='pre',linestyle=linestyle,label=label)
-	
+	line_mass_frac, = ax[1].step(massfraccum,flipped_gamma_arr,where='post',linestyle=linestyle,label=label)
 	ax[1].set_ylim(0)
+
+	line_rad = ax[2].scatter(lor_dist_list[0]['RADIUS'],lor_dist_list[0]['GAMMA'],marker=marker,label=label)
+	ax[2].set_ylim(0)
 
 	# Zoomed in version of the distribution as a function of the mass fraction
 	ax_zoom = ax[1].twinx()
-	line_mass_frac_zoom, = ax_zoom.step(massfraccum,flipped_gamma_arr,where='pre',linestyle=linestyle,label=label,color="C1")
+	line_mass_frac_zoom, = ax_zoom.step(massfraccum,flipped_gamma_arr,where='post',linestyle=linestyle,label=label,color="C1")
 	ax_zoom.set_ylim(0,50)
 
 	if xlabel is True:
-		ax[0].set_xlabel('Shell Ind.',fontsize=fontsize,fontweight=fontweight)
+		ax[0].set_xlabel('Initial Ejection Time (sec)',fontsize=fontsize,fontweight=fontweight)
 		ax[1].set_xlabel(r'M/M$_{tot}$',fontsize=fontsize,fontweight=fontweight)
+		ax[2].set_xlabel(r'Radius (light second)',fontsize=fontsize,fontweight=fontweight)
 	if ylabel is True:
 		ax[0].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
 		ax[1].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
+		ax[2].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
+
+	ax[1].set_title("Time = {} sec".format(lor_time_list[0]),fontsize=fontsize,fontweight=fontweight)
 
 	plot_aesthetics(ax[0],fontsize=fontsize,fontweight=fontweight)
 	plot_aesthetics(ax[1],fontsize=fontsize,fontweight=fontweight)
 	plot_aesthetics(ax_zoom,fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax[2],fontsize=fontsize,fontweight=fontweight)
+
 	if label is not None:
 		ax[0].legend(fontsize=fontsize)
 
@@ -162,14 +185,13 @@ def plot_lor_dist_anim(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,
 	separator_string = the string between each snapshot of the Lorentz distribution
 	"""
 	# Load data
-	lor_dist_list = load_lor_dist(file_name)
+	lor_time_list, lor_dist_list = load_lor_dist(file_name)
 
 	# Make plot instance if it doesn't exist
 	fig, ax = plt.subplots(1,2,figsize=(16, 6))	
 
 	# Plot distribution as a function of the shell number 
-	line_shell_ind, = ax[0].step(np.linspace(start=0,stop=len(lor_dist_list[0]['GAMMA']),num=len(lor_dist_list[0]['GAMMA'])),lor_dist_list[0]['GAMMA'],where='pre',linestyle=linestyle,label=label)
-	ax[0].invert_xaxis()
+	line_shell_ind, = ax[0].step(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],where='pre',linestyle=linestyle,label=label)
 	ax[0].set_ylim(0)
 
 	# Plot the Lorentz distribution as a function of the mass fraction
@@ -190,15 +212,18 @@ def plot_lor_dist_anim(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,
 	ax_zoom.set_ylim(0,50)
 
 	if xlabel is True:
-		ax[0].set_xlabel('Shell Ind.',fontsize=fontsize,fontweight=fontweight)
+		ax[0].set_xlabel('Initial Ejection Time (sec)',fontsize=fontsize,fontweight=fontweight)
 		ax[1].set_xlabel(r'M/M$_{tot}$',fontsize=fontsize,fontweight=fontweight)
 	if ylabel is True:
 		ax[0].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
 		ax[1].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
 
+	ax[0].set_title("Time = {} sec",format(lor_time_list[0]),fontsize=fontsize,fontweight=fontweight)
+
 	plot_aesthetics(ax[0],fontsize=fontsize,fontweight=fontweight)
 	plot_aesthetics(ax[1],fontsize=fontsize,fontweight=fontweight)
 	plot_aesthetics(ax_zoom,fontsize=fontsize,fontweight=fontweight)
+	
 	if label is not None:
 		ax[0].legend(fontsize=fontsize)
 
@@ -209,7 +234,7 @@ def plot_lor_dist_anim(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,
 		ind[0] = i
 		
 		# Update shell index plot 
-		line_shell_ind.set_xdata(np.linspace(start=0,stop=len(lor_dist_list[ind[0]]['GAMMA']),num=len(lor_dist_list[ind[0]]['GAMMA'])))
+		line_shell_ind.set_xdata(lor_dist_list[ind[0]]['TE'])
 		line_shell_ind.set_ydata(lor_dist_list[ind[0]]['GAMMA'])
 
 		# Update cumulative mass fraction plot 
@@ -223,6 +248,8 @@ def plot_lor_dist_anim(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,
 
 		line_mass_frac_zoom.set_xdata(massfraccum)
 		line_mass_frac_zoom.set_ydata(flipped_gamma_arr)
+
+		ax[0].set_title("Time = {} sec".format(lor_time_list[ind[0]]),fontsize=fontsize,fontweight=fontweight)
 
 		# Redraw the figure to implement updates
 		# ax[0].redraw_in_frame()
@@ -272,13 +299,19 @@ def load_lor_dist(file_name, string_match = "// Next step\n"):
 		line_num_list = lines_that_equal(string_match,fp)
 
 	# For all the data between each line number in the line_num_list, load the data and append it to the data_list
+	data_time = []
 	data_list = []
 	for i in range(len(line_num_list)-1):
-		tmp_data = np.genfromtxt(file_name,skip_header=line_num_list[i],max_rows=line_num_list[i+1]-1-line_num_list[i], dtype=[("RADIUS",float),("GAMMA",float),("MASS",float),("TE",float),("STATUS",float)])
+		
+		# Read the time at which this data occurred in the simulation
+		tmp_time = np.genfromtxt(file_name,skip_header=line_num_list[i],max_rows=1)
+		data_time.append(tmp_time) 
+		
+		# Read data
+		tmp_data = np.genfromtxt(file_name,skip_header=line_num_list[i]+1,max_rows=line_num_list[i+1]-2-line_num_list[i], dtype=[("RADIUS",float),("GAMMA",float),("MASS",float),("TE",float),("STATUS",float)])
 		data_list.append(tmp_data[tmp_data['STATUS']>0])
-		# data_list.append(tmp_data)
 
-	return data_list
+	return data_time, data_list
 
 ##############################################################################################################################
 
@@ -1566,15 +1599,15 @@ if __name__ == '__main__':
 	Synthetic light curve
 	"""
 	
-	# ax_lc = plt.figure().gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,label="TH",color="r")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,label="IS",color="C0")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,label="FS",color="C1")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,label="RS",color="C2")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
+	ax_lc = plt.figure().gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,label="TH",color="r")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,label="IS",color="C0")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,label="FS",color="C1")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,label="RS",color="C2")
+	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
 
-	# # Interactive light curve
-	tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 20, init_Emin = 8, init_Emax = 1e4,z=z,label="Total",with_comps=True)
+	# Interactive light curve
+	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 20, init_Emin = 8, init_Emax = 1e4,z=z,label="Total",with_comps=True)
 	
 
 	# # Afterglow light curve
@@ -1586,11 +1619,12 @@ if __name__ == '__main__':
 	ax_afg_lc.set_ylim(1e43,1e49)
 	ax_afg_lc.set_xlim(0.1)
 	
+
 	"""
 	Jet dynamics plots 
 	
 	"""
-	
+	"""
 	# therm_emission = load_therm_emission("data-file-dir/synthGRB_jet_params_therm.txt")
 	# plot_evo_therm(therm_emission,z=1)
 	
@@ -1615,7 +1649,7 @@ if __name__ == '__main__':
 	# # plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1")
 	# plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16)
 	# add_FermiGBM_band(ax_synch_reg,axis="y")
-
+	"""
 
 	"""
 	Observables

@@ -29,9 +29,9 @@
 ### p external, dimensionless ###
 2.2
 ### k, wind parameter, i.e., 0, 2 ###
-0
+2
 ### rho_not, density normalization (for k = 0, g cm^-3, i.e., n0*mp = n0*1.672e-24 | for k = 2, g cm^-1, i.e., A_star * 5.e11 ) ###
-1.672e-24
+5.e11
 ### LorentzDist, i.e., step, smoothstep, osci ###
 gauss_inject
 ### ShellDistParamsFile, i.e., ./input-files/jet-shells-"LorentzDist".txt ###

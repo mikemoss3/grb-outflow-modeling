@@ -137,33 +137,36 @@ int main(int argc, char const *argv[])
 	SynthGRB test_grb = SynthGRB();
 	test_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
 	
-	// test_grb.anim_lor_dist = true;
+	test_grb.anim_lor_dist = true;
 	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();
-	test_grb.write_out_jet_params("./data-file-dir/");
+	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt", -1., true);
+	// test_grb.write_out_jet_params("./data-file-dir/");
+	// test_grb.WriteBoulodromeTXT("./data-file-dir/test_boulodrome.txt");
 
 	float tlo = tmin; // The T90? essentially.
 	float thi = tmax;
 
-	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_total.txt");
+	// test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
+	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_total.txt");
 
-	Spectrum * p_source_spectrum_therm = new Spectrum(energ_min, energ_max, num_energ_bins);
-	test_grb.MakeThermalSpec(p_source_spectrum_therm, tlo, thi);
-	(*p_source_spectrum_therm).WriteToTXT("data-file-dir/synthGRB_spec_therm.txt");
+	// Spectrum * p_source_spectrum_therm = new Spectrum(energ_min, energ_max, num_energ_bins);
+	// test_grb.MakeThermalSpec(p_source_spectrum_therm, tlo, thi);
+	// (*p_source_spectrum_therm).WriteToTXT("data-file-dir/synthGRB_spec_therm.txt");
 
-	Spectrum * p_source_spectrum_is = new Spectrum(energ_min, energ_max, num_energ_bins);
-	test_grb.MakeISSpec(p_source_spectrum_is, tlo, thi);
-	(*p_source_spectrum_is).WriteToTXT("data-file-dir/synthGRB_spec_is.txt");
+	// Spectrum * p_source_spectrum_is = new Spectrum(energ_min, energ_max, num_energ_bins);
+	// test_grb.MakeISSpec(p_source_spectrum_is, tlo, thi);
+	// (*p_source_spectrum_is).WriteToTXT("data-file-dir/synthGRB_spec_is.txt");
 
-	Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
-	test_grb.MakeFSSpec(p_source_spectrum_fs, tlo, thi);
-	(*p_source_spectrum_fs).WriteToTXT("data-file-dir/synthGRB_spec_fs.txt");
+	// Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
+	// test_grb.MakeFSSpec(p_source_spectrum_fs, tlo, thi);
+	// (*p_source_spectrum_fs).WriteToTXT("data-file-dir/synthGRB_spec_fs.txt");
 
-	Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
-	test_grb.MakeRSSpec(p_source_spectrum_rs, tlo, thi);
-	(*p_source_spectrum_rs).WriteToTXT("data-file-dir/synthGRB_spec_rs.txt");
+	// Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
+	// test_grb.MakeRSSpec(p_source_spectrum_rs, tlo, thi);
+	// (*p_source_spectrum_rs).WriteToTXT("data-file-dir/synthGRB_spec_rs.txt");
+	
 	
 	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve.txt");
@@ -180,6 +183,8 @@ int main(int argc, char const *argv[])
 
 	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, 0.1, 5e5, dt, "FS", true);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt");
+	
+
 	// test_grb.make_source_light_curve(0.2, 10, 10, 5e5, dt, "FS", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt");
 	// test_grb.make_source_light_curve(1e-3, 5e-3, 10, 5e5, dt, "FS", true);

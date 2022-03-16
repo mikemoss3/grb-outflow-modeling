@@ -196,7 +196,7 @@ void ShellDist::oscillatory(float dte, float median, float amp, float freq, floa
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Distribute the shells by injecting Gaussians at specific places. 
-void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_gauss, std::vector<float> means, std::vector<float> sigmas, std::vector<float> amps, bool fluctuations)
+void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_gauss, std::vector<float> means, std::vector<float> sigmas, std::vector<float> sigma_count, std::vector<float> amps, bool fluctuations)
 {
 	/*
 	Distribute the Lorentz factors of the shells into a step function. 
@@ -211,10 +211,11 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 	*/
 
 	// First, check if each input array is the same size
-	// if( (sizeof(*means)/sizeof(means[0]) != sizeof(*amps)/sizeof(amps[0])) | (sizeof(*means)/sizeof(means[0]) != sizeof(*sigmas)/sizeof(sigmas[0])) )
-	// {
-	// 	cout << "Input Gaussian parameter arrays must be the same length.";
-	// }
+	if( (means.size() != (size_t)num_gauss) | (sigmas.size() != (size_t)num_gauss) | (amps.size() != (size_t)num_gauss) )
+	{
+		cout << "Input Gaussian parameter arrays must have a length equal to the specified Number of Gaussians.";
+		return;
+	}
 
 	// Initially, we set all Lorentz factors to the input average value
 	for(double i = 0; i<numshells; ++i)
@@ -225,43 +226,71 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 	// Set the Lorentz factors for each section of the step distribution
 
 	// Now, add a Gaussian at each value in the "means" array	
+	float curr_t_start = 0.; // Used to find the start time of each Gaussian
+	float curr_t_stop = 0.; // Used to find the stop time of each Gaussian
 	for(int k=0; k < num_gauss; ++k)
 	{
-		for(double i = 0; i<numshells; ++i)
-		{
-			shell_gamma.at(i) += amps[k]*exp( - pow(i - means[k],2.) / (2.*pow(sigmas[k],2.)) );
-		}
+		curr_t_start = means.at(k) - (sigma_count.at(k) * sigmas.at(k) );
+		if(curr_t_start < 0){curr_t_start = 0;} // Set the start time limit to zero if it is was found to be less than zero
 
+		curr_t_stop = means.at(k) + (sigma_count.at(k) * sigmas.at(k) );
+		if(curr_t_stop > (dte*numshells)){curr_t_stop = (dte*numshells);} // Set the stop time limit to the end duration of the wind if it is was found to be larger than the wind duration
+
+		for(double i = (curr_t_start/dte); i < (curr_t_stop/dte); ++i)
+		{
+			shell_gamma.at(i) += amps.at(k) * exp( - pow( (i*dte) - means.at(k),2.) / (2.*pow(sigmas.at(k),2.)) );
+		}
 	}
 
-	// Find the average Lorentz factor in the outflow
+	// For all shells that still have a Lorentz factor of 0, deactivate them,
+	for(float i=0; i<numshells; ++i)
+	{
+		if(shell_gamma.at(i) <= 1.)
+		{
+			// De-activate all shells
+			shell_status.at(i) = 0;
+		}
+		else
+		{
+			// Activate all shells
+			shell_status.at(i) = 1;
+		}
+	}
+
+	// Find the average Lorentz factor of the active shells in the outflow
 	double gamma_bar = 0.0;
 	for(double i = 0; i<numshells; ++i)
 	{
-		gamma_bar += shell_gamma.at(i);
+		if(shell_status.at(i) == 1)
+		{
+			gamma_bar += shell_gamma.at(i);
+		}
 	}
 	gamma_bar /= numshells;
 
 
+	// For the active shells, find the mass and radius
 	for(float i=0; i<numshells; ++i)
 	{
-		// Set the Mass for each shell 
-		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
-		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
-		
-		// Calculate the launch time of each shell
-		shell_te.at(i) = -i*dte;
+		if(shell_status.at(i) == 1)
+		{			
+			// Set the Mass for each shell 
+			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+			shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
+			
+			// Calculate the launch time of each shell
+			shell_te.at(i) = -i*dte;
 
-		// Calculate the shell position based on when the shell will be launched
-		// Notice this is actually R/c 
-		shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
-
-		// Activate all shells
-		shell_status.at(i) = 1;
+			// Calculate the shell position based on when the shell will be launched
+			// Notice this is actually R/c 
+			shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+		}
 	}
 
 	// Eliminate possible divide by zero error (still insignificantly small).
 	shell_radius.at(0) = 1./c_cm;
+
+	return;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -291,39 +320,65 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 	// Set the Lorentz factors for each section of the step distribution
 
 	// Now, add a square starting at each value in the "starts" array	
+	float curr_t_start = 0.; // Used to find the start time of each Gaussian
+	float curr_t_stop = 0.; // Used to find the stop time of each Gaussian
 	for(int k=0; k < num_squares; ++k)
 	{
-		for(double i = starts[k]; i< (starts[k] + durations[k]); ++i)
-		{
-			shell_gamma.at(i) += amps[k];
-		}
+		curr_t_start = starts.at(k);
+		if(curr_t_start < 0){curr_t_start = 0;} // Set the start time limit to zero if it is was found to be less than zero
 
+		curr_t_stop = starts.at(k) +  durations.at(k) ;
+		if(curr_t_stop > (dte*numshells)){curr_t_stop = (dte*numshells);} // Set the stop time limit to the end duration of the wind if it is was found to be larger than the wind duration
+
+		for(double i = (curr_t_start/dte); i < (curr_t_stop/dte); ++i)
+		{
+			shell_gamma.at(i) +=  amps[k];
+		}
+	}
+
+	// For all shells that still have a Lorentz factor of 0, deactivate them,
+	for(float i=0; i<numshells; ++i)
+	{
+		if(shell_gamma.at(i) <= 1.)
+		{
+			// De-activate all shells
+			shell_status.at(i) = 0;
+		}
+		else
+		{
+			// Activate all shells
+			shell_status.at(i) = 1;
+		}
 	}
 
 	// Find the average Lorentz factor in the outflow
 	double gamma_bar = 0.0;
 	for(double i = 0; i<numshells; ++i)
 	{
-		gamma_bar += shell_gamma.at(i);
+		if(shell_status.at(i) == 1)
+		{
+			gamma_bar += shell_gamma.at(i);
+		}
 	}
 	gamma_bar /= numshells;
 
 
 	for(float i=0; i<numshells; ++i)
 	{
-		// Set the Mass for each shell 
-		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
-		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
-		
-		// Calculate the launch time of each shell
-		shell_te.at(i) = -i*dte;
 
-		// Calculate the shell position based on when the shell will be launched
-		// Notice this is actually R/c 
-		shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+		if(shell_status.at(i) == 1)
+		{
+			// Set the Mass for each shell 
+			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+			shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
+			
+			// Calculate the launch time of each shell
+			shell_te.at(i) = -i*dte;
 
-		// Activate all shells
-		shell_status.at(i) = 1;
+			// Calculate the shell position based on when the shell will be launched
+			// Notice this is actually R/c 
+			shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+		}
 	}
 
 	// Eliminate possible divide by zero error (still insignificantly small).
@@ -333,7 +388,7 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Write shell distribution to a text file
-void ShellDist::WriteToTXT(string filename, bool append)
+void ShellDist::WriteToTXT(string filename, double time, bool append)
 {
 
 	// write out thermal params
@@ -348,6 +403,7 @@ void ShellDist::WriteToTXT(string filename, bool append)
 	}
 	size_t i=0;
 	shell_dist_file << "// Next step" << "\n";
+	shell_dist_file << time << "\n";
 	// For each shell, write the shell parameters to file.
 	while ( i < shell_radius.size())
 	{
@@ -365,3 +421,4 @@ void ShellDist::WriteToTXT(string filename, bool append)
 	}
 	shell_dist_file.close(); // Close file
 }
+

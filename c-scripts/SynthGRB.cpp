@@ -335,8 +335,8 @@ void SynthGRB::set_jet_shells()
 		else
 		{
 			// Array to store params 
-			string inputs[7];
-			std::vector<std::vector<float>> vec_vec(3);
+			string inputs[8];
+			std::vector<std::vector<float>> vec_vec(4);
 			int i = 0;
 			int k = 0;
 
@@ -355,7 +355,7 @@ void SynthGRB::set_jet_shells()
 						inputs[i] = line_jet_params;
 						++i;
 					}
-					else if( i < 6)
+					else if( i < 7)
 					{
 						std::vector<float> tmp_v;
 						// Build an istream that holds the input string
@@ -384,8 +384,8 @@ void SynthGRB::set_jet_shells()
 
 			// Make shell distribution with input parameters
 			bool fluc;
-			istringstream(inputs[6]) >> fluc; 
-			(*p_jet_shells).gauss_inject((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), vec_vec.at(0), vec_vec.at(1), vec_vec.at(2), fluc);
+			istringstream(inputs[7]) >> fluc; 
+			(*p_jet_shells).gauss_inject((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), vec_vec.at(0), vec_vec.at(1), vec_vec.at(2), vec_vec.at(3), fluc);
 		}
 	}
 	if((*p_model_params).LorentzDist == "square_inject")
@@ -516,8 +516,12 @@ void SynthGRB::reset_simulation()
 	e_diss_fs.resize(0);
 	nu_c_fs.resize(0);
 	nu_m_fs.resize(0);
-	// eps_star_fs.resize(0);
-	// rho_fs.resize(0);	
+
+	rad_coll_fs.resize(0);
+	rho_fs.resize(0);
+	eps_star_fs.resize(0);
+	num_swept_e_fs.resize(0);
+	theta_fs.resize(0);
 	
 	// Reset RS variable arrays
 	te_rs.resize(0);
@@ -557,8 +561,8 @@ void SynthGRB::SimulateJetDynamics()
 	for(int i=0; i<(*p_model_params).numshells; ++i)
 	{
 		// Calculate the photospheric radius for each jet shell, Equation 9 of Hascoet 2013
-		r_phot.at(i) = (kappa_T*(*p_model_params).E_dot_iso / ( (1.+(*p_model_params).sigma)*8.*M_PI*pow(c_cm,4.) *pow( (*p_jet_shells).shell_gamma.at(i) ,3.) ) ); // units of lightseconds, cm/speed of light
-		// r_phot = 2.9*pow(10,13) *((*p_model_params).E_dot_iso/1e53) / ( cc.c*(1+(*p_model_params).sigma)* pow((*p_jet_shells).shell_gamma/100,3) ) # units of lightseconds, cm/(cm/s)
+		r_phot.at(i) = (kappa_T*(*p_model_params).E_dot_iso / ( (1.+(*p_model_params).sigma)*8.*M_PI*pow(c_cm,4.) *pow( (*p_jet_shells).shell_gamma.at(i) ,3.) ) ); // units of light seconds, cm/speed of light
+		// r_phot = 2.9*pow(10,13) *((*p_model_params).E_dot_iso/1e53) / ( cc.c*(1+(*p_model_params).sigma)* pow((*p_jet_shells).shell_gamma/100,3) ) # units of light seconds, cm/(cm/s)
 
 		// Times when each shell will cross the photosphere
 		te_therm.at(i) = (r_phot.at(i) - (*p_jet_shells).shell_radius.at(i) ) / beta((*p_jet_shells).shell_gamma.at(i)); // sec
@@ -706,24 +710,29 @@ void SynthGRB::SimulateJetDynamics()
 				// The down stream shell must have a Lorentz factor smaller than the upstream shell or they will never collide
 				if( (*p_jet_shells).shell_gamma.at(tmp_ind_ds_shell) < (*p_jet_shells).shell_gamma.at(tmp_ind_us_shell) )
 				{
-					// The down stream shell is farther out, but slower
-					// The up stream shell is closer to the central engine, but faster
-					tmp_ds_r = (*p_jet_shells).shell_radius.at(tmp_ind_ds_shell);
-					tmp_ds_b = beta( (*p_jet_shells).shell_gamma.at(tmp_ind_ds_shell) );
-					tmp_us_r = (*p_jet_shells).shell_radius.at(tmp_ind_us_shell);
-					tmp_us_b = beta( (*p_jet_shells).shell_gamma.at(tmp_ind_us_shell) );
-
-					// Calculate the time until these shells collide
-					tmp_t_IS = (tmp_ds_r - tmp_us_r) / (tmp_us_b - tmp_ds_b);
-
-					// Check if this time is shorter than the previously known shortest time until collision
-					if(tmp_t_IS < t_IS_lowest)
+					// Both shells must be launched
+					// The shells are launched at a radius of zero, before this they are at "negative" radii
+					if( ((*p_jet_shells).shell_radius.at(tmp_ind_ds_shell) > 0) & ((*p_jet_shells).shell_radius.at(tmp_ind_us_shell) > 0) )
 					{
-						t_IS_lowest = tmp_t_IS;
+						// The down stream shell is farther out, but slower
+						// The up stream shell is closer to the central engine, but faster
+						tmp_ds_r = (*p_jet_shells).shell_radius.at(tmp_ind_ds_shell);
+						tmp_ds_b = beta( (*p_jet_shells).shell_gamma.at(tmp_ind_ds_shell) );
+						tmp_us_r = (*p_jet_shells).shell_radius.at(tmp_ind_us_shell);
+						tmp_us_b = beta( (*p_jet_shells).shell_gamma.at(tmp_ind_us_shell) );
 
-						// Record which shells these were
-						ind_s_ds = tmp_ind_ds_shell;
-						ind_s_us = tmp_ind_us_shell;
+						// Calculate the time until these shells collide
+						tmp_t_IS = (tmp_ds_r - tmp_us_r) / (tmp_us_b - tmp_ds_b);
+
+						// Check if this time is shorter than the previously known shortest time until collision
+						if(tmp_t_IS < t_IS_lowest)
+						{
+							t_IS_lowest = tmp_t_IS;
+
+							// Record which shells these were
+							ind_s_ds = tmp_ind_ds_shell;
+							ind_s_us = tmp_ind_us_shell;
+						}
 					}
 				}
 			} 
@@ -1026,8 +1035,7 @@ void SynthGRB::SimulateJetDynamics()
 			// tmp_e_diss = pow(c_cm,2.) * m_bar * m_swept_tot * ( tmp_fs_g + 1 - 2*tmp_gamma_r); // erg 
 
 			// tmp_eps_star =  (fs_gamma_int - 1) * pow(c_cm,2.); // erg/g, Average energy dissipated for each proton in the collision of two shells
-			tmp_eps_star = tmp_e_diss /(2.*m_bar*m_swept_tot*tmp_gamma_r);
-			// tmp_eps_star = tmp_e_diss /(m_bar*(m_swept+tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_gamma_r);
+			tmp_eps_star = tmp_e_diss /(2.*m_bar*m_swept_tot*tmp_gamma_r); // erg/g, Average energy dissipated for each proton in the collision of two shells
 
 			// The typical Lorentz factor of the electron distribution (Gamma_min)
 			// tmp_gamma_e = ((*p_model_params).p_ext-2.) * (*p_model_params).eps_e_ext * mp * tmp_eps_star / ((*p_model_params).p_ext-1.) /(*p_model_params).zeta_ext / me / pow(c_cm,2.);
@@ -1079,11 +1087,6 @@ void SynthGRB::SimulateJetDynamics()
 			// adiabatic (slow cooling) so FS_gamma_int > 1 and approx = gamma_r  :
 			fs_gamma_int = ((tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_fs_g + m_swept_tot - tmp_rs_m*tmp_gamma_r)/(tmp_fs_m+m_swept_tot)/tmp_gamma_r;
 
-			// Reset the swept up mass
-			m_swept = 0.;
-			m_swept_tot = 0.;
-			m_ex = q * ((*p_jet_shells).shell_mass.at(fs_shell_index)+(*p_jet_shells).shell_mass.at(rs_shell_index))/gamma_bar;
-
 			// Continuous emission:
 			te_fs.push_back(tmp_te); // sec, Time of emission 
 			ta_fs.push_back(tmp_te - tmp_fs_r); // sec, Arrival time of emission at observer
@@ -1095,8 +1098,18 @@ void SynthGRB::SimulateJetDynamics()
 			e_diss_fs.push_back(tmp_lum_diss); // erg/s, Dissipated energy of the FS	
 			nu_c_fs.push_back(tmp_nu_c); // Hz, Critical synchrotron frequency
 			nu_m_fs.push_back(tmp_nu_m); // Hz, Minimum electron frequency
-			// eps_star_fs.push_back(tmp_eps_star); // erg / g, Internal energy dissipated in a collision 
-			// rho_fs.push_back(rho); // g cm^-3, Density of the collision region
+
+			rad_coll_fs.push_back(tmp_fs_r); // light seconds, Radius of forward shell
+			rho_fs.push_back(tmp_rho); // g cm^-3, Density of the collision region
+			eps_star_fs.push_back(tmp_eps_star); // Internal energy dissipated in a collision 
+			num_swept_e_fs.push_back((*p_model_params).zeta_ext * m_swept_tot / mp); // Number of swept up electrons in the shock
+			theta_fs.push_back( tmp_te / tmp_gamma_r / tmp_fs_r / sqrt(3.) ); // rad, Jet opening angle, assumes sound speed = c / sqrt(3)
+
+			// Reset the swept up mass
+			m_swept = 0.;
+			m_swept_tot = 0.;
+			m_ex = q * ((*p_jet_shells).shell_mass.at(fs_shell_index)+(*p_jet_shells).shell_mass.at(rs_shell_index))/gamma_bar;
+
 		}
 
 		/* Reverse Shock Dynamics and Emission*/
@@ -1297,7 +1310,7 @@ void SynthGRB::SimulateJetDynamics()
 		if( (anim_lor_dist == true ) & (num_shocks % 200 == 0))
 		{
 			// Append the current Lorentz distribution to the data file
-			(*p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt", true);
+			(*p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt", tmp_te, true);
 			num_shocks +=1;
 		}
 	}
@@ -1781,6 +1794,10 @@ void SynthGRB::WriteSpectrumToTXT(std::string out_file_name)
 	// Write the light curve to a text file
 	ofstream spec_file; // Construct file 
 	spec_file.open(out_file_name); // Open text file with this name
+
+	spec_file << "# Spectrum Count Rate" << endl;
+	spec_file << "# Energy bin (keV) \t Rate (c/s) \t Uncertainty (c/s)" << endl;
+
 	size_t i=0;
 	// For each time bin, write the time and count rate to the file.
 	while ( i < (*p_source_spectrum).spectrum_rate.size())
@@ -1812,6 +1829,10 @@ void SynthGRB::WriteLightCurveToTXT(std::string out_file_name)
 	// Write the light curve to a text file
 	ofstream light_curve_file; // Construct file 
 	light_curve_file.open(out_file_name); // Open text file with this name
+
+	light_curve_file << "# Light Curve Count Rate" << endl;
+	light_curve_file << "# Time (sec) \t Rate (c/s)" << endl;
+
 	size_t i=0;
 	// For each time bin, write the time and count rate to the file.
 	while ( i < (*p_source_light_curve).lc_rate.size())
@@ -1831,6 +1852,44 @@ void SynthGRB::WriteLightCurveToTXT(std::string out_file_name)
 void SynthGRB::WriteLightCurveToFITS(std::string out_file_name)
 {
 
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Write out file to be read by the amazing afterglow calculation code, Boulodrome. 
+void SynthGRB::WriteBoulodromeTXT(std::string out_file_name)
+{
+	ofstream boul_file; // Construct file 
+	
+	boul_file.open(out_file_name); // Open text file with this name
+
+	boul_file << "# Boulodrome Data File" << endl;
+	boul_file << "# Radius (light second) \t Time (sec) \t Gamma \t Beta \t Density (g cm^-3) \t Spec. Energy (erg cm^-3) \t Num. Acc. e- \t Jet Opening Angle (rad)" << endl;
+
+	size_t i=0;
+
+	// For each time bin, write the time and count rate to the file.
+	while ( i < te_fs.size())
+	{
+		boul_file << rad_coll_fs.at(i); // light seconds, Radius of forward shell
+		boul_file << " \t ";
+		boul_file << te_fs.at(i); // sec, Emission time for this information
+		boul_file << " \t ";
+		boul_file << gamma_r_fs.at(i); // Lorentz factor
+		boul_file << " \t ";
+		boul_file << beta(gamma_r_fs.at(i)); // v/c
+		boul_file << " \t ";
+		boul_file << rho_fs.at(i); // g cm^-3, Mass density
+		boul_file << " \t ";
+		boul_file << eps_star_fs.at(i); // erg cm^-3, Specific energy density
+		boul_file << " \t ";
+		boul_file << num_swept_e_fs.at(i); // Number of swept up electrons in the forward shell
+		boul_file << " \t ";
+		boul_file << theta_fs.at(i); // rad, Jet opening angle
+		boul_file << "\n";
+		++i;
+	}
+	boul_file.close(); // Close file
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

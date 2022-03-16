@@ -153,6 +153,8 @@ public:
 	// Write light curve to FITS file
 	void WriteLightCurveToFITS(std::string out_file_name);
 
+	// Write out file to be read by the amazing afterglow calculation code, Boulodrome. 
+	void WriteBoulodromeTXT(std::string out_file_name);
 
 private:
 	// Calculate final Lorentz factor of two colliding shells (after complete redistribution of momenta)
@@ -201,8 +203,13 @@ private:
 	std::vector<double> e_diss_fs; // Energy dissipated in a FS	
 	std::vector<double> nu_c_fs; // Hz, Frequency associated with the critical synchrotron Lorentz factor
 	std::vector<double> nu_m_fs; // Hz, Frequency associated with the minimum Lorentz factor of the accelerated electron population
-	// std::vector<double> eps_star_fs; // Internal energy dissipated in a collision 
-	// std::vector<double> rho_fs; // g cm^-3, Density of the collision region
+	
+	std::vector<double> rad_coll_fs; // light seconds, Radius of forward shell
+	std::vector<double> rho_fs; // g cm^-3, Density of the collision region
+	std::vector<double> eps_star_fs; // Internal energy dissipated in a collision 
+	std::vector<double> num_swept_e_fs; // Number of swept up electrons in the shock
+	std::vector<double> theta_fs; // rad, Jet opening angle
+
 	
 	std::vector<float> te_rs; // sec, Time of emission (in the rest frame of the jet)
 	std::vector<float> ta_rs; // sec, Time when the emission arrives at the observer (in the observer rest frame)
