@@ -1,7 +1,7 @@
 # Files to ignore
-figs/*
-data-file-dir/*
-log.txt
+c-scripts/figs/*
+c-scripts/data-file-dir/*
+c-scripts/log.txt
 
 # Ignore Latex temporary files 
 *.out
