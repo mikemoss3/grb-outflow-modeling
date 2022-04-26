@@ -154,7 +154,7 @@ public:
 	void WriteLightCurveToFITS(std::string out_file_name);
 
 	// Write out file to be read by the amazing afterglow calculation code, Boulodrome. 
-	void WriteBoulodromeTXT(std::string out_file_name);
+	void WriteBoulodromeTXT(std::string out_file_name, float te_start);
 
 private:
 	// Calculate final Lorentz factor of two colliding shells (after complete redistribution of momenta)
@@ -173,6 +173,7 @@ private:
 	std::vector<float> T_phot; // K, Temperatures at photosphere
 	std::vector<double> L_phot; // erg/s, Luminosities of thermal emission
 	std::vector<float> r_phot; // cm, radii of photosphere 
+	std::vector<int> shell_ind_th; // shell index passing the photosphere.
 
 	// Initialize arrays to store Synchrotron emission event data 
 	std::vector<double> te_is; // sec, Time of emission (in the rest frame of the jet), is also equal to the time a shell crosses the photosphere
