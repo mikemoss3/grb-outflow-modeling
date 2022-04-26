@@ -1,0 +1,6 @@
+### Starting Lorentz factor  ###
+500. 
+### Ending Lorentz factor  ###
+2. 
+### fluctuations ###
+false
