@@ -78,12 +78,12 @@ void ShellDist::step(float dte, float g1, float g2, float mfrac, bool fluctuatio
 		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
 		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 		
-		// Calculate the launch time of each shell
-		shell_te.at(i) = -i*dte;
+		// Calculate the launch time of each shell since the start of the launch 
+		shell_te.at(i) = i*dte;
 
-		// Calculate the shell position based on when the shell will be launched
+		// Calculate the initial shell position based on when the shell will be launched
 		// Notice this is actually R/c 
-		shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+		shell_radius.at(i) = - beta(shell_gamma.at(i)) * shell_te.at(i);
 
 		// Deactivate all shells
 		shell_status.at(i) = 1;
@@ -133,12 +133,12 @@ void ShellDist::smoothstep(float dte, float g1, float g2, float tfrac, bool fluc
 		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
 		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 		
-		// Calculate the launch time of each shell
-		shell_te.at(i) = -i*dte;
+		// Calculate the launch time of each shell since the start of the launch 
+		shell_te.at(i) = i*dte;
 
-		// Calculate the shell position based on when the shell will be launched
+		// Calculate the initial shell position based on when the shell will be launched
 		// Notice this is actually R/c 
-		shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+		shell_radius.at(i) = - beta(shell_gamma.at(i)) * shell_te.at(i);
 
 		// Deactivate all shells
 		shell_status.at(i) = 1;
@@ -178,12 +178,12 @@ void ShellDist::oscillatory(float dte, float median, float amp, float freq, floa
 		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
 		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 		
-		// Calculate the launch time of each shell
-		shell_te.at(i) = -i*dte;
+		// Calculate the launch time of each shell since the start of the launch 
+		shell_te.at(i) = i*dte;
 
-		// Calculate the shell position based on when the shell will be launched
+		// Calculate the initial shell position based on when the shell will be launched
 		// Notice this is actually R/c 
-		shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+		shell_radius.at(i) = - beta(shell_gamma.at(i)) * shell_te.at(i);
 
 		// Activate all shells
 		shell_status.at(i) = 1;
@@ -196,7 +196,7 @@ void ShellDist::oscillatory(float dte, float median, float amp, float freq, floa
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Distribute the shells by injecting Gaussians at specific places. 
-void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_gauss, std::vector<float> means, std::vector<float> sigmas, std::vector<float> sigma_count, std::vector<float> amps, bool fluctuations)
+void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_gauss, std::vector<float> means, std::vector<float> amps, std::vector<float> sigmas, std::vector<float> sigma_count, bool fluctuations)
 {
 	/*
 	Distribute the Lorentz factors of the shells into a step function. 
@@ -278,12 +278,12 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
 			shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 			
-			// Calculate the launch time of each shell
-			shell_te.at(i) = -i*dte;
+			// Calculate the launch time of each shell since the start of the launch 
+			shell_te.at(i) = i*dte;
 
-			// Calculate the shell position based on when the shell will be launched
+			// Calculate the initial shell position based on when the shell will be launched
 			// Notice this is actually R/c 
-			shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+			shell_radius.at(i) = - beta(shell_gamma.at(i)) * shell_te.at(i);
 		}
 	}
 
@@ -372,17 +372,70 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
 			shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 			
-			// Calculate the launch time of each shell
-			shell_te.at(i) = -i*dte;
+			// Calculate the launch time of each shell since the start of the launch 
+			shell_te.at(i) = i*dte;
 
-			// Calculate the shell position based on when the shell will be launched
+			// Calculate the initial shell position based on when the shell will be launched
 			// Notice this is actually R/c 
-			shell_radius.at(i) = beta(shell_gamma.at(i)) * shell_te.at(i);
+			shell_radius.at(i) = - beta(shell_gamma.at(i)) * shell_te.at(i);
 		}
 	}
 
 	// Eliminate possible divide by zero error (still insignificantly small).
 	shell_radius.at(0) = 1./c_cm;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Make a linear distribution
+void ShellDist::linear(float dte, float g1, float g2, bool fluctuations)
+{
+	/*
+	Distribute the Lorentz factors of the shells as a linear function
+	Params: 
+	dte = time between shell launches, this can be specific by a single float to apply a constant time step through out the jet evolution or can be a array of the shell emission times
+	g1 = Lorentz factor at the front of the ejecta
+	g2 = Lorentz factor at the end of the ejecta
+
+	*/
+
+	// Calculate slope
+	float xstart = 0.; // Start time of the ejecta
+	float xend = this->numshells * dte; // end time of the ejecta
+	float m = (g2-g1)/(xend - xstart);
+
+	// Assign Lorentz factors to each shell
+	for(double i = 0; i<numshells; ++i)
+	{
+		shell_gamma.at(i) = m*i*dte + g1;
+	}
+
+	// Find the average Lorentz factor in the outflow
+	double gamma_bar = 0.0;
+	for(double i = 0; i<numshells; ++i)
+	{
+		gamma_bar += shell_gamma.at(i);
+	}
+	gamma_bar /= numshells;
+
+
+	for(float i=0; i<numshells; ++i)
+	{
+
+		// Set the Mass for each shell 
+		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
+		
+		// Calculate the launch time of each shell since the start of the launch 
+		shell_te.at(i) = i*dte;
+
+		// Calculate the initial shell position based on when the shell will be launched
+		// Notice this is actually R/c 
+		shell_radius.at(i) = - beta(shell_gamma.at(i)) * shell_te.at(i);
+
+		// Activate all shells
+		shell_status.at(i) = 1;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
