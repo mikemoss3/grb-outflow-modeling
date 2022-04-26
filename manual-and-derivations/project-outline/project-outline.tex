@@ -872,7 +872,7 @@ When electrons travel through a magnetic field, they are accelerated along the m
 Following \citet{1973plas.book.....K}, this can approximated as, 
 
 \begin{align}
-	& = 3 \left( \frac{3}{2}\right)^{1/3} \frac{q_e^3 B \Gamma}{m_e c^2} \chi^{1/3} \exp{-\chi}
+	& = 3 \left( \frac{3}{2}\right)^{1/3} \frac{q_e^3 B \Gamma}{m_e c^2} \chi^{1/3} e^{-\chi}
 \end{align}
 
 \mm{make figure of single electron synchrotron power spectra}
@@ -916,14 +916,14 @@ We can write the corrected power law distributions as,
 
 Slow cooling regime:
 \begin{align}
-	&\gamma_m < \gamma_e < \gamma_c,\quad N(\gamma_e)d\gamma_e = n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(p-1)}\right)^{-1} \left(\frac{\gamma_e}{\gamma_m}\right)^{-p} d\left(\frac{\gamma_e}{\gamma_m})\right)\\
-	&\gamma_m < \gamma_c < \gamma_e,\quad N(\gamma_e)d\gamma_e = n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(p-1)}\right)^{-1} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(-p-1)}\left(\frac{\gamma_e}{\gamma_c}\right)^{-p-1} d\left(\frac{\gamma_e}{\gamma_c})\right)
+	&\gamma_m < \gamma_e < \gamma_c,\quad N(\gamma_e)d\gamma_e = n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(p-1)}\right)^{-1} \left(\frac{\gamma_e}{\gamma_m}\right)^{-p} d\left(\frac{\gamma_e}{\gamma_m}\right)\\
+	&\gamma_m < \gamma_c < \gamma_e,\quad N(\gamma_e)d\gamma_e = n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(p-1)}\right)^{-1} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(-p-1)}\left(\frac{\gamma_e}{\gamma_c}\right)^{-p-1} d\left(\frac{\gamma_e}{\gamma_c}\right)
 \end{align}
 
 Fast cooling regime:
 \begin{align}
-	&\gamma_c < \gamma_e < \gamma_c,\quad N(\gamma_e)d\gamma_e = n_o \left(1 - \frac{(p-1)}{p} \left(\frac{\gamma_m}{\gamma_c}\right)^{-1)}\right)^{-1} \left(\frac{\gamma_e}{\gamma_c}\right)^{-2} d\left(\frac{\gamma_e}{\gamma_c})\right)\\
-	&\gamma_c < \gamma_m < \gamma_e,\quad N(\gamma_e)d\gamma_e = n_o \left(1 - \frac{(p-1)}{p} \left(\frac{\gamma_m}{\gamma_c}\right)^{-1}\right)^{-1} \left(\frac{\gamma_m}{\gamma_c}\right)^{-1}\left(\frac{\gamma_e}{\gamma_m}\right)^{-p-1} d\left(\frac{\gamma_e}{\gamma_m})\right)
+	&\gamma_c < \gamma_e < \gamma_c,\quad N(\gamma_e)d\gamma_e = n_o \left(1 - \frac{(p-1)}{p} \left(\frac{\gamma_m}{\gamma_c}\right)^{-1)}\right)^{-1} \left(\frac{\gamma_e}{\gamma_c}\right)^{-2} d\left(\frac{\gamma_e}{\gamma_c}\right)\\
+	&\gamma_c < \gamma_m < \gamma_e,\quad N(\gamma_e)d\gamma_e = n_o \left(1 - \frac{(p-1)}{p} \left(\frac{\gamma_m}{\gamma_c}\right)^{-1}\right)^{-1} \left(\frac{\gamma_m}{\gamma_c}\right)^{-1}\left(\frac{\gamma_e}{\gamma_m}\right)^{-p-1} d\left(\frac{\gamma_e}{\gamma_m}\right)
 \end{align}
 
 We can now calculate the power for each of the four branches of the population by integrating the power spectra over the entire electron population, 
@@ -939,6 +939,66 @@ In the following derivations, we will be transforming between Lorentz factors an
 	d\left(\frac{\gamma_1}{\gamma_2}\right) &= d\left(\frac{\nu_1}{\nu_2}\right)^{1/2} = \frac{1}{2} \left(\frac{\gamma_1}{\gamma_2}\right)^{-1/2} d\left(\frac{\gamma_1}{\gamma_2}\right)
 \end{align}
 
+For the slow cooling regime where $\gamma_m < \gamma_e < \gamma_c$, we find power spectra as
+
+\begin{align}
+	P_\nu &= \int_{\gamma_m}^{\gamma_c} N(\gamma_e) P_{\nu}(\gamma_e) d\gamma_e\\
+	&= \int_{1}^{\gamma_c/\gamma_m} n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\gamma_c}{\gamma_m}\right)^{-(p-1)}\right)^{-1} \left(\frac{\gamma_e}{\gamma_m}\right)^{-p} d\left(\frac{\gamma_e}{\gamma_m}\right) 3 \left( \frac{3}{2}\right)^{1/3} \frac{q_e^3 B \Gamma}{m_e c^2} \chi^{1/3} e^{-\chi}\\
+	&= \left[n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\nu_c}{\nu_m}\right)^{-\frac{(p-1)}{2}}\right)^{-1}  3 \left( \frac{3}{2}\right)^{1/3} \frac{q_e^3 B \Gamma}{m_e c^2} \right]\int_{1}^{(\nu_c/\nu_m)^{1/2}} \left(\frac{\nu_e}{\nu_m}\right)^{-p/2} d\left(\frac{\nu_e}{\nu_m}\right)^{1/2} \chi^{1/3} e^{-\chi}\\
+	&= \left[\right]\frac{1}{2} \int_{1}^{(\nu_c/\nu_m)^{1/2}} \left(\frac{\nu_e}{\nu_m}\right)^{-\frac{(p-1)}{2}} d\left(\frac{\nu_e}{\nu_m}\right) \chi^{1/3} e^{-\chi}
+\end{align}
+
+From here we will make use of the variable change $\chi = \nu/\nu_e$,
+
+\begin{align}
+	\text{let } \chi &= \frac{\nu}{\nu_e}\\
+	&= \frac{\nu_e}{\nu_m}\frac{\nu_m}{\nu_e}\frac{\nu}{\nu_e}\\
+	\Rightarrow \frac{d\chi}{d\left(\frac{\nu_e}{\nu_m}\right)} &= \frac{\nu_m}{\nu_e} \frac{\nu}{\nu_e} \Rightarrow  d\left(\frac{\nu_e}{\nu_m}\right) = \frac{\nu_e}{\nu_m} \frac{\nu_e}{\nu} d\chi
+\end{align}
+
+Taking a look at the limits of the integration, when $\nu_e/\nu_m = 1$, $\chi = \nu/\nu_m \equiv \chi_{max}$ and when $\nu_e/\nu_m = (\nu_c/\nu_m)^{1/2}$, $\chi = \nu/\nu_c \equiv \chi_{min}$, (recall that we are evaluating the regime where $\nu_c > \nu_m$). We then can write
+
+\begin{align}
+	&= \left[\right]\frac{1}{2} \int_{(\nu_/\nu_m)}^{(\nu_/\nu_c)} \left(\frac{\nu_e}{\nu_m}\right)^{-\frac{(p-1)}{2}} \left(\frac{\nu_e}{\nu_m}\right) \chi^{-1} d\chi \chi^{1/3} e^{-\chi} \\
+\end{align}
+
+We would like to eliminate $\nu_e$ because it is not an observable variable. 
+
+\begin{align}
+	&= [ ]\frac{1}{2} \int_{(\nu_/\nu_m)}^{(\nu_/\nu_c)} \left(\frac{\nu_e}{\nu_m}\right)^{-\frac{(p-1)}{2}} \frac{\chi^{1/3}e^{-x}}{\chi} d\chi \quad \times \quad \left(\frac{\nu}{\nu}\right)^{-\frac{(p-1)}{2}} \\
+	&= [ ]\frac{1}{2} \int_{(\nu_/\nu_m)}^{(\nu_/\nu_c)} \left(\frac{\nu}{\nu_m}\right)^{-\frac{(p-1)}{2}} \left(\frac{\nu_e}{\nu}\right)^{-\frac{(p-1)}{2}} \frac{\chi^{1/3}e^{-x}}{\chi} d\chi\\
+	&= [ ]\frac{1}{2} \left(\frac{\nu}{\nu_m}\right)^{-\frac{(p-1)}{2}} \int_{(\nu_/\nu_m)}^{(\nu_/\nu_c)} \chi^{-\frac{(p-1)}{2}} \frac{\chi^{1/3}e^{-x}}{\chi} d\chi \\
+	&= [ ]\frac{1}{2} \left(\frac{\nu}{\nu_m}\right)^{-\frac{(p-1)}{2}} \int_{(\nu_/\nu_m)}^{(\nu_/\nu_c)} \frac{ \chi^{ \frac{p}{2} - \frac{1}{6} } e^{-x} }{\chi} d\chi
+\end{align}
+
+Here we can use the incomplete Gamma function, defined as,
+
+\begin{align}
+	\Gamma(y,a) = \int_a^\infty \frac{x^y e^{-x}}{x} dx
+\end{align}
+
+Which leads us to our final expression for the power spectrum,
+
+\begin{align}
+	&= \left[n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\nu_c}{\nu_m}\right)^{-\frac{(p-1)}{2}}\right)^{-1}  3 \left( \frac{3}{2}\right)^{1/3} \frac{q_e^3 B \Gamma}{m_e c^2} \right] \times \\ 
+	& \hspace{2cm} \frac{1}{2} \left(\frac{\nu}{\nu_m}\right)^{-\frac{(p-1)}{2}} \left( \Gamma \left(\frac{p}{2} - \frac{1}{6}, \frac{\nu}{\nu_c}\right) - \Gamma \left(\frac{p}{2} - \frac{1}{6}, \frac{\nu}{\nu_m}\right) \right)
+\end{align}
+
+The three other regimes can be found in similar ways. The total power in the slow cooling regime be written as, 
+
+\begin{align}
+	&= \frac{1}{2} \left[n_o (p-1) \left(1 - \frac{1}{p} \left(\frac{\nu_c}{\nu_m}\right)^{-\frac{(p-1)}{2}}\right)^{-1}  3 \left( \frac{3}{2}\right)^{1/3} \frac{q_e^3 B \Gamma}{m_e c^2} \right] \times \\ 
+	& \hspace{2cm} \Bigg(\left[\left(\frac{\nu}{\nu_m}\right)^{-\frac{(p-1)}{2}} \left( \Gamma \left(\frac{p}{2} - \frac{1}{6}, \frac{\nu}{\nu_c}\right) - \Gamma \left(\frac{p}{2} - \frac{1}{6}, \frac{\nu}{\nu_m}\right) \right) \right] +\\
+	& \hspace{3cm} \left[\left(\frac{\nu_c}{\nu_m}\right)^{\frac{1}{2}} \left(\frac{\nu}{\nu_m}\right)^{-\frac{p}{2}} \left( \Gamma \left(\frac{p}{2} + \frac{1}{3}\right) - \Gamma \left(\frac{p}{2} + \frac{1}{3}, \frac{\nu}{\nu_c}\right) \right)\right]\Bigg)
+\end{align}
+
+and for the fast cooling regime,
+
+\begin{align}
+	&= \frac{1}{2} \left[n_o \left(1 - \frac{(p-1)}{p} \left(\frac{\nu_m}{\nu_c}\right)^{-\frac{1}{2}}\right)^{-1}  3 \left( \frac{3}{2}\right)^{1/3} \frac{q_e^3 B \Gamma}{m_e c^2} \right] \times \\ 
+	& \hspace{2cm} \Bigg(\left[\left(\frac{\nu}{\nu_c}\right)^{-\frac{1}{2}} \left( \Gamma \left(\frac{5}{6}, \frac{\nu}{\nu_m}\right) - \Gamma \left(\frac{5}{6}, \frac{\nu}{\nu_c}\right) \right) \right] +\\
+	& \hspace{3cm} \left[\left(\frac{\nu_c}{\nu_m}\right)^{\frac{1}{2}} \left(\frac{\nu}{\nu_m}\right)^{-\frac{p}{2}} \left( \Gamma \left(\frac{p}{2} + \frac{1}{3}\right) - \Gamma \left(\frac{p}{2} + \frac{1}{3}, \frac{\nu}{\nu_m}\right) \right)\right]\Bigg)
+\end{align}
 
 \end{appendix}
 
