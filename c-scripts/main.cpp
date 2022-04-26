@@ -34,18 +34,35 @@ int main(int argc, char const *argv[])
 {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/* Quick make a spectrum */
+	/* 
+	Called during interactive plotting manipulation
+
+	argv[1] = indicates if the update changes the plotted time interval or the energy band
+
+	argv[2] = indicates if all the components should be calculated or just the summed total 
+	argv[3] = indicates if a log scale should be used to calculate the light curve
+	argv[4], argv[5] = input time interval
+	argv[6], argv[7] = input energy interval
+
+	*/
 
 	if(argv[1]!=NULL)
 	{
+
+		bool logscale = false;
+		if( (strcmp(argv[3],"True")==0) | (strcmp(argv[3],"true")==0) | (strcmp(argv[3],"1")==0) )
+		{
+			logscale = true;
+		}
+		
 		if( strcmp(argv[1], "timechange")==0 )
 		{
 
-			float tmin = stof(argv[3]);
-			float tmax = stof(argv[4]);
+			float tmin = stof(argv[4]);
+			float tmax = stof(argv[5]);
 
-			float energ_min = stof(argv[5]);
-			float energ_max = stof(argv[6]);
+			float energ_min = stof(argv[6]);
+			float energ_max = stof(argv[7]);
 			float num_energ_bins = 10.*log10(energ_max/energ_min);
 
 			SynthGRB synth_grb = SynthGRB();
@@ -86,18 +103,18 @@ int main(int argc, char const *argv[])
 		if( strcmp(argv[1], "energychange")==0 )
 		{
 
-			float tmin = stof(argv[3]);
-			float tmax = stof(argv[4]);
-			float dt = 0.1;
+			float tmin = stof(argv[4]);
+			float tmax = stof(argv[5]);
+			float dt = stof(argv[6]);
 
-			float energ_min = stof(argv[5]);
-			float energ_max = stof(argv[6]);
+			float energ_min = stof(argv[7]);
+			float energ_max = stof(argv[8]);
 
 			SynthGRB synth_grb = SynthGRB();
 			synth_grb.LoadJetParamsFromTXT("input-files/jet-params.txt");
-			synth_grb.SimulateJetDynamics();;
-			
-			synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt);
+			synth_grb.SimulateJetDynamics();
+
+			synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "all", logscale);
 			synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve.txt");
 
 
@@ -105,14 +122,14 @@ int main(int argc, char const *argv[])
 			if(strcmp(argv[2], "true")==0)
 			{
 				// Plot the other light curves components 
-				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "TH", false);
+				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "TH", logscale);
 				synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve_TH.txt");
-				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "IS", false);
+				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "IS", logscale);
 				synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve_IS.txt");
-				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "FS", false);
+				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "FS", logscale);
 				synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve_FS.txt");
-				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "RS", false);
-				synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve_RS.txt");
+				synth_grb.make_source_light_curve(energ_min, energ_max, tmin, tmax, dt, "RS", logscale);
+				synth_grb.WriteLightCurveToTXT("data-file-dir/quickplot_light_curve_RS.txt");				
 			}
 
 			return 0; 
@@ -126,12 +143,15 @@ int main(int argc, char const *argv[])
 
 	float energ_min = 8;
 	float energ_max = 4e4;
-	float energ_min_lc = 15.;
-	float energ_max_lc = 350.;
+	float energ_min_lc = energ_min; 
+	float energ_max_lc = energ_max;
 	float num_energ_bins = 200;
 
+	// 15 - 5000 keV = Konus-Wind energy band
+
+	// Light curve time interval
 	float tmin = 0.;
-	float tmax = 23.;
+	float tmax = 12;
 	float dt = 0.1;
 
 	SynthGRB test_grb = SynthGRB();
@@ -141,33 +161,32 @@ int main(int argc, char const *argv[])
 	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();
-	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt", -1., true);
-	// test_grb.write_out_jet_params("./data-file-dir/");
-	// test_grb.WriteBoulodromeTXT("./data-file-dir/test_boulodrome.txt");
+	test_grb.write_out_jet_params("./data-file-dir/");
+	test_grb.WriteBoulodromeTXT("./data-file-dir/test_boulodrome.txt",8e5);
 
-	float tlo = tmin; // The T90? essentially.
-	float thi = tmax;
+	// Spectrum time interval
+	float tlo = 0; // The T90? essentially.
+	float thi = 10;
 
-	// test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
-	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_total.txt");
+	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
+	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_total.txt");
 
-	// Spectrum * p_source_spectrum_therm = new Spectrum(energ_min, energ_max, num_energ_bins);
-	// test_grb.MakeThermalSpec(p_source_spectrum_therm, tlo, thi);
-	// (*p_source_spectrum_therm).WriteToTXT("data-file-dir/synthGRB_spec_therm.txt");
+	Spectrum * p_source_spectrum_therm = new Spectrum(energ_min, energ_max, num_energ_bins);
+	test_grb.MakeThermalSpec(p_source_spectrum_therm, tlo, thi);
+	(*p_source_spectrum_therm).WriteToTXT("data-file-dir/synthGRB_spec_therm.txt");
 
-	// Spectrum * p_source_spectrum_is = new Spectrum(energ_min, energ_max, num_energ_bins);
-	// test_grb.MakeISSpec(p_source_spectrum_is, tlo, thi);
-	// (*p_source_spectrum_is).WriteToTXT("data-file-dir/synthGRB_spec_is.txt");
+	Spectrum * p_source_spectrum_is = new Spectrum(energ_min, energ_max, num_energ_bins);
+	test_grb.MakeISSpec(p_source_spectrum_is, tlo, thi);
+	(*p_source_spectrum_is).WriteToTXT("data-file-dir/synthGRB_spec_is.txt");
 
-	// Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
-	// test_grb.MakeFSSpec(p_source_spectrum_fs, tlo, thi);
-	// (*p_source_spectrum_fs).WriteToTXT("data-file-dir/synthGRB_spec_fs.txt");
+	Spectrum * p_source_spectrum_fs = new Spectrum(energ_min, energ_max, num_energ_bins);
+	test_grb.MakeFSSpec(p_source_spectrum_fs, tlo, thi);
+	(*p_source_spectrum_fs).WriteToTXT("data-file-dir/synthGRB_spec_fs.txt");
 
-	// Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
-	// test_grb.MakeRSSpec(p_source_spectrum_rs, tlo, thi);
-	// (*p_source_spectrum_rs).WriteToTXT("data-file-dir/synthGRB_spec_rs.txt");
-	
-	
+	Spectrum * p_source_spectrum_rs = new Spectrum(energ_min, energ_max, num_energ_bins);
+	test_grb.MakeRSSpec(p_source_spectrum_rs, tlo, thi);
+	(*p_source_spectrum_rs).WriteToTXT("data-file-dir/synthGRB_spec_rs.txt");
+
 	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve.txt");
 
@@ -181,14 +200,21 @@ int main(int argc, char const *argv[])
 	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "RS", false);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_RS.txt");
 
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, 0.1, 5e5, dt, "FS", true);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt");
-	
-
-	// test_grb.make_source_light_curve(0.2, 10, 10, 5e5, dt, "FS", true);
+	// Looking at after glows 
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, 20, 5e5, dt, "FS", true);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt");
+	// test_grb.make_source_light_curve(0.2, 10, 20, 5e5, dt, "FS", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt");
-	// test_grb.make_source_light_curve(1e-3, 5e-3, 10, 5e5, dt, "FS", true);
+	// test_grb.make_source_light_curve(1e-3, 5e-3, 20, 1e6, dt, "FS", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt.txt");
+	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e4, 1e6, dt/2., "FS", true);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom.txt");
+
+	// Looking for Spectral Lags
+	test_grb.make_source_light_curve(2, 10, tmin, tmax, dt);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_sxc.txt");
+	test_grb.make_source_light_curve(50, 300, tmin, tmax, dt);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_batse.txt");
 
 	return 0;
 	
