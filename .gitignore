@@ -1,0 +1,12 @@
+# Files to ignore
+figs/*
+data-file-dir/*
+log.txt
+
+# Ignore Latex temporary files 
+*.out
+*.fls
+*.aux
+*.fdb_latexmk
+*.synctex.gz
+*.bst
