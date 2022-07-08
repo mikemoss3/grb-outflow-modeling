@@ -1,17 +1,17 @@
 ### tw, sec ###
-500
+30.
 ### dte, sec  ###
-0.2
+0.02
 ### E_dot_iso, erg/s  ###
-1.e53
+4.e50
 ### theta, rad  ###
-0.07
+0.095
 ### r_open, cm ###
 3.e6
 ### eps_th, fraction  ###
 0.03
 ### sigma, dimensionless ###
-0.1
+0.07
 ### eps_e internal, fraction ###
 0.33
 ### eps_b internal, fraction ###
@@ -29,10 +29,10 @@
 ### p external, dimensionless ###
 2.2
 ### k, external medium parameter, i.e., constant = 0, wind = 2 ###
-2
+0
 ### rho_not, density normalization (for k = 0, g cm^-3, i.e., n0*mp = n0*1.672e-24 | for k = 2, g cm^-1, i.e., A_star * 5.e11 ) ###
-5.e11
+1.672e-24
 ### LorentzDist, i.e., step, smoothstep, osci, linear ###
-osci
+gauss_inject
 ### ShellDistParamsFile, i.e., ./input-files/jet-shells-"LorentzDist".txt ###
-./input-files/jet-shells-osci.txt
+./input-files/jet-shells-gauss_inject.txt

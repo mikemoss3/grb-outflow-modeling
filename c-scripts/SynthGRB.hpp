@@ -165,6 +165,11 @@ private:
 	int _check_if_sorted();
 	// Make the energy axis of a spectrum, bounded by Emin and Emax with a number of bins = num_en_bins
 	int _make_en_axis(std::vector<float> & energy_axis, float emin, float emax, int num_en_bins);
+	// Used to calculate the fraction of an emission time interval overlaps with a time bin
+	float _fraction_of_interval_in_time_bin(float t_a, float del_t_a, float tbin_min, float tbin_max );
+	// Calculate the pulse profile factor
+	double _calc_pulse_profile_factor(float t_a, float del_t_a, float t_low, float t_hi);
+
 
 	// Initialize arrays to store thermal emission event data 
 	std::vector<float> te_therm; // sec, Times of emission (in the rest frame of the jet), is also equal to the time a shell crosses the photosphere

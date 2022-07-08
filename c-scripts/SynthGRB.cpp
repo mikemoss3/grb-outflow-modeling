@@ -158,25 +158,25 @@ void SynthGRB::LoadJetParamsFromTXT(std::string file_name)
 	// LorentzDist
 	// ShellDistParamsFile	
 	p_model_params = new ModelParams(
-		stof(inputs[0]),
-		stof(inputs[1]),
-		stod(inputs[2]),
-		stof(inputs[3]),
-		stof(inputs[4]),
-		stof(inputs[5]),
-		stod(inputs[6]),
-		stof(inputs[7]),
-		stof(inputs[8]),
-		stof(inputs[9]),
-		stof(inputs[10]),
-		stof(inputs[11]),
-		stof(inputs[12]),
-		stof(inputs[13]),
-		stof(inputs[14]),
-		stof(inputs[15]),
-		stod(inputs[16]),
-		inputs[17],
-		inputs[18]);
+		stof(inputs[0]), // tw ,sec
+		stof(inputs[1]), // dte, sec
+		stod(inputs[2]), // E_dot_iso, erg/s
+		stof(inputs[3]), // theta, rad
+		stof(inputs[4]), // r_open, cm
+		stof(inputs[5]), // eps_th
+		stod(inputs[6]), // sigma
+		stof(inputs[7]), // eps_e_int
+		stof(inputs[8]), // eps_b_int
+		stof(inputs[9]), // zeta_int
+		stof(inputs[10]), // p_int
+		stof(inputs[11]), // eps_e_ext
+		stof(inputs[12]), // eps_b_ext
+		stof(inputs[13]), // zeta_ext
+		stof(inputs[14]), // p_ext
+		stof(inputs[15]), // k_med
+		stod(inputs[16]), // rho_not
+		inputs[17], // Lorentz dist.
+		inputs[18]); // Lorentz dist. parameter file
 
 	// Initialize jet based on current jet parameters and shell distribution
 	InitializeJet();
@@ -624,12 +624,10 @@ void SynthGRB::SimulateJetDynamics()
 
 			// Luminosity at photosphere, from equation 8 in Hascoet 2013
 			// L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * Phi; // erg/s, beamed
-			L_phot.at(i) = E_dot_therm * Phi; // erg/s, isotropic
-			// L_phot.at(i) = E_dot_therm * Phi/(*p_model_params).numshells; // erg/s, isotropic
 			// L_phot.at(i) = pow((*p_jet_shells).shell_gamma.at(i),2.) * a * pow( T0*Phi/(*p_jet_shells).shell_gamma.at(i),4.) * c_cm * (M_PI * pow((*p_model_params).theta,2.) * pow(c_cm * r_phot.at(i),2.) );// erg/s, beamed (alternative expression)
+			L_phot.at(i) = E_dot_therm * Phi; // erg/s, isotropic
+			// L_phot.at(i) = E_dot_therm * Phi * (*p_model_params).tw / (*p_model_params).numshells; // erg/s, isotropic
 
-			// Test expression
-			// L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * (*p_model_params).tw * Phi / delt_therm.at(i); // erg/s, beamed
 
 			// Record which shell is producing this thermal emission
 			shell_ind_th.at(i) = i;
@@ -647,7 +645,8 @@ void SynthGRB::SimulateJetDynamics()
 	int num_shocks = 1; // Current number of shocks that have occurred 
 	float num_fs_shocks = 0.; // Current number of forward shocks that have occurred times q, when q*num_fs_shocks = 50, increment num_shocks
 	bool const_gamma_e = false; // Is the fraction of accelerated electrons proportional to the energy dissipated in a shock? (e.g., is gamma_e constant?)
-	
+	bool flag_lat_exp = false; // Indicates if lateral expansion should be used to calculate the opening angle of the forward shell
+
 	// Declare and initialize variables for 
 	// Internal Shock processes
 	
@@ -796,12 +795,19 @@ void SynthGRB::SimulateJetDynamics()
 			// Assume a wind density profile for the medium:
 			if ((*p_model_params).k_med == 2)
 			{
+				// Spherical propagation
 				t_FS_sweep = m_remaining*m_bar / (4. * M_PI * (*p_model_params).rho_not) / (beta((*p_jet_shells).shell_gamma.at(fs_shell_index))*c_cm); // sec
+				// Conical propagation (using jet opening angle)
+				// t_FS_sweep = m_remaining*m_bar *2. / (pow(tmp_theta,2.) * (*p_model_params).rho_not) / (beta((*p_jet_shells).shell_gamma.at(fs_shell_index))*c_cm); // sec
 			}
 			// Assume a constant density profile for the medium:
 			else if ((*p_model_params).k_med == 0)
 			{
+				// Spherical propagation
 				t_FS_sweep = ( pow( (3.*m_remaining*m_bar / (4. * M_PI * (*p_model_params).rho_not)) + pow((*p_jet_shells).shell_radius.at(fs_shell_index)*c_cm,3.),1./3.) - ((*p_jet_shells).shell_radius.at(fs_shell_index)*c_cm) )/ (beta((*p_jet_shells).shell_gamma.at(fs_shell_index))*c_cm); // sec
+				// Conical propagation (using jet opening angle)
+				// t_FS_sweep = ( pow( (3.*m_remaining*m_bar * 2. / ( pow(tmp_theta,2.) * (*p_model_params).rho_not)) + pow((*p_jet_shells).shell_radius.at(fs_shell_index)*c_cm,3.),1./3.) - ((*p_jet_shells).shell_radius.at(fs_shell_index)*c_cm) )/ (beta((*p_jet_shells).shell_gamma.at(fs_shell_index))*c_cm); // sec
+				
 			}	
 		}
 
@@ -814,7 +820,8 @@ void SynthGRB::SimulateJetDynamics()
 			t_RS_coll = ((*p_jet_shells).shell_radius.at(rs_shell_index) - (*p_jet_shells).shell_radius.at(active_inds.at(0))) / (beta((*p_jet_shells).shell_gamma.at(active_inds.at(0))) - beta((*p_jet_shells).shell_gamma.at(rs_shell_index)));
 		}
 
-		/* Internal Shock Dynamics and Emission*/
+
+		/* ## Internal Shock Dynamics and Emission ## */
 		if((t_IS_lowest < t_FS_sweep) & (t_IS_lowest < t_RS_coll))
 		{
 			// Keep track of the number of internal shocks that occur, this is used for taking snapshots of the Lorentz distribution
@@ -981,7 +988,8 @@ void SynthGRB::SimulateJetDynamics()
 			// Duration of the emission event 
 			tmp_delt = rad_coll/2./pow(tmp_gamma_r,2.);
 
-			tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn / tmp_delt; // erg / s
+			// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn / tmp_delt; // erg / s
+			tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn; // erg 
 			
 			// Is the emission efficient? 
 			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
@@ -1024,7 +1032,8 @@ void SynthGRB::SimulateJetDynamics()
 				// rho_is.push_back(rho); // g cm^-3, Density of the collision region
 			}
 		}		
-		/* Forward Shock Dynamics and Emission*/
+		
+		/* ## Forward Shock Dynamics and Emission ## */
 		else if((fs_active == true ) & (t_FS_sweep < t_RS_coll))
 		{			
 			// Keep track of the number of forward shocks that occur, this is used for taking snapshots of the Lorentz distribution
@@ -1051,9 +1060,6 @@ void SynthGRB::SimulateJetDynamics()
 			(*p_jet_shells).shell_radius.at(fs_shell_index) += beta((*p_jet_shells).shell_gamma.at(fs_shell_index))*t_FS_sweep;
 			(*p_jet_shells).shell_radius.at(rs_shell_index) += beta((*p_jet_shells).shell_gamma.at(rs_shell_index))*t_FS_sweep;
 
-			// Opening angle of the jet
-			tmp_theta += tmp_te / tmp_gamma_r / tmp_fs_r / sqrt(3.);
-
 			// Sweep up some mass into the FS
 			// Assume a wind density profile for the medium:
 			if ((*p_model_params).k_med == 2)
@@ -1079,11 +1085,16 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_rs_m = (*p_jet_shells).shell_mass.at(rs_shell_index); // current mass of the reverse shock shell
 			tmp_rs_g = (*p_jet_shells).shell_gamma.at(rs_shell_index); // current Lorentz factor of the reverse shock shell
 			tmp_rs_r = (*p_jet_shells).shell_radius.at(rs_shell_index); // current radius of the reverse shock shell
-
 			
 			// Calculate necessary parameters:
 			// The new Lorentz factor at the discontinuity due to forward shock
 			tmp_gamma_r = pow( ((tmp_rs_m + tmp_fs_m*fs_gamma_int)*pow(tmp_fs_g,2.) + m_swept_tot*tmp_fs_g ) / ( (tmp_rs_m + tmp_fs_m*fs_gamma_int) + 2.*m_swept_tot*tmp_fs_g ) ,0.5);
+
+			// Opening angle of the jet increases due to lateral expansion
+			if(flag_lat_exp == true)
+			{
+				tmp_theta += t_FS_sweep / tmp_gamma_r / tmp_fs_r / sqrt(3.);
+			}
 
 			// The energy dissipated by forward shock
 			tmp_e_diss = pow(c_cm,2.) * m_bar * ( (tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_fs_g + m_swept_tot - (m_swept_tot + tmp_rs_m + tmp_fs_m*fs_gamma_int )*tmp_gamma_r); // erg 
@@ -1130,16 +1141,32 @@ void SynthGRB::SimulateJetDynamics()
 
 			tmp_asyn = 1 - alpha_ic; // Fraction of energy remaining for synchrotron electrons
 
-			// Duration of the emission event 
-			tmp_delt = tmp_fs_r/2./pow(tmp_gamma_r,2.);
 
-			tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
-		
-			// If the jet is passed the jet break, reduce the observed luminosity
-			if( ( (*p_model_params).theta * tmp_gamma_r) <= 1 )
+			// If the jet is still before the the jet break
+			if( ( tmp_theta * tmp_gamma_r) >= 1. )
 			{
-				tmp_lum_diss *= pow((*p_model_params).theta*tmp_gamma_r,2.);
+				// Duration of the emission event 
+				tmp_delt = tmp_fs_r/2./pow(tmp_gamma_r,2.);
+
+
+				// Luminosity of the emission
+				// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
+				tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn; // erg 
 			}
+			// If the jet is after the jet break
+			else
+			{				
+				// Duration of the emission event 
+				tmp_delt = tmp_fs_r * pow(tmp_theta,2.) / 2.;
+
+				// Luminosity of the emission
+				// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
+				tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn; // erg 
+
+				// Reduce the jet luminosity due to the jet break
+				// tmp_lum_diss *= pow(tmp_theta*tmp_gamma_r,2.);
+			}
+
 
 			// Calculate nu_c
 			tmp_nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(tmp_beq,3.)/pow(tmp_delt,2.);
@@ -1182,7 +1209,7 @@ void SynthGRB::SimulateJetDynamics()
 
 		}
 
-		/* Reverse Shock Dynamics and Emission*/
+		/* ## Reverse Shock Dynamics and Emission ## */
 		else if((rs_active == true ))
 		{
 			// Keep track of the number of reverse shocks that occur, this is used for taking snapshots of the Lorentz distribution
@@ -1297,10 +1324,35 @@ void SynthGRB::SimulateJetDynamics()
 
 			tmp_asyn = 1. - alpha_ic; // Fraction of energy remaining for synchrotron electrons
 
+
+			// // If the jet is still before the the jet break
+			// if( ( tmp_theta * tmp_gamma_r) >= 1. )
+			// {
+			// 	// Duration of the emission event 
+			// 	tmp_delt = tmp_rs_r/2./pow(tmp_gamma_r,2.);
+				
+
+			// 	// Luminosity of the emission
+			// 	// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
+			// 	tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn; // erg 
+			// }
+			// // If the jet is after the jet break
+			// else
+			// {
+			// 	// Duration of the emission event 
+			// 	tmp_delt = tmp_rs_r * pow(tmp_theta,2.) / 2.;
+
+			// 	// Luminosity of the emission
+			// 	// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
+			// 	tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn; // erg 
+
+			// }
+
 			// Duration of the emission event 
 			tmp_delt = tmp_rs_r/2./pow(tmp_gamma_r,2.);
 
-			tmp_lum_diss = tmp_e_diss * (*p_model_params).eps_e_int * tmp_asyn / tmp_delt; // erg / s;
+			// tmp_lum_diss = tmp_e_diss * (*p_model_params).eps_e_int * tmp_asyn / tmp_delt; // erg / s;
+			tmp_lum_diss = tmp_e_diss * (*p_model_params).eps_e_int * tmp_asyn; // erg ;
 			
 			// Calculate nu_c
 			tmp_nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(tmp_beq,3.)/pow(tmp_delt,2.);
@@ -1402,7 +1454,7 @@ void SynthGRB::make_source_spectrum(float energ_min, float energ_max, int num_en
 	// Make a Spectrum object
 	p_source_spectrum = new Spectrum(energ_min, energ_max, num_energ_bins);
 	(*p_source_spectrum).ZeroSpectrum(); // Set spectrum to zero.
-	
+
 
 	if(comp.compare("all") == 0)
 	{
@@ -1432,6 +1484,12 @@ void SynthGRB::make_source_spectrum(float energ_min, float energ_max, int num_en
 		return;
 	}
 
+	// Normalize by time bin
+	for(size_t i=0; i< (*p_source_spectrum).spectrum_rate.size();++i)
+	{
+		(*p_source_spectrum).spectrum_rate.at(i) /= (tmax - tmin);
+	}
+	(*p_source_spectrum).spectrum_sum /= (tmax - tmin);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1444,27 +1502,18 @@ void SynthGRB::MakeThermalSpec(Spectrum * therm_spectrum, float tmin, float tmax
 	// For each thermal emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_therm.size(); ++i)
 	{
-
 		// We only want to take the emission that occurs between the specified tmin and tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with tmin and tmax, calculate its contribution.
 		if ( ta_therm.at(i) <= tmax and (ta_therm.at(i)+delt_therm.at(i)) >= tmin )
 		{
+			// Integrated emission profile factor
+			// double profile_factor = _calc_pulse_profile_factor(ta_therm.at(i), delt_therm.at(i), tmin, tmax );
+
 			// Call function to calculate thermal spectrum rate
 			CalcThermalContribution(therm_spectrum, T_phot.at(i),L_phot.at(i));
 			num+=1;
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum.
-	}
-	
-	// If there was an event during this time, normalize the spectrum by the number of events
-	if(num > 0)
-	{
-		// Normalize by the number of shells crossing the photosphere during this time.
-		for(size_t i=0; i< (*therm_spectrum).spectrum_rate.size();++i)
-		{
-			(*therm_spectrum).spectrum_rate.at(i) /= num;	
-		}
-		(*therm_spectrum).spectrum_sum /= num;
 	}
 }
 
@@ -1474,10 +1523,17 @@ void SynthGRB::MakeThermalSpec(Spectrum * therm_spectrum, float tmin, float tmax
 void SynthGRB::CalcThermalContribution(Spectrum * therm_spectrum, float temp, double flux)
 {
 	// Calculate the normalization
-	double norm=0.; // Set normalization to zero
-	int norm_num_bin=20.*log10(1e6*(*therm_spectrum).energ_hi.back()/(*therm_spectrum).energ_lo.at(0)); // Number of energy bins to use to calculate normalization
+	// double norm=0.; // Set normalization to zero
+	// int norm_num_bin=20.*log10(1e6*(*therm_spectrum).energ_hi.back()/(*therm_spectrum).energ_lo.at(0)); // Number of energy bins to use to calculate normalization
+	// std::vector<float> norm_energy_axis(norm_num_bin+1); // Make vector to store energy axis (initialized to zero's) 
+	// _make_en_axis(norm_energy_axis,(*therm_spectrum).energ_lo.at(0)/1000.,1000.*(*therm_spectrum).energ_hi.back(),norm_num_bin+1); // Fill in energy values
+
+	double norm = 0.; // Set normalization to zero
+	double e_hi = 5e3;
+	double e_lo = 1e-6;
+	int norm_num_bin= 20.*log10(e_hi/e_lo); // Number of energy bins to use to calculate normalization
 	std::vector<float> norm_energy_axis(norm_num_bin+1); // Make vector to store energy axis (initialized to zero's) 
-	_make_en_axis(norm_energy_axis,(*therm_spectrum).energ_lo.at(0)/1000.,1000.*(*therm_spectrum).energ_hi.back(),norm_num_bin+1); // Fill in energy values
+	_make_en_axis(norm_energy_axis,e_lo,e_hi,norm_num_bin+1); // Make energy axis
 
 	float en_curr=0.; // Current energy to evaluate the addition to the normalization
 	// For each energy bin along the normalization energy axis, calculate the addition to the normalization and add it. 
@@ -1490,7 +1546,6 @@ void SynthGRB::CalcThermalContribution(Spectrum * therm_spectrum, float temp, do
 			norm += (norm_energy_axis.at(i+1)-norm_energy_axis.at(i)) * en_curr * ThermalSpec(en_curr,temp);
 		}
 		// else: don't contribute to the normalization
-		// norm += (norm_energy_axis.at(i+1)-norm_energy_axis.at(i)) * en_curr * ThermalSpec(en_curr,temp);
 
 	}
 
@@ -1509,7 +1564,6 @@ void SynthGRB::CalcThermalContribution(Spectrum * therm_spectrum, float temp, do
 			tmp_val = flux * ThermalSpec(en_curr,temp) / norm;
 		}
 		else{tmp_val=0;}
-		// tmp_val = flux * ThermalSpec(en_curr,temp) / norm;
 
 		// Add the contribution to the total spectrum according to a Left-Riemann-Sum
 		(*therm_spectrum).spectrum_sum += ((*therm_spectrum).energ_hi.at(i) - (*therm_spectrum).energ_lo.at(i)) * tmp_val;
@@ -1538,15 +1592,14 @@ void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 	{
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
-		if ( ta_is.at(i) <= tmax and (ta_is.at(i)+delt_is.at(i)) >= tmin )
+		if ( ta_is.at(i) <= tmax)
 		{
 			// The emission will only be observable if the relativistic velocity is great than the local sound speed v_s/c = 0.1
 			// And if the wind is transparent to the radiation
 			if ( relvel.at(i) > 0.1 and tau.at(i) < 1)
 			{
-
-				// Emission profile
-				double profile_factor = 2./pow(1. + ((tmax - ta_is.at(i))/delt_is.at(i)),3.);
+				// Integrated emission profile factor
+				double profile_factor = _calc_pulse_profile_factor(ta_is.at(i), delt_is.at(i), tmin, tmax );
 
 				// Call function to calculate spectrum count rate, assuming synchrotron emission
 				CalcSynchContribution(intsh_spectrum, esyn_is.at(i),e_diss_is.at(i),delt_is.at(i), nu_c_is.at(i), nu_m_is.at(i), (*p_model_params).p_int, beq_is.at(i), gamma_r_is.at(i), profile_factor);
@@ -1578,10 +1631,11 @@ void SynthGRB::MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 	{
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
-		if ( ta_fs.at(i) <= tmax and (ta_fs.at(i)+delt_fs.at(i)) >= tmin )
+		// if ( ta_fs.at(i) <= tmax )
+		if ( (ta_fs.at(i) <= tmax) and (tmin <= (ta_fs.at(i) + 4.*delt_fs.at(i) ) ) )
 		{
-			// Emission profile
-			double profile_factor = 2./pow(1. + ((tmax - ta_fs.at(i))/delt_fs.at(i)),3.);
+			// Integrated emission profile factor
+			double profile_factor = _calc_pulse_profile_factor(ta_fs.at(i), delt_fs.at(i), tmin, tmax );
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
 			CalcSynchContribution(extsh_spectrum, esyn_fs.at(i),e_diss_fs.at(i),delt_fs.at(i), nu_c_fs.at(i), nu_m_fs.at(i),(*p_model_params).p_ext, beq_fs.at(i), gamma_r_fs.at(i), profile_factor);
@@ -1600,10 +1654,10 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 	{
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
-		if ( ta_rs.at(i) <= tmax and (ta_rs.at(i)+delt_rs.at(i)) >= tmin )
+		if ( ta_rs.at(i) <= tmax)
 		{
-			// Emission profile
-			double profile_factor = 2./pow(1. + ((tmax - ta_rs.at(i))/delt_rs.at(i)),3.);
+			// Integrated emission profile factor
+			double profile_factor = _calc_pulse_profile_factor(ta_rs.at(i), delt_rs.at(i), tmin, tmax );
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
 			CalcSynchContribution(extsh_spectrum, esyn_rs.at(i),e_diss_rs.at(i),delt_rs.at(i), nu_c_rs.at(i), nu_m_rs.at(i),(*p_model_params).p_int, beq_rs.at(i), gamma_r_rs.at(i), profile_factor);
@@ -1619,10 +1673,17 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, double e_diss, double delt, float nu_c, float nu_m, float p, double B, float Gamma, double profile_factor)
 {
 	// Calculate the normalization
+	// double norm = 0.; // Set normalization to zero
+	// int norm_num_bin= 20.*log10(1e6*(*synch_spectrum).energ_hi.back()/(*synch_spectrum).energ_lo.at(0)); // Number of energy bins to use to calculate normalization
+	// std::vector<float> norm_energy_axis(norm_num_bin+1); // Make vector to store energy axis (initialized to zero's) 
+	// _make_en_axis(norm_energy_axis,(*synch_spectrum).energ_lo.at(0)/1000.,1000.*(*synch_spectrum).energ_hi.back(),norm_num_bin+1); // Make energy axis
+
 	double norm = 0.; // Set normalization to zero
-	int norm_num_bin= 20.*log10(1e6*(*synch_spectrum).energ_hi.back()/(*synch_spectrum).energ_lo.at(0)); // Number of energy bins to use to calculate normalization
+	double e_hi = 1e8;
+	double e_lo = 1e-6;
+	int norm_num_bin= 20.*log10(e_hi/e_lo); // Number of energy bins to use to calculate normalization
 	std::vector<float> norm_energy_axis(norm_num_bin+1); // Make vector to store energy axis (initialized to zero's) 
-	_make_en_axis(norm_energy_axis,(*synch_spectrum).energ_lo.at(0)/1000.,1000.*(*synch_spectrum).energ_hi.back(),norm_num_bin+1); // Make energy axis
+	_make_en_axis(norm_energy_axis,e_lo,e_hi,norm_num_bin+1); // Make energy axis
 
 	float en_curr=0.; // Current energy to evaluate the addition to the normalization
 	// For each energy bin along the normalization energy axis, calculate the addition to the normalization and add it. 
@@ -1643,7 +1704,7 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 		// The current temp and energy bin define the count rate, the normalization found above is applied.
 		// This (*p_model_params).must still be (*p_model_params).multiplied by the energy dissipated during the emission event.
 		// The energy dissipated can be turned into Flux by dividing the energy dissipated by the observed emission duration (delt).
-		tmp_val = e_diss * profile_factor * SynchSpec(en_curr, esyn, nu_c, nu_m, p, B, Gamma) / norm;
+		tmp_val = e_diss * profile_factor * SynchSpec(en_curr, esyn, nu_c, nu_m, p, B, Gamma) / norm / delt;
 		
 		// Add the contribution to the total spectrum according to a Center-Riemann-Sum
 		(*synch_spectrum).spectrum_sum += ((*synch_spectrum).energ_hi.at(i) - (*synch_spectrum).energ_lo.at(i)) * tmp_val;
@@ -1790,7 +1851,7 @@ void SynthGRB::write_out_jet_params(std::string dir_path_name)
 	fs_params_file.open(dir_path_name+"synthGRB_jet_params_FS.txt"); // Open text file with this name
 	i=0;
 	fs_params_file << "# Forward Shock Dynamics" << endl;
-	fs_params_file << "# t_e (s) \t t_a (s) \t delt_a (s) \t B_eq (G) \t Gamma_e \t E_syn (keV) \t Gamma_r \t L_diss (erg/s) \t nu_c (Hz) \t nu_m (Hz) \t shell_ind" << endl << endl;
+	fs_params_file << "# t_e (s) \t t_a (s) \t delt_a (s) \t B_eq (G) \t Gamma_e \t E_syn (keV) \t Gamma_r \t L_diss (erg/s) \t nu_c (Hz) \t nu_m (Hz) \t theta_open (rad) \t shell_ind" << endl << endl;
 	// For each time bin, write the time and count rate to the file.
 	while ( i < te_fs.size())
 	{
@@ -1813,6 +1874,8 @@ void SynthGRB::write_out_jet_params(std::string dir_path_name)
 		fs_params_file << nu_c_fs.at(i);
 		fs_params_file << " \t ";
 		fs_params_file << nu_m_fs.at(i);
+		fs_params_file << " \t ";
+		fs_params_file << theta_fs.at(i);
 		fs_params_file << " \t ";
 		fs_params_file << 0;
 		// fs_params_file << " \t ";
@@ -1974,8 +2037,7 @@ void SynthGRB::WriteBoulodromeTXT(std::string out_file_name, float te_start)
 		boul_file << " \t ";
 		boul_file << num_swept_e_fs.at(i); // Number of swept up electrons in the forward shell
 		boul_file << " \t ";
-		// boul_file << theta_fs.at(i); // rad, Jet opening angle
-		boul_file << (*p_model_params).theta; // rad, Jet opening angle
+		boul_file << theta_fs.at(i); // rad, Jet opening angle
 		boul_file << "\n";
 		++i;
 	}
@@ -2061,3 +2123,50 @@ int SynthGRB::_make_en_axis(std::vector<float> & energy_axis, float emin, float 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Used to calculate the fraction of an emission time interval overlaps with a time bin
+float SynthGRB::_fraction_of_interval_in_time_bin(float t_a, float del_t_a, float tbin_min, float tbin_max )
+{
+	float profile_factor = 1.;
+
+	// Case 1: If the emission starts before the time bin and ends after this time bin
+	if( (t_a < tbin_min ) and ( (t_a + del_t_a) > tbin_max) )
+	{
+		profile_factor = (tbin_max - tbin_min) / del_t_a;
+	}
+	// Case 2: If the emission starts before the time bin and ends within the time bin
+	else if(t_a < tbin_min)
+	{
+		profile_factor = ( (t_a + del_t_a) - tbin_min) / del_t_a;
+	}
+	// Case 3: If the emission starts within the time bin and ends after the time bin
+	else if( (t_a+del_t_a) > tbin_max)
+	{
+		profile_factor = (tbin_max - t_a) / del_t_a;
+	}
+	// Case 4: If the emission starts and ends within the time bin, then the fraction is = 1. 
+
+	return profile_factor;
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Calculates the integral under the pulse profile curve integrated between t_1 and t_2 (see Equation 5 in Genet et al 2007)
+double SynthGRB::_calc_pulse_profile_factor(float t_a, float del_t_a, float t_low, float t_hi)
+{
+	if(t_low < t_a)
+	{
+		t_low = t_a;
+	}
+
+	// Evaluating lower bound 
+	double bound_low = 1./pow(1. + ( (t_low - t_a ) / del_t_a ) , 2.);
+
+	// Evaluating upper bound
+	double bound_hi = 1./pow(1. + ( (t_hi - t_a ) / del_t_a ) , 2.);
+
+	// Analytical integral of Equation 5 in Genet et al 2007
+	double pulse_profile_factor = - del_t_a * (bound_hi - bound_low);
+
+	return pulse_profile_factor;
+}

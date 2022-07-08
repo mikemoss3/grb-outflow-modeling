@@ -242,7 +242,7 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 		}
 	}
 
-	// For all shells that still have a Lorentz factor of 0, deactivate them,
+	// For all shells that still have a Lorentz factor of 1, deactivate them,
 	for(float i=0; i<numshells; ++i)
 	{
 		if(shell_gamma.at(i) <= 1.)
@@ -252,7 +252,7 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 		}
 		else
 		{
-			// Activate all shells
+			// Activate shells with Lorentz factor > 1
 			shell_status.at(i) = 1;
 		}
 	}
@@ -280,6 +280,11 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 			
 			// Calculate the launch time of each shell since the start of the launch 
 			shell_te.at(i) = i*dte;
+
+			if (shell_te.at(i)>14)
+			{
+				shell_mass.at(i) = shell_mass.at(i) * 1.75;	
+			}
 
 			// Calculate the initial shell position based on when the shell will be launched
 			// Notice this is actually R/c 

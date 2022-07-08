@@ -68,6 +68,10 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 	# Load data
 	lor_time_list, lor_dist_list = load_lor_dist(file_name)
 
+	# Only select active shells. 
+	for i in range(len(lor_dist_list)):
+		lor_dist_list[i] = lor_dist_list[i][lor_dist_list[i]["STATUS"]==1]
+
 	# Make plot instance if it doesn't exist
 	if ax is None:
 		fig, ax = plt.subplots(2,2,figsize=(12, 10))	
@@ -235,7 +239,7 @@ def plot_lor_dist(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label
 
 ##############################################################################################################################
 
-def plot_lor_dist_simple(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",joined=True):
+def plot_lor_dist_simple(file_name,ax=None,fig=None,color="C0",save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",joined=True,title=True):
 	"""
 	Method to plot the given Lorentz factor distribution saved in the text file with path name "file_name".
 	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string".
@@ -262,8 +266,10 @@ def plot_lor_dist_simple(file_name,ax=None,save_pref=None,xlabel=True,ylabel=Tru
 	lor_time_list, lor_dist_list = load_lor_dist(file_name)
 
 	# Make plot instance if it doesn't exist
+	if fig is None:
+		fig = plt.figure()
 	if ax is None:
-		fig, ax = plt.subplots(1,1,figsize=(8,6))
+		ax = fig.gca()
 
 	ind = np.array([0])
 	def on_press(event):
@@ -287,7 +293,8 @@ def plot_lor_dist_simple(file_name,ax=None,save_pref=None,xlabel=True,ylabel=Tru
 			line_shell_ind.set_offsets(np.transpose([lor_dist_list[ind[0]]['TE'],lor_dist_list[ind[0]]['GAMMA']]))
 		# ax[0].set_xlim(np.min(lor_dist_list[ind[0]]['TE']),np.max(lor_dist_list[ind[0]]['GAMMA']))
 
-		fig.suptitle("Emission Time = {0:.1e} sec".format(lor_time_list[ind[0]]),fontsize=fontsize,fontweight=fontweight)
+		if title == True:
+			fig.suptitle("Emission Time = {0:.1e} sec".format(lor_time_list[ind[0]]),fontsize=fontsize,fontweight=fontweight)
 
 		# Redraw the figure to implement updates
 		ax.redraw_in_frame()
@@ -297,9 +304,10 @@ def plot_lor_dist_simple(file_name,ax=None,save_pref=None,xlabel=True,ylabel=Tru
 
 	## Plot distribution as a function of the shell number 
 	if(joined == True):
-		line_shell_ind, = ax.step(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],where="pre")
+		line_shell_ind, = ax.step(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],where="pre",color=color)
 	elif(joined == False):
-		line_shell_ind = ax.scatter(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],marker=marker)
+		line_shell_ind = ax.scatter(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],marker=marker,color=color)
+	
 	ax.set_ylim(0)
 	ax.invert_xaxis()
 
@@ -309,7 +317,8 @@ def plot_lor_dist_simple(file_name,ax=None,save_pref=None,xlabel=True,ylabel=Tru
 		ax.set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
 
 
-	fig.suptitle("Emission Time = {0:.1e} sec".format(lor_time_list[0]),fontsize=fontsize,fontweight=fontweight)
+	if title == True:
+		fig.suptitle("Emission Time = {0:.1e} sec".format(lor_time_list[0]),fontsize=fontsize,fontweight=fontweight)
 
 
 	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
@@ -540,7 +549,7 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, n
 	ax.set_yscale('log')
 
 	# Force lower bound
-	ax.set_ylim(1e48,5e51)
+	ax.set_ylim(1e48,1e52)
 
 	# For axis labels
 	ax.set_xlabel('E (keV)',fontsize=fontsize,fontweight=fontweight)
@@ -637,7 +646,7 @@ def add_SwiftBAT_band(ax,fontsize=12,axis="x"):
 
 ##############################################################################################################################
 
-def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, save_pref=None,color="C0", fontsize=14,fontweight='bold', logscale=False,y_factor=1):
+def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None, Tmax=None, save_pref=None,color="C0", fontsize=14,fontweight='bold', logscale=False,y_factor=1,guidelines=False,xax_units="s"):
 	"""
 	Method to plot the input light curve data files
 
@@ -655,7 +664,7 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 	linestyle = style of the plotting line 
 	logscale = boolean, Indicates whether the time x- and y- axes should be in log scale 
 
-	bm_break = float, indicates where the jet break is in the light curve. This will automatically plot the Blandford-Mckee solutions pre and post jet break.
+	xax_units = "s", indicates the units of the x axis on the light curve. ("s"==seconds, "m"==minutes, "h"==hours, d=="days")
 	"""
 
 	if(z<0):
@@ -663,11 +672,24 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 		return;
 	else:
 		# Make plot instance if it doesn't exist
+		if fig is None:
+			fig = plt.figure() 
 		if ax is None:
-			ax = plt.figure().gca()
+			ax = fig.gca()
 
 		# Load light curve data
 		light_curve_data = np.genfromtxt(file_name,dtype=[("TIME",float),("RATE",float)])
+
+		# Unit conversion
+		x_conv = 1 # if xax_unit == "s", then we don't have to change anything
+		if(xax_units == "m"):
+			x_conv = 60 # if xax_unit == "m"
+		if(xax_units == "h"):
+			x_conv = 60*60 # if xax_unit == "h" 
+		if(xax_units == "d"):
+			x_conv = 60*60*24 # if xax_unit == "d"
+
+		light_curve_data['TIME']/=x_conv
 
 		# Plot light curve data
 
@@ -679,6 +701,32 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 			# ax.scatter(light_curve_data['TIME'],light_curve_data['RATE'],label=label,marker=".")
 			ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color)
 
+		if guidelines is True:
+			# rhowindline = lambda t, t0, norm: norm*np.power(t/t0,-5./4.)
+			# rhoconstline = lambda t, t0, norm: norm*np.power(t/t0,-11./8.)
+
+			p = 2.2
+			bjbline = lambda t, t0, norm: norm*np.power(t/t0,-0.9)
+			ajbline = lambda t, t0, norm: norm*np.power(t/t0,-1.5)
+
+			tstart = np.log10( light_curve_data['TIME'][0] )
+			tstop = np.log10( light_curve_data['TIME'][-1] )
+			tspace = np.logspace(start = tstart, stop= tstop)
+
+			index_max = np.argmax(light_curve_data['RATE'])
+
+			# g_norm_wind = rhowindline(tstart,light_curve_data['TIME'][index_max],light_curve_data['RATE'][index_max])
+			# g_norm_const = rhoconstline(tstart,light_curve_data['TIME'][index_max],light_curve_data['RATE'][index_max])
+			g_bjb_norm = bjbline(tstart,light_curve_data['TIME'][index_max+30],light_curve_data['RATE'][index_max])*1.2
+			g_ajb_norm = ajbline(tstart,light_curve_data['TIME'][index_max+140],light_curve_data['RATE'][index_max+150])*1.4
+
+			# ax.plot(tspace,rhowindline(tspace,tstart,g_norm_wind),label=r"$t^{-5/4}$",color='r')
+			# ax.plot(tspace,rhoconstline(tspace,tstart,g_norm_const),label=r"$t^{-11/8}$",color='k')
+			ax.plot(tspace,bjbline(tspace,tstart,g_bjb_norm),label=r"$t^{-0.9}$",color='r')
+			ax.plot(tspace,ajbline(tspace,tstart,g_ajb_norm),label=r"$t^{-1.5}$",color='g')
+
+		# Custom power law index annotation
+		annot = ax.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points", bbox=dict(boxstyle="round", fc="w"),arrowprops=dict(arrowstyle="->"))
 
 		if(logscale == True):
 			ax.set_yscale('log')
@@ -691,7 +739,15 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 		else:
 			ax.set_ylabel(r'Rate (ph s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
 
-		ax.set_xlabel('Obs Time (sec)',fontsize=fontsize,fontweight=fontweight)
+		if(xax_units == "s"):
+			ax.set_xlabel('Obs Time (sec)',fontsize=fontsize,fontweight=fontweight)
+		if(xax_units == "m"):
+			ax.set_xlabel('Obs Time (minutes)',fontsize=fontsize,fontweight=fontweight)
+		if(xax_units == "h"):
+			ax.set_xlabel('Obs Time (hours)',fontsize=fontsize,fontweight=fontweight)
+		if(xax_units == "d"):
+			ax.set_xlabel('Obs Time (days)',fontsize=fontsize,fontweight=fontweight)
+		
 
 		# Add label names to plot if supplied
 		if label is not None:
@@ -700,8 +756,62 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 		plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
 		
 		plt.tight_layout()
+
+
+		def onclick(event, points):
+			"""
+			Function used to making a line and calculating the power law index of the line
+			"""
+
+			# If this is the first point being clicked on, add it to the list of points
+			if len(points) == 0:
+				points.append([event.xdata, event.ydata])
+			# If this is the second point being clicked on, add it to the list of points, make the connecting line, and show the power law index
+			elif len(points) == 1:
+				# Append points to list
+				points.append([event.xdata, event.ydata])
+
+				# Make connecting line
+				ax.plot([points[0][0] , points[1][0]] ,[points[0][1], points[1][1]],color="m")
+
+				# Calculate the power law index
+				ratio_F = points[1][1]/points[0][1] # Ratio of flux 
+				ratio_E = points[1][0]/points[0][0] # Ratio of energy
+				alpha = (np.log(ratio_F) / np.log(ratio_E) )
+
+				# Set the position of the annotation and make it visible
+				annot.xy = points[1]
+				annot.set(visible = True)
+
+				# Display the point index
+				text = r"$\alpha$ = {}".format(alpha)
+				annot.set_text(text)
+
+			# If this is the third point selected, remove the line and reset the points
+			elif len(points) == 2:
+				# Remove the line
+				ax.lines[-1].remove()
+
+				# Hide the annotation
+				annot.set(visible = False)
+
+				# Reset points list
+				points.clear()
+
+
+			# Redraw the figure to implement updates
+			ax.redraw_in_frame()
+			fig.canvas.draw_idle()
+
+
+		# Call function for making line between two points
+		points = []
+		fig.canvas.mpl_connect('button_press_event', lambda event: onclick(event, points) )
+
 		if save_pref is not None:
 			plt.savefig('figs/{}-light-curve.png'.format(save_pref))
+
+		return fig
 
 ##############################################################################################################################
 
@@ -740,8 +850,8 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 		return;
 	
 	# Make initial data
-	subprocess.run(["./main","timechange", comp_indicator, "{}".format(logscale), "{}".format(init_Tmin), "{}".format(init_Tmax), "{}".format(init_Emin), "{}".format(init_Emax) ])
-	subprocess.run(["./main","energychange", comp_indicator, "{}".format(logscale), "{}".format(init_Tmin), "{}".format(init_Tmax), "{}".format(init_dT), "{}".format(init_Emin), "{}".format(init_Emax) ])
+	subprocess.run(["./main","timechange", comp_indicator, "{}".format(logscale), "{}".format(init_Tmin/(1+z)), "{}".format(init_Tmax/(1+z)), "{}".format(init_Emin*(1+z)), "{}".format(init_Emax*(1+z)) ])
+	subprocess.run(["./main","energychange", comp_indicator, "{}".format(logscale), "{}".format(init_Tmin/(1+z)), "{}".format(init_Tmax/(1+z)), "{}".format(init_dT/(1+z)), "{}".format(init_Emin*(1+z)), "{}".format(init_Emax*(1+z)) ])
 
 	# Make plot instance if it doesn't exist
 	fig, ax = plt.subplots(1,2,figsize=(16, 8))	
@@ -753,7 +863,7 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 	if(z>0):
 		lc_tot_line, = ax[0].step(lc_data_tot['TIME']*(1+z),lc_data_tot['RATE']/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color="k")
 		ax[0].set_ylabel(r'Rate (ph cm$^{-2}$ s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
-	else: 
+	else:
 		# If z = 0, return luminosity
 		lc_tot_line, = ax[0].step(lc_data_tot['TIME'],lc_data_tot['RATE'],label=label,marker=" ",where="mid",color="k")
 		ax[0].set_ylabel(r'Rate (ph s$^{-1}$)',fontsize=fontsize,fontweight=fontweight)
@@ -815,24 +925,30 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 	axbox_time_select = plt.axes([0.2, 0.125, 0.1, 0.04])
 	txtbox_time_select = TextBox(ax=axbox_time_select, label='Time Selection', initial="{0:.2f}, {1:.2f}".format(init_Tmin, init_Tmax) )
 
-	axbox_time_window = plt.axes([0.2, 0.035, 0.1, 0.04])
+	axbox_time_window = plt.axes([0.2, 0.08, 0.1, 0.04])
 	txtbox_time_window = TextBox(ax=axbox_time_window, label='Time Window', initial="{0:.2f}, {1:.2f}".format(init_Tmin, init_Tmax) )
 
 	# Make time resolution selection box
-	axbox_time_res_select = plt.axes([0.2, 0.08, 0.1, 0.04])
+	axbox_time_res_select = plt.axes([0.2, 0.035, 0.1, 0.04])
 	txtbox_time_res_select = TextBox(ax=axbox_time_res_select, label='Time Resolution', initial="{0:.2f}".format(init_dT) )
 
 	# Make energy selection and energy window text boxes
 	axbox_energy_select = plt.axes([0.65, 0.125, 0.1, 0.04])
 	txtbox_energy_select = TextBox(ax=axbox_energy_select, label='Energy Selection', initial="{0:.2f}, {1:.2f}".format(init_Emin,init_Emax) )
 
-	axbox_energy_window = plt.axes([0.65, 0.035, 0.1, 0.04])
+	axbox_energy_window = plt.axes([0.65, 0.08, 0.1, 0.04])
 	txtbox_energy_window = TextBox(ax=axbox_energy_window, label='Energy Window', initial="{0:.2f}, {1:.2f}".format(init_Emin,init_Emax) )
 
+	# Redshift selection text box
+	axbox_redshift = plt.axes([0.65, 0.035, 0.1, 0.04])
+	txtbox_redshift = TextBox(ax=axbox_redshift, label='Redshift', initial="{0:.2f}".format(z) )
+
+	# Custom power law index annotation
+	annot = ax[1].annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points", bbox=dict(boxstyle="round", fc="w"),arrowprops=dict(arrowstyle="->"))
 
 	# Make update functions
 	
-	def submit_time_select(val):
+	def submit_time_select(val,z):
 		"""
 		Function call when a time selection is given, this will alter the displayed spectra
 		"""
@@ -850,7 +966,7 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 		shaded_region_time.xy = [[ selected_Tmin, 0.], [ selected_Tmin, 1.], [selected_Tmax, 1.], [selected_Tmax, 0.], [ selected_Tmin, 0.]]
 
 		# Compute the new spectrum for this time selection
-		subprocess.run(["./main","timechange", comp_indicator, "{}".format(logscale), "{}".format(selected_Tmin), "{}".format(selected_Tmax), "{}".format(init_Emin), "{}".format(init_Emax) ])
+		subprocess.run(["./main","timechange", comp_indicator, "{}".format(logscale), "{}".format(selected_Tmin/(1+z)), "{}".format(selected_Tmax/(1+z)), "{}".format(init_Emin*(1+z)), "{}".format(init_Emax*(1+z)) ])
 
 		# If components are desired, plot initial component spectra 
 		if(with_comps == True):
@@ -871,12 +987,12 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 		ax[0].redraw_in_frame()
 		ax[1].redraw_in_frame()
 		fig.canvas.draw_idle()
-
-		
-	def submit_energy_select(val):
+	
+	def submit_energy_select(val,z):
 		"""
 		Function call when a energy selection is given, this will edit the observed light curve 
 		"""
+
 		# val will be separated into two values, split by the comma
 		x = val.split(", ")
 
@@ -891,7 +1007,7 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 		shaded_region_energy.xy = [[ selected_Emin, 0.], [ selected_Emin, 1.], [selected_Emax, 1.], [selected_Emax, 0.], [ selected_Emin, 0.]]
 
 		# Compute the new light curve for this energy selection
-		subprocess.run(["./main","energychange", comp_indicator, "{}".format(logscale), "{}".format(init_Tmin), "{}".format(init_Tmax), "{}".format(init_dT), "{}".format(selected_Emin), "{}".format(selected_Emax) ])
+		subprocess.run(["./main","energychange", comp_indicator, "{}".format(logscale), "{}".format(init_Tmin/(1+z)), "{}".format(init_Tmax/(1+z)), "{}".format(init_dT/(1+z)), "{}".format(selected_Emin*(1+z)), "{}".format(selected_Emax*(1+z)) ])
 
 		# If components are desired, plot initial component spectra 
 		if(with_comps == True):
@@ -927,7 +1043,7 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 		"""
 
 		# Compute the new light curve for this energy selection
-		subprocess.run(["./main","energychange", comp_indicator, "{}".format(logscale), "{}".format(init_Tmin), "{}".format(init_Tmax), "{}".format(val), "{}".format(init_Emin), "{}".format(init_Emax) ])
+		subprocess.run(["./main","energychange", comp_indicator, "{}".format(logscale), "{}".format(init_Tmin/(1+z)), "{}".format(init_Tmax/(1+z)), "{}".format(val/(1+z)), "{}".format(init_Emin*(1+z)), "{}".format(init_Emax*(1+z)) ])
 
 		# If components are desired, plot initial component spectra 
 		if(with_comps == True):
@@ -993,18 +1109,84 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 		ax[1].redraw_in_frame()
 		fig.canvas.draw_idle()
 
+	def submit_redshift(val):
+		"""
+		Function to call when a new redshift is input by the user.
+		"""
+		new_z = float(val)
+		# Remake spectrum (same time interval, but now different enclosed emission)
+		submit_energy_select("{}, {}".format(init_Emin,init_Emax),new_z)
+
+		# # Remake light curve (same energy interval, but now spectrum is shifted) 
+		submit_time_select("{}, {}".format(init_Tmin,init_Tmax),new_z)
+
+
+	def onclick(event, points):
+		"""
+		Function used to making a line and calculating the power law index of the line
+		"""
+
+		# If this is the first point being clicked on, add it to the list of points
+		if len(points) == 0:
+			points.append([event.xdata, event.ydata])
+		# If this is the second point being clicked on, add it to the list of points, make the connecting line, and show the power law index
+		elif len(points) == 1:
+			# Append points to list
+			points.append([event.xdata, event.ydata])
+
+			# Make connecting line
+			ax[1].plot([points[0][0] , points[1][0]] ,[points[0][1], points[1][1]],color="m")
+
+			# Calculate the power law index
+			ratio_F = points[1][1]/points[0][1] # Ratio of flux 
+			ratio_E = points[1][0]/points[0][0] # Ratio of energy
+			alpha = (np.log(ratio_F) / np.log(ratio_E) ) - 2.
+
+			# Set the position of the annotation and make it visible
+			annot.xy = points[1]
+			annot.set(visible = True)
+
+			# Display the point index
+			text = r"$\alpha$ = {}".format(alpha)
+			annot.set_text(text)
+
+		# If this is the third point selected, remove the line and reset the points
+		elif len(points) == 2:
+			# Remove the line
+			ax[1].lines[-1].remove()
+
+			# Hide the annotation
+			annot.set(visible = False)
+
+			# Reset points list
+			points.clear()
+
+
+		# Redraw the figure to implement updates
+		ax[1].redraw_in_frame()
+		fig.canvas.draw_idle()
+
 		
 
 	# Call functions to update selection intervals
-	txtbox_time_select.on_submit(submit_time_select)
-	txtbox_energy_select.on_submit(submit_energy_select)
+	txtbox_time_select.on_submit(lambda val: submit_time_select(val,z))
+	txtbox_energy_select.on_submit(lambda val: submit_energy_select(val,z))
 	
 	# Call function to change time resolution of light curve
-	txtbox_time_res_select.on_submit(submit_time_res_select)
+	txtbox_time_res_select.on_submit(lambda val: submit_time_res_select(val,z))
 
 	# Call functions to update windows
 	txtbox_time_window.on_submit(submit_time_window)
 	txtbox_energy_window.on_submit(submit_energy_window)
+
+	# Call function to set a new redshift
+	txtbox_redshift.on_submit(submit_redshift)
+
+	# Call function for making line between two points
+	points = []
+	fig.canvas.mpl_connect('button_press_event', lambda event: onclick(event, points) )
+
+
 
 	fig.subplots_adjust(bottom=0.25,wspace=0.4)
 
@@ -1012,7 +1194,7 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 	if save_pref is not None:
 		plt.savefig('figs/{}-light-curve.png'.format(save_pref))
 
-	return txtbox_time_select, txtbox_time_window, txtbox_energy_select, txtbox_energy_window
+	return fig, txtbox_time_select, txtbox_time_window, txtbox_energy_select, txtbox_energy_window
 
 
 ##############################################################################################################################
@@ -1044,7 +1226,7 @@ def load_fs_emission(file_name):
 	Method to load forward shock emission data from the given file name
 	"""
 
-	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),("NUC",float),("NUM",float),("SHIND",int)])
+	dtype = np.dtype([('TE',float),('TA',float),('DELT',float),('BEQ',float),('GAMMAE',float),('ESYN',float),('GAMMAR',float),('EDISS',float),("NUC",float),("NUM",float),("THETA",float),("SHIND",int)])
 
 	return np.genfromtxt(file_name,dtype=dtype)
 
@@ -1748,9 +1930,9 @@ def plot_synch_cooling_regime(emission,frame="obs",ax=None,z=0,label=None, color
 
 	# Plot temperature of the thermal component vs time (in observer frame)
 	plot_param_vs_time(emission,'NUC', ax=ax, z=z, y_factor=y_factor,Tmin=Tmin, Tmax=Tmax, marker=markers[0],
-		markersize=markersize, color=color, label=label, fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
+		markersize=markersize, color="C0", label=r"$\nu_c$", fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
 	plot_param_vs_time(emission,'NUM', ax=ax, z=z, y_factor=y_factor,Tmin=Tmin, Tmax=Tmax, marker=markers[1],
-		markersize=markersize, color=color, fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
+		markersize=markersize, color="C1", label=r"$\nu_m$", fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
 
 	ax.set_xlabel(r't$_{obs}$',fontsize=fontsize,fontweight=fontweight)
 	ax.set_ylabel(r'E (KeV)',fontsize=fontsize,fontweight=fontweight)
@@ -1801,13 +1983,17 @@ if __name__ == '__main__':
 	z = 0
 
 
-	save_pref = "2022-04-20/2022-04-20"
+	# save_pref = "2022-06-17/test-sharp-pulse-prof-5"
 
 	"""
 	Shell Lorentz Distribution
 	"""
 	
-	# plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt')
+	fig = plt.figure()
+	ax = fig.gca()
+	plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=False,ax=ax,fig=fig)
+	plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,color="C1")
+	ax.invert_xaxis()
 	# plot_lor_dist('data-file-dir/synthGRB_shell_dist.txt',show_zoomed=False)
 	# ani = plot_lor_dist_anim('data-file-dir/synthGRB_shell_dist.txt')
 
@@ -1840,36 +2026,36 @@ if __name__ == '__main__':
 
 	# ax_spec.set_xlim(0.1,1e5)
 	# ax_spec.set_ylim(1e48,1e52)
+	
 	"""
-
 	
 
 	"""
 	Synthetic light curve
 	"""
 	
-	ax_lc = plt.figure().gca()
-	plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,label="TH",color="r")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,label="IS",color="C0")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,label="FS",color="C1")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,label="RS",color="C2")
-	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
+	# ax_lc = plt.figure().gca()
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,label="TH",color="r")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,label="IS",color="C0")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,label="FS",color="C1")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,label="RS",color="C2")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,label="Total",logscale=False,color="k")
 
 	# Interactive light curve
-	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 13, init_dT=0.1, init_Emin = 8, init_Emax = 40000,z=z,label="Total",with_comps=True,with_gbm=True)
-	# tbox = plot_light_curve_interactive(init_Tmin = 15, init_Tmax = 1e4, init_dT=0.1, init_Emin = 8, init_Emax = 40000,z=z,label_comps=False,logscale=True)
+	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 13, init_dT=0.2, init_Emin = 8, init_Emax = 40000,z=z,label="Total",with_comps=True)
 
-	# # # Afterglow light curve
+	# Afterglow light curve
 	# ax_afg_lc = plt.figure().gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_afg_lc,z=z,label="Prompt",logscale=True,color="k")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt",ax=ax_afg_lc,z=z,label="AG: Konus-Wind",logscale=True,color="C1")
-	# # plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt",ax=ax_afg_lc,z=z,label="AG: XRT",logscale=True,color="C4")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt.txt",ax=ax_afg_lc,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="C5")
-	# # ax_afg_lc.set_ylim(1e43,1e49)
-	# # ax_afg_lc.set_xlim(0.1)
+	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_afg_lc,z=z,label="Prompt: Fermi-GBM",logscale=True,color="k")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt",ax=ax_afg_lc,z=z,label="AG: Fermi-GBM",logscale=True,color="C0")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt",ax=ax_afg_lc, fig = fig, z=z,label="AG: XRT",logscale=True,color="C4")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt.txt",ax=ax_afg_lc, fig = fig, z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="C1")
+	# ax_afg_lc.set_ylim(1e43,1e49)
+	# ax_afg_lc.set_xlim(0.1)
 
-	# ax_afg_lc = plt.figure().gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom.txt",ax=ax_afg_lc,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k")
+	fig = plt.figure()
+	ax_afg_lc = fig.gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="C1",xax_units="d")
 
 
 
@@ -1879,26 +2065,28 @@ if __name__ == '__main__':
 	"""
 	
 	# therm_emission = load_therm_emission("data-file-dir/synthGRB_jet_params_TH.txt")
-	# plot_evo_therm(therm_emission,frame="source")
+	# plot_evo_therm(therm_emission,xlogscale=False,z=1)
 	
 	# is_data = load_is_emission("data-file-dir/synthGRB_jet_params_IS.txt")
-	# # plot_evo_int_shock(is_data,z=0.5)
-
 	# fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_FS.txt")
 	# rs_data = load_rs_emission("data-file-dir/synthGRB_jet_params_RS.txt")
 
 	# Plot everything together:
 	# fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
-	# fig0, fig1 = plot_together(fs_data=fs_data)
+	# fig0, fig1 = plot_together(fs_data=fs_data,rs_data=rs_data)
+	# fig0, fig1 = plot_together(fs_data=fs_data,guidelines=True)
 
 	
 	# Plot nu_c and nu_m: 
 	# ax_synch_reg = plt.figure(figsize=(10,8)).gca()
 	# markers = [".","^"]
-	# plot_synch_cooling_regime(is_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="IS",color="C0",markers=markers,alpha=0.8,markersize=16)
-	# # plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1")
-	# plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16)
-	# add_FermiGBM_band(ax_synch_reg,axis="y")
+	# # plot_synch_cooling_regime(is_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="IS",color="C0",markers=markers,alpha=0.8,markersize=16)
+	# plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,Tmin=1e3,Tmax=1e6,label="FS",color="C1",markers=markers,alpha=0.6,markersize=16)
+	# # plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16)
+	# # add_FermiGBM_band(ax_synch_reg,axis="y")
+
+	# # Display Fermi/GBM - NAI energy band
+	# ax_synch_reg.axhspan(ymin=1e-3,ymax=5e-3,xmin=0,xmax=1,alpha=0.4,facecolor='grey',label='Optical Band')
 	
 
 	"""
@@ -1915,51 +2103,11 @@ if __name__ == '__main__':
 	"""
 	Testing
 	"""
-
-	"""
-	# Looking at spectral lags	
-	plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt')
-
-	# plt.savefig("figs/2022-04-08/smoothstep-lor-dist-gam_e-const.png")
-
-
-	ax_lc = plt.figure().gca()
-	plot_light_curve("data-file-dir/synthGRB_light_curve_sxc.txt",ax=ax_lc,z=z,label="(2 - 10) keV",color="C0")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_batse.txt",ax=ax_lc,z=z,label="(50 - 300) keV",color="C1",y_factor=5)
-
-
-	# plt.savefig("figs/2022-04-08/smoothstep-light-curve-gam_e-const.png")
-
-
-	is_data = load_is_emission("data-file-dir/synthGRB_jet_params_IS.txt")
-	rs_data = load_rs_emission("data-file-dir/synthGRB_jet_params_RS.txt")
-
-
-	ax = plt.figure().gca()
-	plot_param_vs_time(is_data, "NUC",frame="obs",ax=ax, y_factor=planck_kev, color="C0",label=r"$E_C$")
-	plot_param_vs_time(is_data, "NUM",frame="obs",ax=ax, y_factor=planck_kev, color="C1",label=r"$E_M$")
-	plot_param_vs_time(is_data, "ESYN",frame="obs",ax=ax,color="C2",label=r"$E_{SYN}$")
-
-	plot_param_vs_time(rs_data, "NUC",frame="obs",ax=ax, y_factor=planck_kev, color="C0")
-	plot_param_vs_time(rs_data, "NUM",frame="obs",ax=ax, y_factor=planck_kev, color="C1")
-	plot_param_vs_time(rs_data, "ESYN",frame="obs",ax=ax,color="C2")
-
-	ax.set_xlim(0,20)
-	ax.set_yscale("log")
-
-	ax.legend(fontsize=13,markerscale=5)
-
-	# plt.savefig("figs/2022-04-08/smoothstep-cooling-regime-gam_e-const.png")
-
+	# fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_FS.txt")
 	# ax = plt.figure().gca()
-	# plot_param_vs_time(is_data, "NUC",frame="obs",ax=ax, y_factor=planck_kev, color="C0",label=r"$E_C$")
-	# plot_param_vs_time(is_data, "NUM",frame="obs",ax=ax, y_factor=planck_kev, color="C1",label=r"$E_M$")
-	# plot_param_vs_time(is_data, "ESYN",frame="obs",ax=ax,color="C2",label=r"$E_{SYN}$")
+	# plot_param_vs_time(fs_data,"THETA",frame="obs",ax=ax)
+	# ax.set_xscale('log')
 
-	# plot_param_vs_time(rs_data, "NUC",frame="obs",ax=ax, y_factor=planck_kev, color="C0")
-	# plot_param_vs_time(rs_data, "NUM",frame="obs",ax=ax, y_factor=planck_kev, color="C1")
-	# plot_param_vs_time(rs_data, "ESYN",frame="obs",ax=ax,color="C2")
-	"""	
 
 	plt.show()
 
