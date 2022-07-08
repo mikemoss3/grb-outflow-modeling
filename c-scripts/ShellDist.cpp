@@ -281,6 +281,11 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 			// Calculate the launch time of each shell since the start of the launch 
 			shell_te.at(i) = i*dte;
 
+			if (shell_te.at(i)>14)
+			{
+				shell_mass.at(i) = shell_mass.at(i) * 1.75;	
+			}
+
 			// Calculate the initial shell position based on when the shell will be launched
 			// Notice this is actually R/c 
 			shell_radius.at(i) = - beta(shell_gamma.at(i)) * shell_te.at(i);
