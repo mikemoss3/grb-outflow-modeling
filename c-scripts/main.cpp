@@ -136,8 +136,8 @@ int main(int argc, char const *argv[])
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
 
-	float energ_min = 10.;
-	float energ_max = 4e5;
+	float energ_min = 1e-10;
+	float energ_max = 1e3;
 	float energ_min_lc = energ_min; 
 	float energ_max_lc = energ_max;
 	float num_energ_bins = 200;
@@ -156,12 +156,12 @@ int main(int argc, char const *argv[])
 	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();
-	test_grb.write_out_jet_params("./data-file-dir/");
+	// test_grb.write_out_jet_params("./data-file-dir/");
 	// test_grb.WriteBoulodromeTXT("./data-file-dir/test_boulodrome.txt",8e5);
 
 	// // Spectrum time interval
-	float tlo = 1; // The T90? essentially.
-	float thi = 14;
+	float tlo = 8e4; // The T90? essentially.
+	float thi = 2e5;
 
 	// Total spectrum
 	// test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
@@ -198,8 +198,13 @@ int main(int argc, char const *argv[])
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt");
 	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e2, 1e6, dt, "FS", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt.txt");
+	
+	test_grb.make_source_light_curve(1e-3, 5e-3, 1e3, 5e6, dt/4., "all", true);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt");
 	test_grb.make_source_light_curve(1e-3, 5e-3, 1e3, 5e6, dt/4., "FS", true);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom.txt");
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt");
+	test_grb.make_source_light_curve(1e-3, 5e-3, 1e3, 5e6, dt/4., "RS", true);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt");
 
 	return 0;
 	

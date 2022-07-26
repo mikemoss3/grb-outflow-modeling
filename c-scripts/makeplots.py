@@ -549,7 +549,7 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, n
 	ax.set_yscale('log')
 
 	# Force lower bound
-	ax.set_ylim(1e48,1e52)
+	# ax.set_ylim(1e48,1e52)
 
 	# For axis labels
 	ax.set_xlabel('E (keV)',fontsize=fontsize,fontweight=fontweight)
@@ -1888,7 +1888,7 @@ def plot_observables(is_emission,th_emission,frame="obs",ax=None,z=0, save_pref=
 
 ##############################################################################################################################
 
-def plot_synch_cooling_regime(emission,frame="obs",ax=None,z=0,label=None, color="C0", markers=[".","^"], markersize=None, alpha=1, save_pref=None, Tmin=None, Tmax=None, fontsize=14,fontweight='bold'):
+def plot_synch_cooling_regime(emission,frame="obs",ax=None,z=0,label=None, color="C0", markers=[".","^"], markersize=None, alpha=1, save_pref=None, Tmin=None, Tmax=None, fontsize=14,fontweight='bold',ylogscale=True,xlogscale=True):
 	"""
 	Plot nu_c and nu_m vs time
 
@@ -1922,6 +1922,11 @@ def plot_synch_cooling_regime(emission,frame="obs",ax=None,z=0,label=None, color
 	if(frame=="source"):
 		time_str = "TE"
 
+	if Tmin is None:
+		Tmin = emission[time_str][0]
+	if Tmax is None:
+		Tmax = emission[time_str][-1]
+
 	y_factor = planck_kev*emission['GAMMAR'][(emission[time_str]>Tmin) & (emission[time_str] < Tmax)]
 
 	# Make plot instance if it doesn't exist
@@ -1930,9 +1935,9 @@ def plot_synch_cooling_regime(emission,frame="obs",ax=None,z=0,label=None, color
 
 	# Plot temperature of the thermal component vs time (in observer frame)
 	plot_param_vs_time(emission,'NUC', ax=ax, z=z, y_factor=y_factor,Tmin=Tmin, Tmax=Tmax, marker=markers[0],
-		markersize=markersize, color="C0", label=r"$\nu_c$", fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
+		markersize=markersize, color=color, label=label, fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
 	plot_param_vs_time(emission,'NUM', ax=ax, z=z, y_factor=y_factor,Tmin=Tmin, Tmax=Tmax, marker=markers[1],
-		markersize=markersize, color="C1", label=r"$\nu_m$", fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
+		markersize=markersize, color=color, fontsize=fontsize, fontweight=fontweight,frame=frame,alpha=alpha)
 
 	ax.set_xlabel(r't$_{obs}$',fontsize=fontsize,fontweight=fontweight)
 	ax.set_ylabel(r'E (KeV)',fontsize=fontsize,fontweight=fontweight)
@@ -1943,11 +1948,13 @@ def plot_synch_cooling_regime(emission,frame="obs",ax=None,z=0,label=None, color
 	# Make plots look good
 	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
 
-	ax.set_yscale('log')
+	if(ylogscale == True):
+		ax.set_yscale('log')
+	if(xlogscale == True):
+		ax.set_xscale('log')
 
 	if label is not None:
 		ax.legend(fontsize=fontsize)
-	
 
 	ax.grid(True)
 	plt.tight_layout()
@@ -1983,7 +1990,7 @@ if __name__ == '__main__':
 	z = 0
 
 
-	# save_pref = "2022-06-17/test-sharp-pulse-prof-5"
+	# save_pref = "2022-07-08/2022-07-08"
 
 	"""
 	Shell Lorentz Distribution
@@ -1994,6 +2001,7 @@ if __name__ == '__main__':
 	plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=False,ax=ax,fig=fig)
 	plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,color="C1")
 	ax.invert_xaxis()
+	
 	# plot_lor_dist('data-file-dir/synthGRB_shell_dist.txt',show_zoomed=False)
 	# ani = plot_lor_dist_anim('data-file-dir/synthGRB_shell_dist.txt')
 
@@ -2004,12 +2012,12 @@ if __name__ == '__main__':
 	ax_spec = plt.figure().gca()
 
 	## Synthetic spectra with each component
-	plot_spec("data-file-dir/synthGRB_spec_therm.txt",ax=ax_spec,z=z,label="Thermal",color="r")
-	plot_spec("data-file-dir/synthGRB_spec_is.txt",ax=ax_spec,z=z,label="IS",color="C0")
+	# plot_spec("data-file-dir/synthGRB_spec_therm.txt",ax=ax_spec,z=z,label="Thermal",color="r")
+	# plot_spec("data-file-dir/synthGRB_spec_is.txt",ax=ax_spec,z=z,label="IS",color="C0")
 	plot_spec("data-file-dir/synthGRB_spec_fs.txt",ax=ax_spec,z=z,label="FS",color="C1")
 	plot_spec("data-file-dir/synthGRB_spec_rs.txt",ax=ax_spec,z=z,label="RS",color="C2")
-	add_FermiGBM_band(ax_spec)
-	plot_spec("data-file-dir/synthGRB_spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
+	# add_FermiGBM_band(ax_spec)
+	# plot_spec("data-file-dir/synthGRB_spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
 
 	## Synthetic spectrum before convolusion
 	# plot_spec("data-file-dir/spec_source.txt",ax=ax_spec,unc=False,label="Source")
@@ -2026,8 +2034,8 @@ if __name__ == '__main__':
 
 	# ax_spec.set_xlim(0.1,1e5)
 	# ax_spec.set_ylim(1e48,1e52)
-	
 	"""
+	
 	
 
 	"""
@@ -2055,9 +2063,9 @@ if __name__ == '__main__':
 
 	fig = plt.figure()
 	ax_afg_lc = fig.gca()
-	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="C1",xax_units="d")
-
-
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="d")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="Forward Shock",logscale=True,color="C1",xax_units="d")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="Reverse Shock",logscale=True,color="C2",xax_units="d")
 
 	"""
 	Jet dynamics plots 
@@ -2081,9 +2089,10 @@ if __name__ == '__main__':
 	# ax_synch_reg = plt.figure(figsize=(10,8)).gca()
 	# markers = [".","^"]
 	# # plot_synch_cooling_regime(is_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="IS",color="C0",markers=markers,alpha=0.8,markersize=16)
-	# plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,Tmin=1e3,Tmax=1e6,label="FS",color="C1",markers=markers,alpha=0.6,markersize=16)
-	# # plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16)
-	# # add_FermiGBM_band(ax_synch_reg,axis="y")
+	# plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1",markers=markers,alpha=0.6,markersize=16,frame="obs")
+	# plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16,frame="obs")
+	# add_FermiGBM_band(ax_synch_reg,axis="y")
+
 
 	# # Display Fermi/GBM - NAI energy band
 	# ax_synch_reg.axhspan(ymin=1e-3,ymax=5e-3,xmin=0,xmax=1,alpha=0.4,facecolor='grey',label='Optical Band')

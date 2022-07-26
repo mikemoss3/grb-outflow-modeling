@@ -1324,30 +1324,6 @@ void SynthGRB::SimulateJetDynamics()
 
 			tmp_asyn = 1. - alpha_ic; // Fraction of energy remaining for synchrotron electrons
 
-
-			// // If the jet is still before the the jet break
-			// if( ( tmp_theta * tmp_gamma_r) >= 1. )
-			// {
-			// 	// Duration of the emission event 
-			// 	tmp_delt = tmp_rs_r/2./pow(tmp_gamma_r,2.);
-				
-
-			// 	// Luminosity of the emission
-			// 	// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
-			// 	tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn; // erg 
-			// }
-			// // If the jet is after the jet break
-			// else
-			// {
-			// 	// Duration of the emission event 
-			// 	tmp_delt = tmp_rs_r * pow(tmp_theta,2.) / 2.;
-
-			// 	// Luminosity of the emission
-			// 	// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
-			// 	tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn; // erg 
-
-			// }
-
 			// Duration of the emission event 
 			tmp_delt = tmp_rs_r/2./pow(tmp_gamma_r,2.);
 
