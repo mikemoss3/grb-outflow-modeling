@@ -1,0 +1,16 @@
+### median ###
+20.
+### decay ###
+5.
+### number of injected FREDs ###
+4
+### FRED starts ###
+-1. 7 14.7 21
+### tau_1 Values (rise-time parameter) ###
+1. 1. 0.7 0.7
+### tau_2 Values (decay-time parameter) ###
+2.5 1. 1.3 0.6
+### FRED amplitudes ###
+300 300 80 80
+### fluctuations ###
+false

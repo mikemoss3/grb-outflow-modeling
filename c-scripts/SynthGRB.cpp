@@ -452,6 +452,70 @@ void SynthGRB::set_jet_shells()
 			(*p_jet_shells).square_inject((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), vec_vec.at(0), vec_vec.at(1), vec_vec.at(2), fluc);
 		}
 	}
+	if((*p_model_params).LorentzDist == "fred_inject")
+	{
+		// Load shell distribution parameters from (*p_model_params).ShellDistParamsFile
+		if((*p_model_params).ShellDistParamsFile == "Default")
+		{
+			// Make shell distribution with default arguments
+			(* p_jet_shells).fred_inject((*p_model_params).dte);	
+		}
+		else
+		{
+			// Array to store params 
+			string inputs[8];
+			std::vector<std::vector<float>> vec_vec(4);
+			int i = 0;
+			int k = 0;
+
+			// Load from designated file
+			ifstream file_jet_params((*p_model_params).ShellDistParamsFile);
+			string line_jet_params;
+			if ( file_jet_params.is_open() ) 
+			{
+				while(getline(file_jet_params, line_jet_params))
+				{
+					// If it is a commented line, just pass by
+					if(line_jet_params[0] == '#')
+					{ continue; }
+					else if(i < 3 )
+					{
+						inputs[i] = line_jet_params;
+						++i;
+					}
+					else if( i < 7)
+					{
+						std::vector<float> tmp_v;
+						// Build an istream that holds the input string
+						std::istringstream iss(line_jet_params);
+
+
+						// Iterate over the istream, using >> to grab floats and push_back to store them in the vector
+						std::copy(std::istream_iterator<float>(iss),std::istream_iterator<float>(), std::back_inserter(tmp_v));
+						vec_vec.at(k) = tmp_v;
+
+						++i;
+						++k;
+					}
+					else
+					{
+						inputs[i] = line_jet_params;
+						++i;
+					}
+
+				}
+
+				// Close files and free memory 
+				file_jet_params.close();
+			}
+			else std::cout << "Unable to open file.";
+
+			// Make shell distribution with input parameters
+			bool fluc;
+			istringstream(inputs[7]) >> fluc; 			
+			(*p_jet_shells).fred_inject((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), vec_vec.at(0), vec_vec.at(1), vec_vec.at(2), vec_vec.at(3), fluc);
+		}
+	}
 	if((*p_model_params).LorentzDist == "linear")
 	{
 		// Load shell distribution parameters from (*p_model_params).ShellDistParamsFile
@@ -517,6 +581,7 @@ void SynthGRB::set_source_light_curve(LightCurve *in_source_light_curve)
 // Reset jet simulation variable vectors
 void SynthGRB::reset_simulation()
 {
+
 	set_jet_shells();
 
 	// Reset thermal variable arrays
@@ -576,7 +641,7 @@ void SynthGRB::reset_simulation()
 	nu_m_rs.resize(0);
 	shell_ind_rs.resize(0);
 	// eps_star_rs.resize(0);
-	// rho_rs.resize(0);
+	// rho_rs.resize(0);	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -633,7 +698,6 @@ void SynthGRB::SimulateJetDynamics()
 			shell_ind_th.at(i) = i;
 		}
 	}
-
 
 	/* Calculate Internal and External shock considerations */
 
@@ -816,14 +880,15 @@ void SynthGRB::SimulateJetDynamics()
 		// If the reverse shock has begun, calculate the time until the next RS event
 		if( (rs_active == true) and ( (*p_jet_shells).shell_gamma.at(active_inds.at(0)) > (*p_jet_shells).shell_gamma.at(rs_shell_index)) )
 		{
+			
 			// Calculate when the outer most shell will collide with the external shock discontinuity, e.g., when a reverse shock will happen
 			t_RS_coll = ((*p_jet_shells).shell_radius.at(rs_shell_index) - (*p_jet_shells).shell_radius.at(active_inds.at(0))) / (beta((*p_jet_shells).shell_gamma.at(active_inds.at(0))) - beta((*p_jet_shells).shell_gamma.at(rs_shell_index)));
 		}
 
-
 		/* ## Internal Shock Dynamics and Emission ## */
 		if((t_IS_lowest < t_FS_sweep) & (t_IS_lowest < t_RS_coll))
 		{
+		
 			// Keep track of the number of internal shocks that occur, this is used for taking snapshots of the Lorentz distribution
 			num_shocks +=1;
 
@@ -994,6 +1059,7 @@ void SynthGRB::SimulateJetDynamics()
 			// Is the emission efficient? 
 			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
 			tmp_eff = (t_syn < ((1.+Q_IC)*rad_coll/gamma_bar) );
+			// tmp_eff = true;
 
 			// Calculate nu_c
 			tmp_nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(tmp_beq,3.)/pow(tmp_delt,2.);
@@ -1035,7 +1101,7 @@ void SynthGRB::SimulateJetDynamics()
 		
 		/* ## Forward Shock Dynamics and Emission ## */
 		else if((fs_active == true ) & (t_FS_sweep < t_RS_coll))
-		{			
+		{				
 			// Keep track of the number of forward shocks that occur, this is used for taking snapshots of the Lorentz distribution
 			num_fs_shocks += q;
 			if(num_fs_shocks > 1)
@@ -1089,6 +1155,10 @@ void SynthGRB::SimulateJetDynamics()
 			// Calculate necessary parameters:
 			// The new Lorentz factor at the discontinuity due to forward shock
 			tmp_gamma_r = pow( ((tmp_rs_m + tmp_fs_m*fs_gamma_int)*pow(tmp_fs_g,2.) + m_swept_tot*tmp_fs_g ) / ( (tmp_rs_m + tmp_fs_m*fs_gamma_int) + 2.*m_swept_tot*tmp_fs_g ) ,0.5);
+			if(tmp_gamma_r < 1)
+			{
+				tmp_gamma_r = 1.000001;
+			}
 
 			// Opening angle of the jet increases due to lateral expansion
 			if(flag_lat_exp == true)
@@ -1147,26 +1217,19 @@ void SynthGRB::SimulateJetDynamics()
 			{
 				// Duration of the emission event 
 				tmp_delt = tmp_fs_r/2./pow(tmp_gamma_r,2.);
-
-
-				// Luminosity of the emission
-				// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
-				tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn; // erg 
 			}
 			// If the jet is after the jet break
 			else
-			{				
+			{
+				std::cout << (tmp_te - tmp_fs_r) << std::endl;
+				return;
 				// Duration of the emission event 
 				tmp_delt = tmp_fs_r * pow(tmp_theta,2.) / 2.;
-
-				// Luminosity of the emission
-				// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
-				tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn; // erg 
-
-				// Reduce the jet luminosity due to the jet break
-				// tmp_lum_diss *= pow(tmp_theta*tmp_gamma_r,2.);
 			}
 
+			// Luminosity of the emission
+			// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn / tmp_delt; // erg / s;  
+			tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_ext * tmp_asyn; // erg 
 
 			// Calculate nu_c
 			tmp_nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(tmp_beq,3.)/pow(tmp_delt,2.);
@@ -1184,23 +1247,34 @@ void SynthGRB::SimulateJetDynamics()
 			// adiabatic (slow cooling) so FS_gamma_int > 1 and approx = gamma_r  :
 			fs_gamma_int = ((tmp_rs_m + tmp_fs_m*fs_gamma_int)*tmp_fs_g + m_swept_tot - tmp_rs_m*tmp_gamma_r)/(tmp_fs_m+m_swept_tot)/tmp_gamma_r;
 
-			// Continuous emission:
-			te_fs.push_back(tmp_te); // sec, Time of emission 
-			ta_fs.push_back(tmp_te - tmp_fs_r); // sec, Arrival time of emission at observer
-			delt_fs.push_back(tmp_delt); // sec, Duration of the emission
-			beq_fs.push_back(tmp_beq); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
-			gamma_e_fs.push_back(tmp_gamma_e); // Lorentz factor of the electron population
-			esyn_fs.push_back(tmp_esyn_kev); // erg, The typical synchrotron energy of the accelerated electrons
-			gamma_r_fs.push_back(tmp_gamma_r); // New Lorentz factor of the FS
-			e_diss_fs.push_back(tmp_lum_diss); // erg/s, Dissipated energy of the FS	
-			nu_c_fs.push_back(tmp_nu_c); // Hz, Critical synchrotron frequency
-			nu_m_fs.push_back(tmp_nu_m); // Hz, Minimum electron frequency
+			// Is the emission efficient? 
+			// t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
+			// tmp_eff = (t_syn < ((1.+Q_IC)*tmp_fs_r/gamma_bar) );
+			tmp_eff = true;
+			
+			// If the emission is efficient, add the contribution
+			// E.g., if the emission time is less than the shell expansion (the dynamical time scale of the shell)		
+			if ( tmp_eff )
+			{
+				// Continuous emission:
+				te_fs.push_back(tmp_te); // sec, Time of emission 
+				ta_fs.push_back(tmp_te - tmp_fs_r); // sec, Arrival time of emission at observer
+				delt_fs.push_back(tmp_delt); // sec, Duration of the emission
+				beq_fs.push_back(tmp_beq); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq 
+				gamma_e_fs.push_back(tmp_gamma_e); // Lorentz factor of the electron population
+				esyn_fs.push_back(tmp_esyn_kev); // erg, The typical synchrotron energy of the accelerated electrons
+				gamma_r_fs.push_back(tmp_gamma_r); // New Lorentz factor of the FS
+				e_diss_fs.push_back(tmp_lum_diss); // erg/s, Dissipated energy of the FS	
+				nu_c_fs.push_back(tmp_nu_c); // Hz, Critical synchrotron frequency
+				nu_m_fs.push_back(tmp_nu_m); // Hz, Minimum electron frequency
 
-			rad_coll_fs.push_back(tmp_fs_r); // light seconds, Radius of forward shell
-			rho_fs.push_back(tmp_rho); // g cm^-3, Density of the collision region
-			eps_star_fs.push_back(tmp_eps_star); // Internal energy dissipated in a collision 
-			num_swept_e_fs.push_back((*p_model_params).zeta_ext * m_swept_tot / mp); // Number of swept up electrons in the shock
-			theta_fs.push_back(tmp_theta); // rad, Jet opening angle, assumes sound speed = c / sqrt(3)
+				rad_coll_fs.push_back(tmp_fs_r); // light seconds, Radius of forward shell
+				rho_fs.push_back(tmp_rho); // g cm^-3, Density of the collision region
+				eps_star_fs.push_back(tmp_eps_star); // Internal energy dissipated in a collision 
+				num_swept_e_fs.push_back((*p_model_params).zeta_ext * m_swept_tot / mp); // Number of swept up electrons in the shock
+				theta_fs.push_back(tmp_theta); // rad, Jet opening angle, assumes sound speed = c / sqrt(3)
+			}
+
 
 			// Reset the swept up mass
 			m_swept = 0.;
@@ -1211,7 +1285,7 @@ void SynthGRB::SimulateJetDynamics()
 
 		/* ## Reverse Shock Dynamics and Emission ## */
 		else if((rs_active == true ))
-		{
+		{			
 			// Keep track of the number of reverse shocks that occur, this is used for taking snapshots of the Lorentz distribution
 			num_shocks +=1;
 
@@ -1325,8 +1399,20 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_asyn = 1. - alpha_ic; // Fraction of energy remaining for synchrotron electrons
 
 			// Duration of the emission event 
-			tmp_delt = tmp_rs_r/2./pow(tmp_gamma_r,2.);
+			// If the jet is still before the the jet break
+			if( ( (*p_model_params).theta * tmp_gamma_r) >= 1. )
+			{
+				// Duration of the emission event 
+				tmp_delt = tmp_rs_r/2./pow(tmp_gamma_r,2.);
+			}
+			// If the jet is after the jet break
+			else
+			{				
+				// Duration of the emission event 
+				tmp_delt = tmp_rs_r * pow((*p_model_params).theta,2.) / 2.;
+			}
 
+			// Luminosity of the emission
 			// tmp_lum_diss = tmp_e_diss * (*p_model_params).eps_e_int * tmp_asyn / tmp_delt; // erg / s;
 			tmp_lum_diss = tmp_e_diss * (*p_model_params).eps_e_int * tmp_asyn; // erg ;
 			
@@ -1337,6 +1423,7 @@ void SynthGRB::SimulateJetDynamics()
 
 			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
 			tmp_eff = (t_syn < ((1.+Q_IC)*tmp_rs_r/gamma_bar) );
+			// tmp_eff = true;
 
 
 			// Update the mass of the reverse shock shell
@@ -1367,6 +1454,7 @@ void SynthGRB::SimulateJetDynamics()
 				// eps_star_rs.push_back(tmp_eps_star); // erg / g, Internal energy dissipated in a collision 
 				// rho_rs.push_back(rho); // g cm^-3, Density of the collision region
 			}
+
 		}
 		else
 		{
@@ -1394,7 +1482,7 @@ void SynthGRB::SimulateJetDynamics()
 		{
 			ord_lorentz = true;
 			// std::cout << "At time t=" << tmp_te << " s, all shells have been launched and Lorentz factors are ordered.\n";
-		}
+		}		
 		// Check if the FS is no longer relativistic 
 		if((*p_jet_shells).shell_gamma.at(fs_shell_index) < 2)
 		{
@@ -1413,7 +1501,7 @@ void SynthGRB::SimulateJetDynamics()
 			(*p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt", tmp_te, true);
 			num_shocks +=1;
 		}
-	}
+	}	
 }
 
 
@@ -1607,8 +1695,8 @@ void SynthGRB::MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 	{
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
-		// if ( ta_fs.at(i) <= tmax )
-		if ( (ta_fs.at(i) <= tmax) and (tmin <= (ta_fs.at(i) + 4.*delt_fs.at(i) ) ) )
+		if ( ta_fs.at(i) <= tmax )
+		// if ( (ta_fs.at(i) <= tmax) and (tmin <= (ta_fs.at(i) + 4.*delt_fs.at(i) ) ) )
 		{
 			// Integrated emission profile factor
 			double profile_factor = _calc_pulse_profile_factor(ta_fs.at(i), delt_fs.at(i), tmin, tmax );
@@ -2043,7 +2131,6 @@ double SynthGRB::_rel_vel(float gamma_1, float gamma_2)
 // Check if shells are ordered
 int SynthGRB::_check_if_sorted()
 {
-
 	// Make list of shells which are currently active:
 	std::vector<int> active_inds;
 	for(int i=0; i<(*p_model_params).numshells; ++i)

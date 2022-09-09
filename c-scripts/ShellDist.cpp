@@ -213,7 +213,7 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 	// First, check if each input array is the same size
 	if( (means.size() != (size_t)num_gauss) | (sigmas.size() != (size_t)num_gauss) | (amps.size() != (size_t)num_gauss) )
 	{
-		cout << "Input Gaussian parameter arrays must have a length equal to the specified Number of Gaussians.";
+		cout << "Input Gaussian parameter arrays must have a length equal to the specified number of Gaussians.";
 		return;
 	}
 
@@ -310,7 +310,6 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 	decay = used to modulate the decay rate, number multiplied by the half life time scale
 	*/
 
-
 	// Initially, we set all Lorentz factors to the input average value
 	for(double i = 0; i<numshells; ++i)
 	{
@@ -336,7 +335,7 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 		}
 	}
 
-	// For all shells that still have a Lorentz factor of 0, deactivate them,
+	// For all shells that still have a Lorentz factor of 1, deactivate them,
 	for(float i=0; i<numshells; ++i)
 	{
 		if(shell_gamma.at(i) <= 1.)
@@ -383,6 +382,108 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 
 	// Eliminate possible divide by zero error (still insignificantly small).
 	shell_radius.at(0) = 1./c_cm;
+
+	return;
+}
+
+// Distribute the shells by injecting FREDs at specific places. 
+void ShellDist::fred_inject(float dte, float gamma_ave, float decay, int num_freds, std::vector<float> starts, std::vector<float> tau_1s, std::vector<float> tau_2s, std::vector<float> amps, bool fluctuations)
+{
+	/*
+	Distribute the Lorentz factors of the shells as a series of FRED functions. 
+	The FRED function used is defined in Hakkila and Preece 2014. 
+
+	Params: 
+	dte = time between shell launches, this can be specific by a single float to apply a constant time step through out the jet evolution or can be a array of the shell emission times
+
+	starts = 
+	tau_1s = 
+	tau_2s = 
+
+	decay = used to modulate the decay rate, number multiplied by the half life time scale
+	*/
+
+	// First, check if each input array is the same size
+	if( (tau_1s.size() != (size_t)num_freds) | (tau_2s.size() != (size_t)num_freds) | (amps.size() != (size_t)num_freds) )
+	{
+		cout << "Input FRED parameter arrays must have a length equal to the specified number of FREDS.";
+		return;
+	}
+
+	// Initially, we set all Lorentz factors to the input average value
+	for(double i = 0; i<numshells; ++i)
+	{
+		shell_gamma.at(i) = gamma_ave * exp(-decay*i/numshells);
+	}
+
+	// Set the Lorentz factors for each section of the step distribution
+
+	// Now, add a square starting at each value in the "starts" array	
+	float curr_t_start = 0.; // Used to find the start time of each Gaussian
+	float t_stop = numshells * dte; // Used to find the stop time of each Gaussian
+	float tmp_lambda = 0.; // Initialize parameter in the FRED function
+	for(int k=0; k < num_freds; ++k)
+	{
+		curr_t_start = starts.at(k)+dte;
+		if(curr_t_start < 0){curr_t_start = 0;} // Set the start time limit to zero if it is was found to be less than zero
+
+		for(double i = (curr_t_start/dte); i < (t_stop/dte); ++i)
+		{
+
+			tmp_lambda = exp( 2.*pow(tau_1s.at(k)/tau_2s.at(k),0.5) );
+			shell_gamma.at(i) += amps.at(k) * tmp_lambda * exp( (-tau_1s.at(k)/( (i*dte)-starts.at(k) ) ) - (( (i*dte)-starts.at(k) )/ tau_2s.at(k)) );
+		}
+	}
+
+
+	// For all shells that still have a Lorentz factor of 1, deactivate them,
+	for(float i=0; i<numshells; ++i)
+	{
+		if(shell_gamma.at(i) <= 1.)
+		{
+			// De-activate all shells
+			shell_status.at(i) = 0;
+		}
+		else
+		{
+			// Activate all shells
+			shell_status.at(i) = 1;
+		}
+	}
+
+	// Find the average Lorentz factor in the outflow
+	double gamma_bar = 0.0;
+	for(double i = 0; i<numshells; ++i)
+	{
+		if(shell_status.at(i) == 1)
+		{
+			gamma_bar += shell_gamma.at(i);
+		}
+	}
+	gamma_bar /= numshells;
+
+
+	for(float i=0; i<numshells; ++i)
+	{
+		if(shell_status.at(i) == 1)
+		{
+			// Set the Mass for each shell 
+			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+			shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
+			
+			// Calculate the launch time of each shell since the start of the launch 
+			shell_te.at(i) = i*dte;
+
+			// Calculate the initial shell position based on when the shell will be launched
+			// Notice this is actually R/c 
+			shell_radius.at(i) = - beta(shell_gamma.at(i)) * shell_te.at(i);
+		}
+	}
+
+	// Eliminate possible divide by zero error (still insignificantly small).
+	shell_radius.at(0) = 1./c_cm;
+
+	return;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -436,6 +537,8 @@ void ShellDist::linear(float dte, float g1, float g2, bool fluctuations)
 		// Activate all shells
 		shell_status.at(i) = 1;
 	}
+
+	return;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

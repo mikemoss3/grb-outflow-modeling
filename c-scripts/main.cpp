@@ -136,8 +136,8 @@ int main(int argc, char const *argv[])
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
 
-	float energ_min = 1e-10;
-	float energ_max = 1e3;
+	float energ_min = 15;
+	float energ_max = 5e3;
 	float energ_min_lc = energ_min; 
 	float energ_max_lc = energ_max;
 	float num_energ_bins = 200;
@@ -146,7 +146,7 @@ int main(int argc, char const *argv[])
 
 	// Light curve time interval
 	float tmin = 0.;
-	float tmax = 15.;
+	float tmax = 30.;
 	float dt = 0.1;
 
 	SynthGRB test_grb = SynthGRB();
@@ -156,7 +156,7 @@ int main(int argc, char const *argv[])
 	(*test_grb.p_jet_shells).WriteToTXT("data-file-dir/synthGRB_shell_dist.txt");
 
 	test_grb.SimulateJetDynamics();
-	// test_grb.write_out_jet_params("./data-file-dir/");
+	test_grb.write_out_jet_params("./data-file-dir/");
 	// test_grb.WriteBoulodromeTXT("./data-file-dir/test_boulodrome.txt",8e5);
 
 	// // Spectrum time interval
@@ -198,13 +198,23 @@ int main(int argc, char const *argv[])
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt");
 	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e2, 1e6, dt, "FS", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt.txt");
+
+	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e3, 5e6, dt/4., "all", true);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt");
 	
-	test_grb.make_source_light_curve(1e-3, 5e-3, 1e3, 5e6, dt/4., "all", true);
+
+	test_grb.make_source_light_curve(1e-3, 5e-3, 5e2, 5e6, dt, "all", true);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt");
-	test_grb.make_source_light_curve(1e-3, 5e-3, 1e3, 5e6, dt/4., "FS", true);
+	test_grb.make_source_light_curve(1e-3, 5e-3, 5e2, 5e6, dt, "FS", true);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt");
-	test_grb.make_source_light_curve(1e-3, 5e-3, 1e3, 5e6, dt/4., "RS", true);
+	test_grb.make_source_light_curve(1e-3, 5e-3, 5e2, 5e6, dt, "RS", true);
 	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt");
+
+
+	// test_grb.make_source_spectrum(1e-6, 1e3, 120, 8e4, 2e5, "FS");
+	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_fs.txt");
+	// test_grb.make_source_spectrum(1e-6, 1e3, 120, 8e4, 2e5, "RS");
+	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_rs.txt");
 
 	return 0;
 	

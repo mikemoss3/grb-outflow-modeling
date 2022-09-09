@@ -1,9 +1,9 @@
 ### median  ###
-333. 
+10
 ### amp  ###
 0.66 
 ### freq  ###
-5. 
+10. 
 ### decay  ###
 0.5 
 ### fluctuations ###

@@ -1,0 +1,56 @@
+This is BibTeX, Version 0.99d (TeX Live 2019/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: project-outline.aux
+The style file: aasjournal.bst
+Database file #1: bibliograpy-list.bib
+Unbalanced braces---line 65 of file bibliograpy-list.bib
+ :         title = "{Large scale magnetic fields and their dissipation in GRB fireballs\}
+ :                                                                                       }",
+I'm skipping whatever remains of this entry
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Warning--empty publisher in 1973plas.book.....K
+Warning--empty publisher in 1986rpa..book.....R
+Warning--empty year in 2001A&A...369..694S; set to ????
+Warning--empty journal in 2001A&A...369..694S
+You've used 7 entries,
+            3168 wiz_defined-function locations,
+            702 strings with 5759 characters,
+and the built_in function-call counts, 2810 in all, are:
+= -- 240
+> -- 178
+< -- 4
++ -- 58
+- -- 61
+* -- 225
+:= -- 503
+add.period$ -- 7
+call.type$ -- 7
+change.case$ -- 38
+chr.to.int$ -- 7
+cite$ -- 11
+duplicate$ -- 116
+empty$ -- 196
+format.name$ -- 80
+if$ -- 570
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 7
+newline$ -- 29
+num.names$ -- 28
+pop$ -- 55
+preamble$ -- 1
+purify$ -- 38
+quote$ -- 0
+skip$ -- 95
+stack$ -- 0
+substring$ -- 92
+swap$ -- 0
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 57
+warning$ -- 4
+while$ -- 25
+width$ -- 0
+write$ -- 77
+(There was 1 error message)

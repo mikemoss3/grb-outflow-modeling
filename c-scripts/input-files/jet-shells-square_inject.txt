@@ -1,14 +1,14 @@
 ### median ###
-40.
+100.
 ### decay ###
-5.
+8
 ### number of injected Squared ###
-4
+2
 ### Square starts ###
-0. 20. 25. 26
+0. 5.
 ### Square Lengths ###
-20. 2.2 1. 4.
+5. 5.
 ### Square amplitudes ###
-220. 5.8 4.2 1.2
+100. 18
 ### fluctuations ###
 false

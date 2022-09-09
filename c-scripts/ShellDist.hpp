@@ -52,10 +52,11 @@ public:
 	void oscillatory(float dte, float median=333., float amp=2./3., float freq=5., float decay=0.5, bool fluctuations = false);
 
 	// Distribute the shells by injecting Gaussians at specific places. 
-	void gauss_inject(float dte, float gamma_ave = 1.1, float decay = 0.5, int num_gauss = 2, std::vector<float> means = {50, 100}, std::vector<float> amps = {100, 50}, std::vector<float> sigmas = {10, 10}, std::vector<float> sigma_count = {3., 3.}, bool fluctuations = false);
+	void gauss_inject(float dte, float gamma_ave = 1.1, float decay = 0.5, int num_gauss = 2, std::vector<float> means = {1, 7}, std::vector<float> amps = {100, 50}, std::vector<float> sigmas = {10, 10}, std::vector<float> sigma_count = {3., 3.}, bool fluctuations = false);
 	// Distribute the shells by injecting Squares at specific places. 
-	void square_inject(float dte, float gamma_ave = 1.1, float decay = 0.5, int num_squares = 2, std::vector<float> starts = {50, 200}, std::vector<float> durations = {50, 50} , std::vector<float> amps = {100, 50}, bool fluctuations = false);
-
+	void square_inject(float dte, float gamma_ave = 1.1, float decay = 0.5, int num_squares = 2, std::vector<float> starts = {1, 7}, std::vector<float> durations = {50, 50} , std::vector<float> amps = {100, 50}, bool fluctuations = false);
+	// Distribute the shells by injecting FREDs at specific places. 
+	void fred_inject(float dte, float gamma_ave = 1.1, float decay = 0.5, int num_freds = 2, std::vector<float> starts = {1, 7}, std::vector<float> tau_1s = { 1, 1}, std::vector<float> tau_2s = {4.5, 4.5}, std::vector<float> amps = {200, 50}, bool fluctuations = false);
 	// Make a linear distribution
 	void linear(float dte, float g1 = 500., float g2 = 1., bool fluctuations = false);
 
