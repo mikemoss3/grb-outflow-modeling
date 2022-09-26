@@ -1221,8 +1221,6 @@ void SynthGRB::SimulateJetDynamics()
 			// If the jet is after the jet break
 			else
 			{
-				std::cout << (tmp_te - tmp_fs_r) << std::endl;
-				return;
 				// Duration of the emission event 
 				tmp_delt = tmp_fs_r * pow(tmp_theta,2.) / 2.;
 			}
@@ -1422,8 +1420,8 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_nu_m = (1./2./M_PI) * pow(((*p_model_params).p_int-2.)*(*p_model_params).eps_e_int/((*p_model_params).p_int-1.)/(*p_model_params).zeta_int,2.) * (qe*pow(mp,2.)/pow(me,3.)/pow(c_cm,5.)) * pow(tmp_eps_star,2.) * tmp_beq;
 
 			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
-			tmp_eff = (t_syn < ((1.+Q_IC)*tmp_rs_r/gamma_bar) );
-			// tmp_eff = true;
+			// tmp_eff 	= (t_syn < ((1.+Q_IC)*tmp_rs_r/gamma_bar) );
+			tmp_eff = true;
 
 
 			// Update the mass of the reverse shock shell
@@ -1663,7 +1661,7 @@ void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 			if ( relvel.at(i) > 0.1 and tau.at(i) < 1)
 			{
 				// Integrated emission profile factor
-				double profile_factor = _calc_pulse_profile_factor(ta_is.at(i), delt_is.at(i), tmin, tmax );
+				double profile_factor = _calc_pulse_profile_factor(ta_is.at(i), delt_is.at(i), tmin, tmax, (*p_model_params).theta, (te_is.at(i) - ta_is.at(i)));
 
 				// Call function to calculate spectrum count rate, assuming synchrotron emission
 				CalcSynchContribution(intsh_spectrum, esyn_is.at(i),e_diss_is.at(i),delt_is.at(i), nu_c_is.at(i), nu_m_is.at(i), (*p_model_params).p_int, beq_is.at(i), gamma_r_is.at(i), profile_factor);
@@ -1696,10 +1694,9 @@ void SynthGRB::MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
 		if ( ta_fs.at(i) <= tmax )
-		// if ( (ta_fs.at(i) <= tmax) and (tmin <= (ta_fs.at(i) + 4.*delt_fs.at(i) ) ) )
 		{
 			// Integrated emission profile factor
-			double profile_factor = _calc_pulse_profile_factor(ta_fs.at(i), delt_fs.at(i), tmin, tmax );
+			double profile_factor = _calc_pulse_profile_factor(ta_fs.at(i), delt_fs.at(i), tmin, tmax, theta_fs.at(i), rad_coll_fs.at(i) );
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
 			CalcSynchContribution(extsh_spectrum, esyn_fs.at(i),e_diss_fs.at(i),delt_fs.at(i), nu_c_fs.at(i), nu_m_fs.at(i),(*p_model_params).p_ext, beq_fs.at(i), gamma_r_fs.at(i), profile_factor);
@@ -1721,7 +1718,7 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 		if ( ta_rs.at(i) <= tmax)
 		{
 			// Integrated emission profile factor
-			double profile_factor = _calc_pulse_profile_factor(ta_rs.at(i), delt_rs.at(i), tmin, tmax );
+			double profile_factor = _calc_pulse_profile_factor(ta_rs.at(i), delt_rs.at(i), tmin, tmax, (*p_model_params).theta, (te_rs.at(i) - ta_rs.at(i)));
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
 			CalcSynchContribution(extsh_spectrum, esyn_rs.at(i),e_diss_rs.at(i),delt_rs.at(i), nu_c_rs.at(i), nu_m_rs.at(i),(*p_model_params).p_int, beq_rs.at(i), gamma_r_rs.at(i), profile_factor);
@@ -2215,21 +2212,32 @@ float SynthGRB::_fraction_of_interval_in_time_bin(float t_a, float del_t_a, floa
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Calculates the integral under the pulse profile curve integrated between t_1 and t_2 (see Equation 5 in Genet et al 2007)
-double SynthGRB::_calc_pulse_profile_factor(float t_a, float del_t_a, float t_low, float t_hi)
+
+double SynthGRB::_calc_pulse_profile_factor(float t_a, float del_t_a, float t_low, float t_hi, float theta, float Rsh)
 {
 	if(t_low < t_a)
 	{
 		t_low = t_a;
 	}
 
+	if(t_hi > (t_a +  ( (1 - cos(theta))*Rsh)) )
+	{
+		t_hi = (t_a +  ( (1 - cos(theta))*Rsh));
+	}
+
+	if(t_low > (t_a +  ( (1 - cos(theta))*Rsh)) )
+	{
+		return 0; 
+	}
+
 	// Evaluating lower bound 
-	double bound_low = 1./pow(1. + ( (t_low - t_a ) / del_t_a ) , 2.);
+	double bound_low = 1./pow(t_low - t_a + del_t_a,2.);
 
 	// Evaluating upper bound
-	double bound_hi = 1./pow(1. + ( (t_hi - t_a ) / del_t_a ) , 2.);
+	double bound_hi = 1./pow(t_hi - t_a + del_t_a,2.);
 
 	// Analytical integral of Equation 5 in Genet et al 2007
-	double pulse_profile_factor = - del_t_a * (bound_hi - bound_low);
+	double pulse_profile_factor = - pow(del_t_a,3.) * (bound_hi - bound_low);
 
 	return pulse_profile_factor;
 }

@@ -5,7 +5,7 @@
 ### E_dot_iso, erg/s ###
 4.e52
 ### theta, rad ###
-0.05
+0.07
 ### r_open, cm ###
 3.e6
 ### eps_th, fraction ###
@@ -13,19 +13,19 @@
 ### sigma, dimensionless ###
 0.1
 ### eps_e internal, fraction ###
-0.1
+0.3
 ### eps_b internal, fraction ###
-0.004
+0.001
 ### zeta internal, fraction ###
 1.e-3
 ### p internal, dimensionless ###
 2.2
 ### eps_e external, fraction ###
-0.13
+0.1
 ### eps_b external, fraction ###
-1.e-3
+1.e-4
 ### zeta external, fraction ###
-1.
+1
 ### p external, dimensionless ###
 2.2
 ### k, external medium parameter, i.e., constant = 0, wind = 2 ###

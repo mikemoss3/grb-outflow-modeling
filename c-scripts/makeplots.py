@@ -519,7 +519,7 @@ def load_lor_dist(file_name, string_match = "// Next step\n"):
 
 ##############################################################################################################################
 
-def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, nuFnu=True, unc=False, Emin=None, Emax=None, save_pref=None,fontsize=14,fontweight='bold'):
+def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, nuFnu=True, unc=False, Emin=None, Emax=None, save_pref=None,fontsize=14,fontweight='bold',linestyle="solid",norm=1,alpha=1):
 	"""
 	Method to plot the input spectrum data files
 
@@ -555,26 +555,26 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, n
 		# Plot spectrum data
 		if nuFnu is True:
 			if unc is True:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=norm*spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,color=color,alpha=alpha)
 			else:
-				line, = ax.plot(spec_data['ENERG'],spec_data['RATE']*(spec_data['ENERG']**2),label=label,color=color)
+				line, = ax.plot(spec_data['ENERG'],norm*spec_data['RATE']*(spec_data['ENERG']**2),label=label,color=color,linestyle=linestyle,alpha=alpha)
 		else:
 			if unc is True:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label,color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=norm*spec_data['RATE'],yerr=spec_data['UNC'],label=label,color=color,alpha=alpha)
 			else:
-				line, = ax.plot(spec_data['ENERG'],spec_data['RATE'],label=label,color=color)
+				line, = ax.plot(spec_data['ENERG'],norm*spec_data['RATE'],label=label,color=color,linestyle=linestyle,alpha=alpha)
 	else:
 		# Plot spectrum data
 		if nuFnu is True:
 			if unc is True:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=norm*spec_data['RATE']*(spec_data['ENERG']**2),yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color,alpha=alpha)
 			else:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=norm*spec_data['RATE']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color,alpha=alpha)
 		else:
 			if unc is True:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],yerr=spec_data['UNC'],label=label,fmt=" ",marker="+",color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=norm*spec_data['RATE'],yerr=spec_data['UNC'],label=label,fmt=" ",marker="+",color=color,alpha=alpha)
 			else:
-				line = ax.errorbar(x=spec_data['ENERG'],y=spec_data['RATE'],label=label,fmt=" ",marker="+",color=color)
+				line = ax.errorbar(x=spec_data['ENERG'],y=norm*spec_data['RATE'],label=label,fmt=" ",marker="+",color=color,alpha=alpha)
 
 	# Plot aesthetics
 	ax.set_xscale('log')
@@ -684,7 +684,7 @@ def add_SwiftBAT_band(ax,fontsize=12,axis="x"):
 
 ##############################################################################################################################
 
-def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None, Tmax=None, save_pref=None,color="C0", fontsize=14,fontweight='bold', logscale=False,y_factor=1,guidelines=False,xax_units="s"):
+def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None, Tmax=None, save_pref=None,color="C0", alpha=1, fontsize=14,fontweight='bold', logscale=False,y_factor=1,guidelines=False,xax_units="s"):
 	"""
 	Method to plot the input light curve data files
 
@@ -733,11 +733,11 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None,
 
 		if(z>0):
 			# ax.scatter(light_curve_data['TIME']*(1+z),light_curve_data['RATE']/(4*np.pi*lum_dis(z)**2),label=label,marker=".")
-			ax.step(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color=color)
+			ax.step(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color=color,alpha=alpha)
 		else: 
 			# If z = 0, return luminosity
 			# ax.scatter(light_curve_data['TIME'],light_curve_data['RATE'],label=label,marker=".")
-			ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color)
+			ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color,alpha=alpha)
 
 		if guidelines is True:
 			# rhowindline = lambda t, t0, norm: norm*np.power(t/t0,-5./4.)
@@ -2028,15 +2028,15 @@ if __name__ == '__main__':
 	z = 0
 
 
-	save_pref = "2022-08-17/2022-08-17"
+	# save_pref = "2022-08-17/2022-08-17"
 
 	"""
 	Shell Lorentz Distribution
 	"""
 	
-	fig = plt.figure()
-	ax = fig.gca()
-	plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,title=None, zoom_inset=True)
+	# fig = plt.figure()
+	# ax = fig.gca()
+	# plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,title=None, zoom_inset=True)
 	# plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,color="C1",title=None)
 	# ax.invert_xaxis()
 	
@@ -2052,15 +2052,19 @@ if __name__ == '__main__':
 	## Synthetic spectra with each component
 	# plot_spec("data-file-dir/synthGRB_spec_therm.txt",ax=ax_spec,z=z,label="Thermal",color="r")
 	# plot_spec("data-file-dir/synthGRB_spec_is.txt",ax=ax_spec,z=z,label="IS",color="C0",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_fs.txt",ax=ax_spec,z=z,label="FS",color="C1",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_fs.txt",ax=ax_spec,z=z,label="FS",color="C1",joined=True,linestyle="dashed",alpha=0.7)
 	# plot_spec("data-file-dir/synthGRB_spec_rs.txt",ax=ax_spec,z=z,label="RS",color="C2",joined=True)
 	# plot_spec("data-file-dir/synthGRB_spec_th.txt",ax=ax_spec,z=z,label="TH",color="r",joined=True)
 
-	# plot_spec("data-file-dir/synthGRB_spec_rs_ksi-1.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-1}$",color="C2",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_rs_ksi-2.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-2}$",color="C3",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_rs_ksi-3.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-3}$",color="C4",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-4}$",color="hotpink",joined=True,alpha=0.7)
+	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-3}$",color="C2",joined=True,alpha=1)
+	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-2}$",color="C0",joined=True,alpha=0.7)
+	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-1}$",color="purple",joined=True,alpha=0.7)
+	# ax_spec.vlines(x=0.75, ymin=1.e39,ymax=1.e44,color="k",alpha=0.6,linestyle="dotted")
+
 	# ax_spec.set_xlim(10**(-6),10**(3))
-	# ax_spec.set_ylim(1.e37,1.e43)
+	# ax_spec.set_ylim(1.e39,1.e44)
+
 
 	# add_FermiGBM_band(ax_spec)
 	# plot_spec("data-file-dir/synthGRB_spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
@@ -2106,13 +2110,17 @@ if __name__ == '__main__':
 	# ax_afg_lc.set_ylim(1e43,1e49)
 	# ax_afg_lc.set_xlim(0.1)
 
-	fig = plt.figure()
-	ax_afg_lc = fig.gca()
-	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="FS",logscale=True,color="C1",xax_units="s")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="RS",logscale=True,color="C2",xax_units="s")
+	# fig = plt.figure()
+	# ax_afg_lc = fig.gca()
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="FS",logscale=True,color="C1",xax_units="s")
+	# # plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="RS",logscale=True,color="C2",xax_units="s")
 
-	# plot_light_curve("test.txt",ax=ax_afg_lc, fig=fig ,z=z,label="ep_b = 0.13 keV",logscale=True,color="r",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-4}$",logscale=True,color="hotpink",xax_units="s",alpha=0.3)
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-3}$",logscale=True,color="C2",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-2}$",logscale=True,color="C0",xax_units="s",alpha=0.3)
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-1}$",logscale=True,color="purple",xax_units="s",alpha=0.3)
+
 
 
 	"""
@@ -2125,7 +2133,10 @@ if __name__ == '__main__':
 	
 	# is_data = load_is_emission("data-file-dir/synthGRB_jet_params_IS.txt")
 	# fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_FS.txt")
-	# rs_data = load_rs_emission("data-file-dir/synthGRB_jet_params_RS.txt")
+	# rs_data_xi_4 = load_rs_emission("data-file-dir/xi-4_synthGRB_jet_params_RS.txt")
+	# rs_data_xi_3 = load_rs_emission("data-file-dir/xi-3_synthGRB_jet_params_RS.txt")
+	# rs_data_xi_2 = load_rs_emission("data-file-dir/xi-2_synthGRB_jet_params_RS.txt")
+	# rs_data_xi_1 = load_rs_emission("data-file-dir/xi-1_synthGRB_jet_params_RS.txt")
 
 	# Plot everything together:
 	# fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
@@ -2138,7 +2149,10 @@ if __name__ == '__main__':
 	# markers = [".","^"]
 	# plot_synch_cooling_regime(is_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="IS",color="C0",markers=markers,alpha=0.8,markersize=16)
 	# plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1",markers=markers,alpha=0.6,markersize=16,frame="obs")
-	# plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16,frame="obs")
+	# plot_synch_cooling_regime(rs_data_xi_4,ax=ax_synch_reg,label="RS",color="hotpink",markers=markers,alpha=0.8,markersize=16,frame="obs")
+	# plot_synch_cooling_regime(rs_data_xi_3,ax=ax_synch_reg,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16,frame="obs")
+	# plot_synch_cooling_regime(rs_data_xi_2,ax=ax_synch_reg,label="RS",color="C0",markers=markers,alpha=0.8,markersize=16,frame="obs")
+	# plot_synch_cooling_regime(rs_data_xi_1,ax=ax_synch_reg,label="RS",color="purple",markers=markers,alpha=0.8,markersize=16,frame="obs")
 	# add_FermiGBM_band(ax_synch_reg,axis="y")
 
 

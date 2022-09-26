@@ -168,7 +168,7 @@ private:
 	// Used to calculate the fraction of an emission time interval overlaps with a time bin
 	float _fraction_of_interval_in_time_bin(float t_a, float del_t_a, float tbin_min, float tbin_max );
 	// Calculate the pulse profile factor
-	double _calc_pulse_profile_factor(float t_a, float del_t_a, float t_low, float t_hi);
+	double _calc_pulse_profile_factor(float t_a, float del_t_a, float t_low, float t_hi, float theta, float Rsh);
 
 
 	// Initialize arrays to store thermal emission event data 
