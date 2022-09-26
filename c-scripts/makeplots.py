@@ -2034,9 +2034,9 @@ if __name__ == '__main__':
 	Shell Lorentz Distribution
 	"""
 	
-	# fig = plt.figure()
-	# ax = fig.gca()
-	# plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,title=None, zoom_inset=True)
+	fig = plt.figure()
+	ax = fig.gca()
+	plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,title=None)
 	# plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,color="C1",title=None)
 	# ax.invert_xaxis()
 	
@@ -2047,14 +2047,14 @@ if __name__ == '__main__':
 	Synthetic spectrum 
 	"""
 
-	# ax_spec = plt.figure().gca()
+	ax_spec = plt.figure().gca()
 
-	## Synthetic spectra with each component
-	# plot_spec("data-file-dir/synthGRB_spec_therm.txt",ax=ax_spec,z=z,label="Thermal",color="r")
-	# plot_spec("data-file-dir/synthGRB_spec_is.txt",ax=ax_spec,z=z,label="IS",color="C0",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_fs.txt",ax=ax_spec,z=z,label="FS",color="C1",joined=True,linestyle="dashed",alpha=0.7)
-	# plot_spec("data-file-dir/synthGRB_spec_rs.txt",ax=ax_spec,z=z,label="RS",color="C2",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_th.txt",ax=ax_spec,z=z,label="TH",color="r",joined=True)
+	# Synthetic spectra with each component
+	# plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,label="IS",color="C0",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_FS.txt",ax=ax_spec,z=z,label="FS",color="C1",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_RS.txt",ax=ax_spec,z=z,label="RS",color="C2",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,label="TH",color="r",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_total.txt",ax=ax_spec,z=z,label="Tot",color="k",joined=True)
 
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-4}$",color="hotpink",joined=True,alpha=0.7)
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-3}$",color="C2",joined=True,alpha=1)
@@ -2092,11 +2092,11 @@ if __name__ == '__main__':
 	"""	
 	# fig = plt.figure()
 	# ax_lc = fig.gca()
+	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,fig=fig,z=z,label="Total",logscale=False,color="k",alpha=0.5)
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc, fig=fig,z=z,label="TH",color="r")
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc, fig=fig,z=z,label="IS",color="C0")
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc, fig=fig,z=z,label="FS",color="C1")
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc, fig=fig,z=z,label="RS",color="C2")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,fig=fig,z=z,label="Total",logscale=False,color="k")
 
 	# Interactive light curve
 	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 13, init_dT=0.2, init_Emin = 8, init_Emax = 40000,z=z,label="Total",with_comps=True)
@@ -2110,14 +2110,14 @@ if __name__ == '__main__':
 	# ax_afg_lc.set_ylim(1e43,1e49)
 	# ax_afg_lc.set_xlim(0.1)
 
-	# fig = plt.figure()
-	# ax_afg_lc = fig.gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="FS",logscale=True,color="C1",xax_units="s")
-	# # plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="RS",logscale=True,color="C2",xax_units="s")
+	fig = plt.figure()
+	ax_afg_lc = fig.gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="FS",logscale=True,color="C1",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="RS",logscale=True,color="C2",xax_units="s")
 
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-4}$",logscale=True,color="hotpink",xax_units="s",alpha=0.3)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-3}$",logscale=True,color="C2",xax_units="s")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-3}$",logscale=True,color="C2",xax_units="s")
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-2}$",logscale=True,color="C0",xax_units="s",alpha=0.3)
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-1}$",logscale=True,color="purple",xax_units="s",alpha=0.3)
 
@@ -2133,10 +2133,7 @@ if __name__ == '__main__':
 	
 	# is_data = load_is_emission("data-file-dir/synthGRB_jet_params_IS.txt")
 	# fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_FS.txt")
-	# rs_data_xi_4 = load_rs_emission("data-file-dir/xi-4_synthGRB_jet_params_RS.txt")
-	# rs_data_xi_3 = load_rs_emission("data-file-dir/xi-3_synthGRB_jet_params_RS.txt")
-	# rs_data_xi_2 = load_rs_emission("data-file-dir/xi-2_synthGRB_jet_params_RS.txt")
-	# rs_data_xi_1 = load_rs_emission("data-file-dir/xi-1_synthGRB_jet_params_RS.txt")
+	# rs_data = load_rs_emission("data-file-dir/synthGRB_jet_params_RS.txt")
 
 	# Plot everything together:
 	# fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
@@ -2144,15 +2141,12 @@ if __name__ == '__main__':
 	# fig0, fig1 = plot_together(fs_data=fs_data,guidelines=True)
 
 	
-	# Plot nu_c and nu_m: 
+	# # Plot nu_c and nu_m: 
 	# ax_synch_reg = plt.figure(figsize=(10,8)).gca()
 	# markers = [".","^"]
 	# plot_synch_cooling_regime(is_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="IS",color="C0",markers=markers,alpha=0.8,markersize=16)
 	# plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1",markers=markers,alpha=0.6,markersize=16,frame="obs")
-	# plot_synch_cooling_regime(rs_data_xi_4,ax=ax_synch_reg,label="RS",color="hotpink",markers=markers,alpha=0.8,markersize=16,frame="obs")
-	# plot_synch_cooling_regime(rs_data_xi_3,ax=ax_synch_reg,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16,frame="obs")
-	# plot_synch_cooling_regime(rs_data_xi_2,ax=ax_synch_reg,label="RS",color="C0",markers=markers,alpha=0.8,markersize=16,frame="obs")
-	# plot_synch_cooling_regime(rs_data_xi_1,ax=ax_synch_reg,label="RS",color="purple",markers=markers,alpha=0.8,markersize=16,frame="obs")
+	# plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16,frame="obs")
 	# add_FermiGBM_band(ax_synch_reg,axis="y")
 
 

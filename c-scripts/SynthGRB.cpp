@@ -1054,7 +1054,7 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_delt = rad_coll/2./pow(tmp_gamma_r,2.);
 
 			// tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn / tmp_delt; // erg / s
-			tmp_lum_diss = tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn; // erg 
+			tmp_lum_diss = 100. * tmp_e_diss* (*p_model_params).eps_e_int * tmp_asyn; // erg 
 			
 			// Is the emission efficient? 
 			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
@@ -1420,8 +1420,8 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_nu_m = (1./2./M_PI) * pow(((*p_model_params).p_int-2.)*(*p_model_params).eps_e_int/((*p_model_params).p_int-1.)/(*p_model_params).zeta_int,2.) * (qe*pow(mp,2.)/pow(me,3.)/pow(c_cm,5.)) * pow(tmp_eps_star,2.) * tmp_beq;
 
 			t_syn = 6.*pow(tmp_gamma_e/100.,-1.)*pow(tmp_beq/1000.,-2.); // Synchrotron time-scale
-			// tmp_eff 	= (t_syn < ((1.+Q_IC)*tmp_rs_r/gamma_bar) );
-			tmp_eff = true;
+			tmp_eff 	= (t_syn < ((1.+Q_IC)*tmp_rs_r/gamma_bar) );
+			// tmp_eff = true;
 
 
 			// Update the mass of the reverse shock shell
@@ -1655,6 +1655,7 @@ void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
 		if ( ta_is.at(i) <= tmax)
+		// if ( (ta_is.at(i) <= tmax) and ( (ta_is.at(i)+delt_is.at(i)) >= tmin) )
 		{
 			// The emission will only be observable if the relativistic velocity is great than the local sound speed v_s/c = 0.1
 			// And if the wind is transparent to the radiation

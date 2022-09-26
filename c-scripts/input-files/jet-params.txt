@@ -1,21 +1,21 @@
 ### tw, sec ###
-30.
-### dte, sec ###
+10.
+### dte, sec  ###
 0.02
-### E_dot_iso, erg/s ###
+### E_dot_iso, erg/s  ###
 4.e52
-### theta, rad ###
+### theta, rad  ###
 0.07
 ### r_open, cm ###
 3.e6
-### eps_th, fraction ###
+### eps_th, fraction  ###
 0.03
 ### sigma, dimensionless ###
-0.1
+0.07
 ### eps_e internal, fraction ###
 0.3
 ### eps_b internal, fraction ###
-0.001
+0.001 
 ### zeta internal, fraction ###
 1.e-3
 ### p internal, dimensionless ###
@@ -25,14 +25,14 @@
 ### eps_b external, fraction ###
 1.e-4
 ### zeta external, fraction ###
-1
+1.
 ### p external, dimensionless ###
 2.2
 ### k, external medium parameter, i.e., constant = 0, wind = 2 ###
 0
-### rho_not, density normalization (for k = 0, g cm^-3, i.e., n0*mp = n0*1.672e-24 | for k = 2, g cm^-1, i.e.,A_star * 5.e11 ) ###
+### rho_not, density normalization (for k = 0, g cm^-3, i.e., n0*mp = n0*1.672e-24 | for k = 2, g cm^-1, i.e., A_star * 5.e11 ) ###
 1.672e-24
 ### LorentzDist, i.e., step, smoothstep, osci, linear ###
-fred_inject
-### ShellDistParamsFile, i.e., ./input-files/jet-shells-"LorentzDist".txt. Default example values can be specified by writing "Default" below. ###
-./input-files/jet-shells-fred_inject.txt
+osci
+### ShellDistParamsFile, i.e., ./input-files/jet-shells-"LorentzDist".txt ###
+./input-files/jet-shells-osci.txt
