@@ -136,16 +136,16 @@ int main(int argc, char const *argv[])
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
 
-	float energ_min = 15;
-	float energ_max = 5e3;
+	float energ_min = 8;
+	float energ_max = 1e5;
 	float energ_min_lc = energ_min; 
 	float energ_max_lc = energ_max;
-	float num_energ_bins = 200;
+	float num_energ_bins = 400;
 
 	// 15 - 5000 keV = Konus-Wind energy band
 
 	// Light curve time interval
-	float tmin = 0.;
+	float tmin = 0.1;
 	float tmax = 15.;
 	float dt = 0.1;
 
@@ -159,22 +159,22 @@ int main(int argc, char const *argv[])
 	test_grb.write_out_jet_params("./data-file-dir/");
 
 	// // Spectrum time interval
-	float tlo = 0; // The T90? essentially.
-	float thi = 15;
+	float tlo = 1.; // The T90? essentially.
+	float thi = 2.;
 
 	// Total spectrum
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_total.txt");
+	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_TOT.txt");
 
 	// Component spectrum
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "TH");
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_therm.txt");
+	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_TH.txt");
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "IS");
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_is.txt");
+	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_IS.txt");
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "FS");
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_fs.txt");
+	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_FS.txt");
 	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "RS");
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_rs.txt");
+	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_RS.txt");
 
 	// Total light curve
 	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt);

@@ -3,19 +3,19 @@
 ### dte, sec  ###
 0.02
 ### E_dot_iso, erg/s  ###
-4.e52
+1.e53
 ### theta, rad  ###
-0.07
+0.1
 ### r_open, cm ###
-3.e6
+1.e6
 ### eps_th, fraction  ###
 0.03
 ### sigma, dimensionless ###
-0.07
+0.1
 ### eps_e internal, fraction ###
 0.3
 ### eps_b internal, fraction ###
-0.001 
+0.3 
 ### zeta internal, fraction ###
 1.e-3
 ### p internal, dimensionless ###
