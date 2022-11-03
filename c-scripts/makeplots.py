@@ -8,6 +8,7 @@ Meta script to plot desired simulation results created by c++ code.
 
 """
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import numpy as np
 import subprocess
 # import cosmologicalconstants as cc
@@ -24,227 +25,30 @@ kb_kev = 8.617*1e-8
 kev_to_erg = 1.6022*np.power(10.,-9.)
 planck_kev = 4.136 * np.power(10,-18.) # keV Hz^-1
 
-def plot_aesthetics(ax,fontsize=14,fontweight='bold'):
+def plot_aesthetics(ax,fontsize=14,fontweight='bold',xax=True,yax=True):
 	"""
 	This function is used to make bold and increase the font size of all plot tick markers
 	"""
 
-	for tick in ax.xaxis.get_major_ticks():
-		tick.label1.set_fontsize(fontsize=fontsize)
-		tick.label1.set_fontweight(fontweight)
+	if xax is True:
+		for tick in ax.xaxis.get_major_ticks():
+			tick.label1.set_fontsize(fontsize=fontsize)
+			tick.label1.set_fontweight(fontweight)
 
-		tick.label2.set_fontsize(fontsize=fontsize)
-		tick.label2.set_fontweight(fontweight)
+			tick.label2.set_fontsize(fontsize=fontsize)
+			tick.label2.set_fontweight(fontweight)
 
-	for tick in ax.yaxis.get_major_ticks():
-		tick.label1.set_fontsize(fontsize=fontsize)
-		tick.label1.set_fontweight(fontweight)
+	if yax is True:
+		for tick in ax.yaxis.get_major_ticks():
+			tick.label1.set_fontsize(fontsize=fontsize)
+			tick.label1.set_fontweight(fontweight)
 
-		tick.label2.set_fontsize(fontsize=fontsize)
-		tick.label2.set_fontweight(fontweight)
+			tick.label2.set_fontsize(fontsize=fontsize)
+			tick.label2.set_fontweight(fontweight)
 		
 ##############################################################################################################################
 
-def plot_lor_dist(file_name,ax=None,fig=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', linestyle="solid",show_zoomed = False, separator_string = "// Next step\n",title=True):
-	"""
-	Method to plot the given Lorentz factor distribution saved in the text file with path name "file_name".
-	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string".
-	If more than one snapshot is provided, the snapshots can be scrolled through with the left and right arrow keys. 
-
-	The Lorentz distribution file must contain the columns: 
-	RADIUS - Radius of the shell
-	GAMMA - Lorentz factor of the shell
-	MASS - Mass of the shell
-	TE - Time of emission of the shell
-	STATUS - Status of the shell, this is used by the simulation code to indicate if a shell is still active or not. 
-
-	Attributes:
-	ax = the matplotlib.pyplot.axes instance to make the plot on
-	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
-	xlabel, ylabel = indicate whether x- and y- labels should be included (boolean)
-	label = optional label for the data set
-	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
-	linestyle = style of the plotting line 
-	separator_string = the string between each snapshot of the Lorentz distribution
-	"""
-
-	# Load data
-	lor_time_list, lor_dist_list = load_lor_dist(file_name)
-
-	# Only select active shells. 
-	for i in range(len(lor_dist_list)):
-		lor_dist_list[i] = lor_dist_list[i][lor_dist_list[i]["STATUS"]==1]
-
-	# Make plot instance if it doesn't exist
-	if fig is None:
-		fig = plt.figure()
-	if ax is None:
-		ax = fig.gca()
-	ind = np.array([0])
-	def on_press(event):
-		if event.key == 'right':
-			ind[0] +=1
-		elif event.key == 'left':
-			ind[0] -=1
-
-		# Loop back to beginning 
-		if(ind[0] == len(lor_time_list)):
-			ind[0] = 0
-		# Loop to the end
-		if(ind[0] == -1):
-			ind[0] = len(lor_time_list)-1
-
-		# Update ejection time plot 
-		# line_shell_ind.set_xdata(lor_dist_list[ind[0]]['TE'])
-		# line_shell_ind.set_ydata(lor_dist_list[ind[0]]['GAMMA'])
-		line_shell_ind.set_offsets(np.transpose([lor_dist_list[ind[0]]['TE'],lor_dist_list[ind[0]]['GAMMA']]))
-		# ax[0].set_xlim(np.min(lor_dist_list[ind[0]]['TE']),np.max(lor_dist_list[ind[0]]['GAMMA']))
-
-		# Update cumulative mass fraction plot 
-		flipped_mass_arr = np.flip(lor_dist_list[ind[0]]['MASS'])
-		flipped_gamma_arr = np.flip(lor_dist_list[ind[0]]['GAMMA'])
-		# Cumulative mass
-		masscum = np.cumsum(flipped_mass_arr)
-		massfraccum = masscum/masscum[-1]
-		line_mass_frac.set_xdata(massfraccum)
-		line_mass_frac.set_ydata(flipped_gamma_arr)
-
-		# Update radius plot 
-		line_rad.set_offsets(np.transpose([lor_dist_list[ind[0]]['RADIUS'],lor_dist_list[ind[0]]['GAMMA']]))
-		ax[1,0].set_xlim(np.min(lor_dist_list[ind[0]]['RADIUS']), np.max(lor_dist_list[ind[0]]['RADIUS']))
-
-		# Update mass-radius plot 
-		line_mass_rad.set_xdata(lor_dist_list[ind[0]]['RADIUS'])
-		line_mass_rad.set_ydata(np.flip(massfraccum))
-		ax[1,1].set_xlim(np.min(lor_dist_list[ind[0]]['RADIUS']), np.max(lor_dist_list[ind[0]]['RADIUS']))
-
-
-		fig.suptitle("Emission Time = {0:.1e} sec".format(lor_time_list[ind[0]]),fontsize=fontsize,fontweight=fontweight)
-		ax[1,0].ticklabel_format(axis='x',style='sci',scilimits=(0,2),useOffset=False)
-		ax[1,1].ticklabel_format(axis='x',style='sci',scilimits=(0,2),useOffset=False)
-
-		if (show_zoomed == True):
-
-			line_mass_frac_zoom_x.set_xdata(massfraccum)
-			line_mass_frac_zoom_x.set_ydata(flipped_gamma_arr)
-
-			line_mass_frac_zoom_y.set_xdata(massfraccum)
-			line_mass_frac_zoom_y.set_ydata(flipped_gamma_arr)
-
-			line_rad_zoom_x.set_offsets(np.transpose([lor_dist_list[ind[0]]['RADIUS'],lor_dist_list[ind[0]]['GAMMA']]))
-
-			line_rad_zoom_y.set_offsets(np.transpose([lor_dist_list[ind[0]]['RADIUS'],lor_dist_list[ind[0]]['GAMMA']]))
-			ax_zoom_rad_y.set_xlim(lor_dist_list[ind[0]]['RADIUS'][int(len(lor_dist_list[ind[0]]['RADIUS'])/2)], np.max(lor_dist_list[ind[0]]['RADIUS']))
-
-			ax_zoom_rad_x.ticklabel_format(axis='x',style='sci',scilimits=(0,2),useOffset=False)
-			ax_zoom_rad_y.ticklabel_format(axis='x',style='sci',scilimits=(0,2),useOffset=False)
-
-			ax_zoom_x.redraw_in_frame()
-			ax_zoom_y.redraw_in_frame()
-			ax_zoom_rad_x.redraw_in_frame()
-			ax_zoom_rad_y.redraw_in_frame()
-
-
-
-		# Redraw the figure to implement updates
-		ax[0,0].redraw_in_frame()
-		ax[0,1].redraw_in_frame()
-		ax[1,0].redraw_in_frame()
-		ax[1,1].redraw_in_frame()
-		fig.canvas.draw_idle()
-
-	fig.canvas.mpl_connect('key_press_event', on_press)
-
-	## Plot distribution as a function of the shell number 
-	line_shell_ind = ax[0,0].scatter(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],marker=marker)
-	ax[0,0].set_ylim(0)
-	ax[0,0].invert_xaxis()
-
-	## Plot the Lorentz distribution as a function of the mass fraction
-	flipped_mass_arr = np.flip(lor_dist_list[0]['MASS'])
-	flipped_gamma_arr = np.flip(lor_dist_list[0]['GAMMA'])
-
-	# Cumulative mass
-	masscum = np.cumsum(flipped_mass_arr)
-	massfraccum = masscum/masscum[-1]
-
-	# Plot distribution as a function of the mass fraction
-	line_mass_frac, = ax[0,1].step(massfraccum,flipped_gamma_arr,where='pre',linestyle=linestyle,label=label)
-	ax[0,1].set_ylim(0)
-
-	## Plot Lorentz factor vs Radius
-	line_rad = ax[1,0].scatter(lor_dist_list[0]['RADIUS'],lor_dist_list[0]['GAMMA'],marker=marker)
-	ax[1,0].set_ylim(0)
-
-	ax[1,0].ticklabel_format(axis='x',style='sci',scilimits=(0,2),useOffset=False)
-	
-
-	## Mass vs Radius
-	line_mass_rad, = ax[1,1].step(lor_dist_list[0]['RADIUS'],np.flip(massfraccum),where='pre',linestyle=linestyle)
-
-	ax[1,1].ticklabel_format(axis='x',style='sci',scilimits=(0,2),useOffset=False)
-
-	if xlabel is True:
-		ax[0,0].set_xlabel('Launch Time After Jet Start (sec)',fontsize=fontsize,fontweight=fontweight)
-		ax[0,1].set_xlabel(r'M/M$_{tot}$',fontsize=fontsize,fontweight=fontweight)
-		ax[1,0].set_xlabel(r'Radius (light second)',fontsize=fontsize,fontweight=fontweight)
-		ax[1,1].set_xlabel(r'Radius (light second)',fontsize=fontsize,fontweight=fontweight)
-	if ylabel is True:
-		ax[0,0].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
-		ax[0,1].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
-		ax[1,0].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
-		ax[1,1].set_ylabel('Mass (g)',fontsize=fontsize,fontweight=fontweight)
-
-
-	if title == True:
-		fig.suptitle("Emission Time = {0:.1e} sec".format(lor_time_list[0]),fontsize=fontsize,fontweight=fontweight)
-
-	plot_aesthetics(ax[0,0],fontsize=fontsize,fontweight=fontweight)
-	plot_aesthetics(ax[0,1],fontsize=fontsize,fontweight=fontweight)
-	plot_aesthetics(ax[1,0],fontsize=fontsize,fontweight=fontweight)
-	plot_aesthetics(ax[1,1],fontsize=fontsize,fontweight=fontweight)
-
-	
-	if (show_zoomed == True):
-		# Zoom in on the lower Lorentz factor
-		ax_zoom_x = ax[0,1].twinx()
-		line_mass_frac_zoom_x, = ax_zoom_x.step(massfraccum,flipped_gamma_arr,where='pre',linestyle=linestyle,color="C1",alpha=0.5)
-		ax_zoom_x.set_ylim(0,40)
-
-		# Zoom in on the highest mass fraction 
-		ax_zoom_y = ax[0,1].twiny()
-		line_mass_frac_zoom_y, = ax_zoom_y.step(massfraccum,flipped_gamma_arr,where='pre',linestyle=linestyle,color="C2",alpha=0.5)
-		ax_zoom_y.set_xlim(0.95,1.01)
-
-		# Zoom in on the shells with lower Lorentz factors 
-		ax_zoom_rad_x = ax[1,0].twinx()
-		line_rad_zoom_x = ax_zoom_rad_x.scatter(lor_dist_list[0]['RADIUS'],lor_dist_list[0]['GAMMA'],marker=marker,color="C1",alpha=0.3)
-		ax_zoom_rad_x.set_ylim(0,20)
-		# Zoom in on the farthest shells 
-		ax_zoom_rad_y = ax[1,0].twiny()
-		line_rad_zoom_y = ax_zoom_rad_y.scatter(lor_dist_list[0]['RADIUS'],lor_dist_list[0]['GAMMA'],marker=marker,color="C2",alpha=0.3)
-		ax_zoom_rad_y.set_xlim(lor_dist_list[0]['RADIUS'][int(len(lor_dist_list[0]['RADIUS'])/2)],np.max(lor_dist_list[0]['RADIUS']))
-
-		ax_zoom_rad_x.ticklabel_format(axis='x',style='sci',scilimits=(0,2),useOffset=False)
-		ax_zoom_rad_y.ticklabel_format(axis='x',style='sci',scilimits=(0,2),useOffset=False)
-
-		plot_aesthetics(ax_zoom_x,fontsize=fontsize,fontweight=fontweight)
-		plot_aesthetics(ax_zoom_y,fontsize=fontsize,fontweight=fontweight)
-		plot_aesthetics(ax_zoom_rad_x,fontsize=fontsize,fontweight=fontweight)
-		plot_aesthetics(ax_zoom_rad_y,fontsize=fontsize,fontweight=fontweight)
-	
-
-	if label is not None:
-		ax[0,0].legend(fontsize=fontsize)
-
-	plt.tight_layout()
-
-	if save_pref is not None :
-		plt.savefig('figs/{}-lorentz-dist.png'.format(save_pref))
-
-##############################################################################################################################
-
-def plot_lor_dist_simple(file_name,ax=None,fig=None,color="C0",save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",joined=True,title=True,zoom_inset=False):
+def plot_lor_prof(file_name,ax=None,fig=None,color="C0",save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",joined=True,title=True,zoom_inset=False,ind_start=0,alpha=0.7,linestyle="solid"):
 	"""
 	Method to plot the given Lorentz factor distribution saved in the text file with path name "file_name".
 	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string".
@@ -276,7 +80,7 @@ def plot_lor_dist_simple(file_name,ax=None,fig=None,color="C0",save_pref=None,xl
 	if ax is None:
 		ax = fig.gca()
 
-	ind = np.array([0])
+	ind = np.array([ind_start])
 	def on_press(event):
 		if event.key == 'right':
 			ind[0] +=1
@@ -309,6 +113,7 @@ def plot_lor_dist_simple(file_name,ax=None,fig=None,color="C0",save_pref=None,xl
 			elif(joined == False):
 				line_inset.set_offsets(np.transpose([lor_dist_list[ind[0]]['TE'],lor_dist_list[ind[0]]['GAMMA']]))
 
+
 		# Redraw the figure to implement updates
 		ax.redraw_in_frame()
 		fig.canvas.draw_idle()
@@ -317,20 +122,26 @@ def plot_lor_dist_simple(file_name,ax=None,fig=None,color="C0",save_pref=None,xl
 
 	## Plot distribution as a function of the shell number 
 	if(joined == True):
-		line_shell_ind, = ax.step(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],where="pre",color=color)
+		line_shell_ind, = ax.step(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
 	elif(joined == False):
-		line_shell_ind = ax.scatter(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],marker=marker,color=color)
+		line_shell_ind = ax.scatter(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],marker=marker,color=color,alpha=alpha)
 
 	# Include zoom within an inset if specified 	
 	if zoom_inset is True:
 		axins = ax.inset_axes([0.1, 0.5, 0.47, 0.47])
+
 		if(joined == True):
-			line_inset, = axins.step(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],where="pre",color=color)
+			line_inset, = axins.step(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],where="pre",color="k",alpha=0.5,linestyle="dashed")
 		elif(joined == False):
-			line_inset = axins.scatter(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],marker=marker,color=color)
-		
+			line_inset = axins.scatter(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],marker=marker,color="k",alpha=0.5)
+
+		if(joined == True):
+			line_inset, = axins.step(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
+		elif(joined == False):
+			line_inset = axins.scatter(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],marker=marker,color=color,alpha=alpha)
+
 		# sub region of the original image
-		x1, x2, y1, y2 = 12, np.max(lor_dist_list[0]['TE']), 0.1, 20
+		x1, x2, y1, y2 = 12, np.max(lor_dist_list[ind_start]['TE']), 0.1, 20
 		axins.set_xlim(x1, x2)
 		axins.set_ylim(y1, y2)
 
@@ -350,7 +161,7 @@ def plot_lor_dist_simple(file_name,ax=None,fig=None,color="C0",save_pref=None,xl
 
 
 	if title == True:
-		fig.suptitle("Emission Time = {0:.1e} sec".format(lor_time_list[0]),fontsize=fontsize,fontweight=fontweight)
+		fig.suptitle("Emission Time = {0:.1e} sec".format(lor_time_list[ind_start]),fontsize=fontsize,fontweight=fontweight)
 
 
 	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
@@ -361,7 +172,86 @@ def plot_lor_dist_simple(file_name,ax=None,fig=None,color="C0",save_pref=None,xl
 	plt.tight_layout()
 
 	if save_pref is not None :
-		plt.savefig('figs/{}-lorentz-dist.png'.format(save_pref))
+		plt.savefig('figs/{}-lorentz-profile.png'.format(save_pref))
+
+
+##############################################################################################################################
+
+def plot_lor_prof_simple(file_name,indices,ax=None,color_map=cm.PuBuGn,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",title=True,zoom_inset=False,alpha=0.7,linestyle="solid"):
+	"""
+	Method to plot the given Lorentz factor distribution saved in the text file with path name "file_name".
+	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string".
+	If more than one snapshot is provided, the snapshots can be scrolled through with the left and right arrow keys. 
+
+	The Lorentz distribution file must contain the columns: 
+	RADIUS - Radius of the shell
+	GAMMA - Lorentz factor of the shell
+	MASS - Mass of the shell
+	TE - Time of emission of the shell
+	STATUS - Status of the shell, this is used by the simulation code to indicate if a shell is still active or not. 
+
+	Attributes:
+	ax = the matplotlib.pyplot.axes instance to make the plot on
+	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
+	xlabel, ylabel = indicate whether x- and y- labels should be included (boolean)
+	label = optional label for the data set
+	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
+	linestyle = style of the plotting line 
+	separator_string = the string between each snapshot of the Lorentz distribution
+	"""
+
+	# Load data
+	lor_time_list, lor_dist_list = load_lor_dist(file_name)
+
+	# Make plot instance if it doesn't exist
+	if ax is None:
+		ax = plt.figure().gca()
+
+	colors = color_map( np.linspace(0.2,0.8,len(indices)) )
+
+	for i in range(len(indices)):
+		## Plot distribution as a function of the shell number 
+		line_shell_ind, = ax.step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=colors[i],alpha=alpha,linestyle=linestyle)
+
+
+
+
+	# Include zoom within an inset if specified 	
+	if zoom_inset is True:
+		axins = ax.inset_axes([0.1, 0.5, 0.47, 0.47])
+
+		for i in range(len(indices)):
+			line_inset, = axins.step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=colors[i],alpha=alpha,linestyle=linestyle)
+
+		# sub region of the original image
+		# x1, x2, y1, y2 = 12, np.max(lor_dist_list[indices[0]]['TE']), 5, 15
+		x1, x2, y1, y2 = 12, 23, 5, 16
+		axins.set_xlim(x1, x2)
+		axins.set_ylim(y1, y2)
+
+		axins.invert_xaxis()
+
+		plot_aesthetics(axins,fontsize=fontsize-2,fontweight=fontweight)
+
+
+	ax.set_ylim(0,np.max(lor_dist_list[indices[0]]['GAMMA']+10))
+	ax.set_xlim(0,np.max(lor_dist_list[indices[0]]['TE']))
+	ax.invert_xaxis()
+
+	if xlabel is True:
+		ax.set_xlabel('Initial Ejection Time (sec)',fontsize=fontsize,fontweight=fontweight)
+	if ylabel is True:
+		ax.set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
+
+	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
+
+	if label is not None:
+		ax.legend(fontsize=fontsize)
+
+	plt.tight_layout()
+
+	if save_pref is not None :
+		plt.savefig('figs/{}-lorentz-profile-simple.png'.format(save_pref))
 
 
 ##############################################################################################################################
@@ -615,7 +505,7 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, s
 
 ##############################################################################################################################
 
-def add_FermiGBM_band(ax,fontsize=12,axis="x"):
+def add_FermiGBM_band(ax,fontsize=12,axis="x",plt_ratio_min=0.5,plt_ratio_max=1,inc_legend=True):
 	"""
 	Method to add two shaded boxes to indicate the Fermi/GBM (NaI and BGO) observation bands to a matplotlib.pyplot.axes instance
 
@@ -630,22 +520,23 @@ def add_FermiGBM_band(ax,fontsize=12,axis="x"):
 	# Vertical axis
 	if(axis == "x"):
 		# Display Fermi/GBM - NAI energy band
-		ax.axvspan(xmin=8,xmax=1e3,ymin=0.5,alpha=0.4,facecolor='grey',label='Fermi/GBM-NAI')
+		ax.axvspan(xmin=8,xmax=1e3,ymin=plt_ratio_min,ymax=plt_ratio_max,alpha=0.4,facecolor='grey',label='Fermi/GBM-NAI')
 
 		# Display Fermi/GBM - BGO energy band
-		ax.axvspan(xmin=150,xmax=3*1e4,ymin=0.5,alpha=0.4,facecolor='orange',label='Fermi/GBM-BGO')
+		ax.axvspan(xmin=150,xmax=3*1e4,ymin=plt_ratio_min,ymax=plt_ratio_max,alpha=0.4,facecolor='orange',label='Fermi/GBM-BGO')
 
 	# Horizontal axis
 	elif(axis == "y"):
 		# Display Fermi/GBM - NAI energy band
-		ax.axhspan(ymin=8,ymax=1e3,alpha=0.4,facecolor='grey',label='Fermi/GBM-NAI')
+		ax.axhspan(ymin=8,ymax=1e3,xmin=plt_ratio_min,xmax=plt_ratio_max,alpha=0.4,facecolor='grey',label='Fermi/GBM-NAI')
 
 		# Display Fermi/GBM - BGO energy band
-		ax.axhspan(ymin=150,ymax=3*1e4,alpha=0.4,facecolor='orange',label='Fermi/GBM-BGO')
+		ax.axhspan(ymin=150,ymax=3*1e4,xmin=plt_ratio_min,xmax=plt_ratio_max,alpha=0.4,facecolor='orange',label='Fermi/GBM-BGO')
 
 
 	# Add to legend	
-	ax.legend(fontsize=fontsize)
+	if inc_legend is True:
+		ax.legend(fontsize=fontsize)
 
 	# We don't want the plotting window to change if either of the energy band edges do not overlap with the plotted energy spectra
 	ax.set_ylim(curr_ymin,curr_ymax)
@@ -653,7 +544,7 @@ def add_FermiGBM_band(ax,fontsize=12,axis="x"):
 
 ##############################################################################################################################
 
-def add_SwiftBAT_band(ax,fontsize=12,axis="x"):
+def add_SwiftBAT_band(ax,fontsize=12,axis="x",plt_ratio_min=0.5,plt_ratio_max=1,inc_legend=True):
 	"""
 	Method to add two shaded boxes to indicate the Swift/BAT observation band to a matplotlib.pyplot.axes instance
 
@@ -669,14 +560,15 @@ def add_SwiftBAT_band(ax,fontsize=12,axis="x"):
 
 	# Vertical axis
 	if(axis == "x"):
-		ax.axvspan(xmin=5,xmax=350,ymin=0.5,alpha=0.4,facecolor='blue',label='Swift/BAT')
+		ax.axvspan(xmin=5,xmax=350,ymin=plt_ratio_min,ymax=plt_ratio_max,alpha=0.4,facecolor='blue',label='Swift/BAT')
 
 	# Horizontal axis
 	elif(axis == "y"):
-		ax.axhspan(ymin=5,ymax=350,alpha=0.4,facecolor='blue',label='Swift/BAT')
+		ax.axhspan(ymin=5,ymax=350,xmin=plt_ratio_min,xmax=plt_ratio_max,alpha=0.4,facecolor='blue',label='Swift/BAT')
 
 	# Add to legend	
-	ax.legend(fontsize=fontsize)
+	if inc_legend is True:
+		ax.legend(fontsize=fontsize)
 
 	# We don't want the plotting window to change if either of the energy band edges do not overlap with the plotted energy spectra
 	ax.set_ylim(curr_ymin,curr_ymax)
@@ -764,7 +656,7 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None,
 			ax.plot(tspace,ajbline(tspace,tstart,g_ajb_norm),label=r"$t^{-1.5}$",color='g')
 
 		# Custom power law index annotation
-		annot = ax.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points", bbox=dict(boxstyle="round", fc="w"),arrowprops=dict(arrowstyle="->"))
+		annot = ax.annotate("", xy=(-100,-100), xytext=(20,20),textcoords="offset points", bbox=dict(boxstyle="round", fc="w"),arrowprops=dict(arrowstyle="->"))
 
 		if(logscale == True):
 			ax.set_yscale('log')
@@ -1340,7 +1232,7 @@ def plot_param_vs_time(emission_comp,param,frame="obs",ax=None,z=0, y_factor=1, 
 		elif(time_str == "TE"):
 			ax.set_xlabel(r't$_e$',fontsize=fontsize,fontweight=fontweight)
 
-	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight,xax=False,yax=False)
 		
 	if save_pref is not None:
 		plt.savefig('figs/{}-param-{}-vs-t.png'.format(save_pref,param))
@@ -1400,10 +1292,12 @@ def plot_evo_therm(thermal_emission,frame="obs",ax=None,z=0,Tmin=None, Tmax=None
 		ax[1].set_xlabel(r't$_{e} (sec)$',fontsize=fontsize,fontweight=fontweight)
 	ax[1].set_ylabel(r'R$_{phot}$ (cm)',fontsize=fontsize,fontweight=fontweight)
 
-	plot_aesthetics(ax[0],fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax[0],fontsize=fontsize,fontweight=fontweight,xax=False)
 	plot_aesthetics(ax[1],fontsize=fontsize,fontweight=fontweight)
 	
 	plt.tight_layout()
+	plt.subplots_adjust(hspace=0)
+
 	if save_pref is not None:
 		plt.savefig('figs/{}-thermal-evo.png'.format(save_pref))
 
@@ -1473,10 +1367,10 @@ def plot_evo_int_shock(is_emission,frame="obs",ax=None,z=0,Tmin=None, Tmax=None,
 	ax[0].grid(axis='x')
 	ax[1].grid(axis='x')
 
-	for i in range(2):
-		plot_aesthetics(ax[i],fontsize=fontsize,fontweight=fontweight)
-	for twin in [ax0cp,ax1cp]:
-		plot_aesthetics(twin,fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax[0],fontsize=fontsize,fontweight=fontweight,xax=False)
+	plot_aesthetics(ax[1],fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax0cp,fontsize=fontsize,fontweight=fontweight,xax=False)
+	plot_aesthetics(ax1cp,fontsize=fontsize,fontweight=fontweight)
 
 	plt.tight_layout()
 	plt.subplots_adjust(hspace=0)
@@ -1520,9 +1414,10 @@ def plot_evo_int_shock(is_emission,frame="obs",ax=None,z=0,Tmin=None, Tmax=None,
 	ax[1,1].yaxis.set_label_position("right")
 	ax[1,1].yaxis.tick_right()
 
-	for i in range(2):
-		for j in range(2):
-			plot_aesthetics(ax[i,j],fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax[0,0],fontsize=fontsize,fontweight=fontweight,xax=False)
+	plot_aesthetics(ax[0,1],fontsize=fontsize,fontweight=fontweight,xax=False,yax=False)
+	plot_aesthetics(ax[1,0],fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax[1,1],fontsize=fontsize,fontweight=fontweight,yax=False)
 
 	plt.tight_layout()
 	plt.subplots_adjust(wspace=0,hspace=0)
@@ -1543,7 +1438,7 @@ def plot_evo_int_shock(is_emission,frame="obs",ax=None,z=0,Tmin=None, Tmax=None,
 
 ##############################################################################################################################
 
-def make_together_plots(shock_data, ax0, ax1,frame="obs", z=0, label=None, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None,color="C1",marker=".",markersize=7):
+def make_together_plots(shock_data, ax0, ax1,frame="obs", z=0, label=None, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None,color="C1",marker=".",markersize=7,inc_legend=True):
 	"""
 	Plot making method called by plot_together()
 
@@ -1610,12 +1505,13 @@ def make_together_plots(shock_data, ax0, ax1,frame="obs", z=0, label=None, Tmin=
 	# ax0[0,0].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
 	ax0[0,0].set_yscale("log")
 	ax0[0,0].set_xscale("log")
-	ax0[0,0].legend(fontsize=fontsize)
+	if inc_legend is True:
+		ax0[0,0].legend(fontsize=fontsize)
 
 	# Format Top Right plot, T_a vs Gamma_r 
 	ax0[0,1].set_ylabel(r"$\Gamma_r$",fontsize=fontsize,fontweight=fontweight)
 	# ax0[0,1].set_xlabel(r"$t_a$",fontsize=fontsize,fontweight=fontweight)
-	ax0[0,1].yaxis.set_label_position("right")
+	ax0[0,1].yaxis.set_label_position("right")	
 	ax0[0,1].yaxis.tick_right()
 	ax0[0,1].set_yscale("log")
 	ax0[0,1].set_xscale("log")
@@ -1641,15 +1537,20 @@ def make_together_plots(shock_data, ax0, ax1,frame="obs", z=0, label=None, Tmin=
 	ax0[1,1].set_xscale("log")
 
 	# Make plots look good
-	for i in range(2):
-		for j in range(2):
-			plot_aesthetics(ax0[i,j],fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax0[0,0],fontsize=fontsize,fontweight=fontweight,xax=False)
+	plot_aesthetics(ax0[0,1],fontsize=fontsize,fontweight=fontweight, xax=False)
+	plot_aesthetics(ax0[1,0],fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax0[1,1],fontsize=fontsize,fontweight=fontweight)
 
 	plt.tight_layout()
 	plt.subplots_adjust(wspace=0,hspace=0)
 
+
+
 	if save_pref is not None:
 		plt.savefig('figs/{}-all-shock-evo-fig0.png'.format(save_pref))
+
+
 
 	### Second Plot ###
 
@@ -1682,7 +1583,8 @@ def make_together_plots(shock_data, ax0, ax1,frame="obs", z=0, label=None, Tmin=
 	ax1[0].set_xscale("log")
 	# ax1cp.set_yscale("log")
 	# ax1cp.set_xscale("log")
-	ax1[0].legend(fontsize=fontsize)
+	if inc_legend is True:
+		ax1[0].legend(fontsize=fontsize)
 
 	# Format Bottom plot, T_a vs Gamma_e
 	ax1[1].set_ylabel(r"$\Gamma_{e}$",fontsize=fontsize,fontweight=fontweight)
@@ -1694,20 +1596,21 @@ def make_together_plots(shock_data, ax0, ax1,frame="obs", z=0, label=None, Tmin=
 	ax1[1].set_xscale("log")
 
 	# Make plots look good
-	for i in range(2):
-		plot_aesthetics(ax1[i],fontsize=fontsize,fontweight=fontweight)
+	plot_aesthetics(ax1[0],fontsize=fontsize,fontweight=fontweight,xax=False)
+	plot_aesthetics(ax1[1],fontsize=fontsize,fontweight=fontweight)
 	# plot_aesthetics(ax1cp,fontsize=fontsize,fontweight=fontweight)
 
 
 	plt.tight_layout()
-	plt.subplots_adjust(hspace=0)
+	plt.subplots_adjust(wspace=0,hspace=0)
+
 
 	if save_pref is not None:
 		plt.savefig('figs/{}-all-shock-evo-fig1.png'.format(save_pref))
 
 ##############################################################################################################################
 
-def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',markregime=True,markersize=10,guidelines=False):
+def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',markregime=True,markersize=10,guidelines=False,inc_legend=True):
 	"""
 	Make diagnostics plots for the instantaneous jet dynamics parameters. This will create six plots. All shock emission data provided will be included within these six plots.
 
@@ -1732,7 +1635,7 @@ def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tm
 	"""
 
 
-	fig0, ax0 = plt.subplots(2,2,sharex=True,figsize=(12,8))
+	fig0, ax0 = plt.subplots(2,2,sharex=True,figsize=(12,8),gridspec_kw={'wspace':0,'hspace':0})
 	fig1, ax1 = plt.subplots(2,1,sharex=True,figsize=(6,6))
 
 	annot0 = []
@@ -1813,48 +1716,48 @@ def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tm
 		if (markregime == True):
 			fastcool_data = is_data[is_data['NUM']>is_data['NUC']]
 			if len(fastcool_data) > 0:
-				make_together_plots(shock_data=fastcool_data,label="IS - FC", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+				make_together_plots(shock_data=fastcool_data,label="IS - FC", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,inc_legend=inc_legend)
 			data_holder.append(fastcool_data)
 
 			slowcool_data = is_data[is_data['NUM']<=is_data['NUC']]
 			if len(slowcool_data) > 0:
-				make_together_plots(shock_data=slowcool_data,label="IS - SC", color="C0", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+				make_together_plots(shock_data=slowcool_data,label="IS - SC", color="C0", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,inc_legend=inc_legend)
 			data_holder.append(slowcool_data)
 
 		else:
-			make_together_plots(shock_data=is_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			make_together_plots(shock_data=is_data,label="IS", color="C0", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,inc_legend=inc_legend)
 			data_holder.append(is_data)
 
 	if fs_data is not None:
 		if (markregime == True):
 			fastcool_data = fs_data[fs_data['NUM']>fs_data['NUC']]
 			if len(fastcool_data) > 0:
-				make_together_plots(shock_data=fastcool_data,label="FS - FC", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,guidelines=guidelines)
+				make_together_plots(shock_data=fastcool_data,label="FS - FC", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,guidelines=guidelines,inc_legend=inc_legend)
 			data_holder.append(fastcool_data)
 			
 			slowcool_data = fs_data[fs_data['NUM']<=fs_data['NUC']]
 			if len(slowcool_data) > 0:
-				make_together_plots(shock_data=slowcool_data,label="FS - SC", color="C1", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,guidelines=guidelines)
+				make_together_plots(shock_data=slowcool_data,label="FS - SC", color="C1", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,guidelines=guidelines,inc_legend=inc_legend)
 			data_holder.append(slowcool_data)
 
 		else:
-			make_together_plots(shock_data=fs_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,guidelines=guidelines)
+			make_together_plots(shock_data=fs_data,label="FS", color="C1", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,guidelines=guidelines,inc_legend=inc_legend)
 			data_holder.append(fs_data)
 
 	if rs_data is not None:
 		if (markregime == True):
 			fastcool_data = rs_data[rs_data['NUM']>rs_data['NUC']]
 			if len(fastcool_data) > 0:
-				make_together_plots(shock_data=fastcool_data,label="RS - FC", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+				make_together_plots(shock_data=fastcool_data,label="RS - FC", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,inc_legend=inc_legend)
 			data_holder.append(fastcool_data)
 
 			slowcool_data = rs_data[rs_data['NUM']<=rs_data['NUC']]
 			if len(slowcool_data) > 0:
-				make_together_plots(shock_data=slowcool_data,label="RS - SC", color="C2", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+				make_together_plots(shock_data=slowcool_data,label="RS - SC", color="C2", marker='x', ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,inc_legend=inc_legend)
 			data_holder.append(slowcool_data)
 
 		else:
-			make_together_plots(shock_data=rs_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize)
+			make_together_plots(shock_data=rs_data,label="RS", color="C2", ax0=ax0, ax1=ax1, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,inc_legend=inc_legend)
 			data_holder.append(rs_data)
 
 
@@ -1872,6 +1775,89 @@ def plot_together(is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tm
 		fig1.savefig('figs/{}-all-shock-evo-fig1.png'.format(save_pref))
 
 	return fig0, fig1
+
+##############################################################################################################################
+
+def make_together_single_plot(shock_data, ax,frame="obs", z=0, label=None, Tmin=None, Tmax=None,fontsize=14,fontweight='bold',guidelines=False,save_pref=None,color="C1",marker=".",markersize=7,alpha=0.5):
+	"""
+	Plot making method called by plot_together()
+
+	Attributes:
+	shock_data = the emission data to be plotted
+	ax0 = first axis instance
+	ax1 = second axis instance
+	frame = string, should be given as "obs" or "source"
+		"obs" indicates that the observed time will be used 
+		"source" indicate that the emitted time will be used
+
+	z = redshift to shift the light curve to
+
+	label = optional label for the plotted light curve
+	
+	Tmin, Tmax = indicates the minimum and maximum time range to plot. If None is supplied, the minimum and maximum times of the supplied data files are used
+
+	save_pref = if not left as None, the plot will be saved and the file name will have this prefix
+	fontsize, fontweight = fontsize and fontweight of the plot font and labels on the plot
+	
+	guidelines = boolean, whether or not to include guidelines for the afterglow behavior (indicating whether a wind or constant medium )
+
+	color = color of the data
+	marker = marker of the data
+	markersize = markersize of the data marker
+	"""
+
+	### First Plot ###
+
+	# T_a vs B_eq
+	plot_param_vs_time(shock_data,'BEQ', ax=ax, z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color="purple",label=label,frame=frame,markersize=markersize,alpha=alpha)
+
+	# T_a vs Gamma_r
+	# plot_param_vs_time(shock_data,'GAMMAR', ax=ax, z=z, Tmin=Tmin, Tmax=Tmax,
+	# 		fontsize=fontsize, fontweight=fontweight, disp_xax=False, disp_yax=False, marker=marker,color="C2",frame=frame,markersize=markersize,alpha=alpha)
+
+	# T_a vs Gamma_e
+	plot_param_vs_time(shock_data,'GAMMAE', ax=ax, z=z, Tmin=Tmin, Tmax=Tmax,
+			fontsize=fontsize, fontweight=fontweight, marker=marker,color="orange",frame=frame,markersize=markersize,alpha=alpha)
+
+	# Plot Aesthetics
+	ax.set_yscale("log")
+	# ax.set_xscale("log")
+
+	# Format Top Left plot, T_a vs B_eq
+	ax.set_ylabel(r"B$_{EQ}$",fontsize=fontsize,fontweight=fontweight)
+	ax.set_ylabel(r"$\Gamma_r$",fontsize=fontsize,fontweight=fontweight)
+	ax.set_ylabel(r"$\Gamma_{e}$",fontsize=fontsize,fontweight=fontweight)
+
+
+	# Format Bottom plot, T_a vs Gamma_e
+	if(frame == "obs"):
+		ax.set_xlabel(r't$_{obs}$ (sec)',fontsize=fontsize,fontweight=fontweight)
+	if(frame == "source"):
+		ax.set_xlabel(r't$_{e}$ (sec)',fontsize=fontsize,fontweight=fontweight)
+
+
+	# Make plots look good
+	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
+
+	plt.tight_layout()
+
+	if save_pref is not None:
+		plt.savefig('figs/{}-all-shock-evo-single-plot.png'.format(save_pref))
+
+##############################################################################################################################
+
+def plot_together_single_plot(ax=None, is_data = None,fs_data=None, rs_data=None,frame="obs", z=0, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',markregime=True,markersize=10,alpha=0.5):
+
+	if ax is None:
+		ax = plt.figure().gca()
+
+	if is_data is not None:
+		make_together_single_plot(shock_data=is_data, ax=ax, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,alpha=alpha,save_pref=save_pref)
+	if rs_data is not None:
+		make_together_single_plot(shock_data=rs_data, ax=ax, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,alpha=alpha,save_pref=save_pref)
+	if fs_data is not None:
+		make_together_single_plot(shock_data=fs_data, ax=ax, z=z, Tmin=Tmin, Tmax=Tmax, fontsize=fontsize,fontweight=fontweight,frame=frame,markersize=markersize,alpha=alpha,save_pref=save_pref)
 
 ##############################################################################################################################
 
@@ -2028,7 +2014,7 @@ if __name__ == '__main__':
 	z = 0
 
 
-	# save_pref = "2022-08-17/2022-08-17"
+	# save_pref = "2022-11-01/2022-11-01"
 
 	"""
 	Shell Lorentz Distribution
@@ -2036,8 +2022,8 @@ if __name__ == '__main__':
 	
 	fig = plt.figure()
 	ax = fig.gca()
-	plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,title=None)
-	# plot_lor_dist_simple('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,color="C1",title=None)
+	# plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,title=None)
+	plot_lor_prof_simple('data-file-dir/synthGRB_shell_dist.txt',indices= [0,1,2,5,7],ax=ax,zoom_inset=True,alpha=1,linestyle="solid")
 	# ax.invert_xaxis()
 	
 	# plot_lor_dist('data-file-dir/synthGRB_shell_dist.txt',show_zoomed=False)
@@ -2049,12 +2035,12 @@ if __name__ == '__main__':
 
 	# ax_spec = plt.figure().gca()
 
-	# # Synthetic spectra with each component
-	# plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,label="IS",color="C0",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_FS.txt",ax=ax_spec,z=z,label="FS",color="C1",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_RS.txt",ax=ax_spec,z=z,label="RS",color="C2",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,label="TH",color="r",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_TOT.txt",ax=ax_spec,z=z,label="Tot",color="k",joined=True)
+	# Synthetic spectra with each component
+	# plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,color="C0",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_FS.txt",ax=ax_spec,z=z,color="C1",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_RS.txt",ax=ax_spec,z=z,color="C2",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,color="r",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_TOT.txt",ax=ax_spec,z=z,color="k",joined=True,fontsize=20)
 
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-4}$",color="hotpink",joined=True,alpha=0.7)
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-3}$",color="C2",joined=True,alpha=1)
@@ -2062,11 +2048,15 @@ if __name__ == '__main__':
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-1}$",color="purple",joined=True,alpha=0.7)
 	# ax_spec.vlines(x=0.75, ymin=1.e39,ymax=1.e44,color="k",alpha=0.6,linestyle="dotted")
 
-	# ax_spec.set_xlim(10**(-6),10**(3))
-	# ax_spec.set_ylim(1.e39,1.e44)
+	# ax_spec.set_xlim(8,5*10**(4))
+	# ax_spec.set_ylim(1.e48,1.e50)
 
+	# add_FermiGBM_band(ax_spec,plt_ratio_min=0.9,plt_ratio_max=1,inc_legend=False)
+	# add_SwiftBAT_band(ax_spec,plt_ratio_min=0.8,plt_ratio_max=0.9,inc_legend=False)
 
-	# add_FermiGBM_band(ax_spec)
+	# plt.tight_layout()
+	# plt.savefig("./figs/2022-10-13/2022-10-13-spec-interval-1.png")
+
 	# plot_spec("data-file-dir/synthGRB_spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
 
 	## Synthetic spectrum before convolusion
@@ -2090,16 +2080,18 @@ if __name__ == '__main__':
 	"""
 	Synthetic light curve
 	"""	
-	# fig = plt.figure()
+	# fig = plt.figure(figsize=(18,6))
 	# ax_lc = fig.gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,fig=fig,z=z,label="Total",logscale=False,color="k",alpha=0.5)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc, fig=fig,z=z,label="TH",color="r")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc, fig=fig,z=z,label="IS",color="C0")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc, fig=fig,z=z,label="FS",color="C1")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc, fig=fig,z=z,label="RS",color="C2")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,fig=fig,z=z,logscale=False,color="k")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc, fig=fig,z=z,color="r")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc, fig=fig,z=z,color="C0")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc, fig=fig,z=z,color="C1")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc, fig=fig,z=z,color="C2")
+
+	# ax_lc.set_xlim(0,15)
 
 	# Interactive light curve
-	tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 13, init_dT=0.2, init_Emin = 8, init_Emax = 40000,z=z,label="Total",with_comps=True)
+	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 13, init_dT=0.2, init_Emin = 8, init_Emax = 40000,z=z,label="Total",with_comps=True)
 
 	# Afterglow light curve
 	# ax_afg_lc = plt.figure().gca()
@@ -2131,23 +2123,28 @@ if __name__ == '__main__':
 	# therm_emission = load_therm_emission("data-file-dir/synthGRB_jet_params_TH.txt")
 	# plot_evo_therm(therm_emission,xlogscale=False,z=1)
 	
-	is_data = load_is_emission("data-file-dir/synthGRB_jet_params_IS.txt")
-	fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_FS.txt")
-	rs_data = load_rs_emission("data-file-dir/synthGRB_jet_params_RS.txt")
+	# is_data = load_is_emission("data-file-dir/synthGRB_jet_params_IS.txt")
+	# fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_FS.txt")
+	# rs_data = load_rs_emission("data-file-dir/synthGRB_jet_params_RS.txt")
 
 	# Plot everything together:
-	# fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data)
+	# fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data,inc_legend=False,markregime=False,fontsize=16)
 	# fig0, fig1 = plot_together(fs_data=fs_data,rs_data=rs_data)
 	# fig0, fig1 = plot_together(fs_data=fs_data,guidelines=True)
 
+	# ax = plt.figure(figsize=(18,4)).gca()
+	# plot_together_single_plot(ax=ax,is_data=is_data,rs_data=rs_data,fontsize=16)
+	# ax.set_xlim(0,15)
+
+	# plot_together_single_plot(is_data=is_data,fs_data=fs_data,rs_data=rs_data,inc_legend=False,markregime=False,fontsize=16)
 	
 	# Plot nu_c and nu_m: 
-	ax_synch_reg = plt.figure(figsize=(10,8)).gca()
-	markers = [".","^"]
-	plot_synch_cooling_regime(is_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="IS",color="C0",markers=markers,alpha=0.8,markersize=16)
-	plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1",markers=markers,alpha=0.6,markersize=16,frame="obs")
-	plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16,frame="obs")
-	add_FermiGBM_band(ax_synch_reg,axis="y")
+	# ax_synch_reg = plt.figure(figsize=(10,8)).gca()
+	# markers = [".","^"]
+	# plot_synch_cooling_regime(is_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="IS",color="C0",markers=markers,alpha=0.8,markersize=16)
+	# plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1",markers=markers,alpha=0.6,markersize=16,frame="obs")
+	# plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16,frame="obs")
+	# add_FermiGBM_band(ax_synch_reg,axis="y")
 
 
 	# ax = plt.figure().gca()

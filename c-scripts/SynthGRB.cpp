@@ -1188,7 +1188,7 @@ void SynthGRB::SimulateJetDynamics()
 			}
 			
 			// The magnetic field in the forward shock
-			tmp_rho = tmp_gamma_r*(*p_model_params).rho_not/pow(tmp_fs_r*c_cm,(*p_model_params).k_med); // g/cm^3, comoving proton density 
+			tmp_rho = 4.*tmp_gamma_r*(*p_model_params).rho_not/pow(tmp_fs_r*c_cm,(*p_model_params).k_med); // g/cm^3, comoving proton density 
 			tmp_beq = c_cm*tmp_gamma_r*sqrt(32. * M_PI * (*p_model_params).eps_b_ext * tmp_rho); // (erg/cm^3)^1/2, Magnetic field density, assuming B = Beq  
 
 			// The synchrotron energy of the accelerated electrons 
