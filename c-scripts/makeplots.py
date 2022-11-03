@@ -684,7 +684,7 @@ def add_SwiftBAT_band(ax,fontsize=12,axis="x"):
 
 ##############################################################################################################################
 
-def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None, Tmax=None, save_pref=None,color="C0", alpha=1, fontsize=14,fontweight='bold', logscale=False,y_factor=1,guidelines=False,xax_units="s"):
+def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None, Tmax=None, save_pref=None,color="C0", alpha=1, fontsize=14,fontweight='bold', logscale=False,y_factor=1,guidelines=False,xax_units="s",smoothed=False):
 	"""
 	Method to plot the input light curve data files
 
@@ -733,11 +733,17 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None,
 
 		if(z>0):
 			# ax.scatter(light_curve_data['TIME']*(1+z),light_curve_data['RATE']/(4*np.pi*lum_dis(z)**2),label=label,marker=".")
-			ax.step(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color=color,alpha=alpha)
+			if smoothed is False:
+				ax.step(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color=color,alpha=alpha)
+			elif smoothed is True:
+				ax.plot(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",color=color,alpha=alpha)
 		else: 
 			# If z = 0, return luminosity
 			# ax.scatter(light_curve_data['TIME'],light_curve_data['RATE'],label=label,marker=".")
-			ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color,alpha=alpha)
+			if smoothed is False:
+				ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color,alpha=alpha)
+			elif smoothed is True:
+				ax.plot(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",color=color,alpha=alpha)
 
 		if guidelines is True:
 			# rhowindline = lambda t, t0, norm: norm*np.power(t/t0,-5./4.)
@@ -2110,11 +2116,15 @@ if __name__ == '__main__':
 	# ax_afg_lc.set_ylim(1e43,1e49)
 	# ax_afg_lc.set_xlim(0.1)
 
-	# fig = plt.figure()
-	# ax_afg_lc = fig.gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="FS",logscale=True,color="C1",xax_units="s")
-	# # plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="RS",logscale=True,color="C2",xax_units="s")
+	fig = plt.figure()
+	ax_afg_lc = fig.gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s",smoothed=True)
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="FS",logscale=True,color="C1",xax_units="s",smoothed=True)
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="RS",logscale=True,color="C2",xax_units="s",smoothed=True)
+
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_is.txt",ax=ax_afg_lc, fig=fig ,z=z,label="IS",logscale=True,color="C0",xax_units="s",smoothed=True)
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_th.txt",ax=ax_afg_lc, fig=fig ,z=z,label="TH",logscale=True,color="r",xax_units="s",smoothed=True)
+
 
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-4}$",logscale=True,color="hotpink",xax_units="s",alpha=0.3)
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-3}$",logscale=True,color="C2",xax_units="s")
