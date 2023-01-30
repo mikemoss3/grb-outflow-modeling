@@ -75,7 +75,7 @@ void ShellDist::step(float dte, float g1, float g2, float mfrac, bool fluctuatio
 	for(float i=0; i<numshells; ++i)
 	{
 		// Set the Mass for each shell 
-		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt_e = E_dot *dt_e /gamma_ave/c^2)
 		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 		
 		// Calculate the launch time of each shell since the start of the launch 
@@ -130,7 +130,7 @@ void ShellDist::smoothstep(float dte, float g1, float g2, float tfrac, bool fluc
 	for(float i=0; i<numshells; ++i)
 	{
 		// Set the Mass for each shell 
-		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt_e = E_dot *dt_e /gamma_ave/c^2)
 		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 		
 		// Calculate the launch time of each shell since the start of the launch 
@@ -175,7 +175,7 @@ void ShellDist::oscillatory(float dte, float median, float amp, float freq, floa
 	for(float i=0; i<numshells; ++i)
 	{
 		// Set the Mass for each shell 
-		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt_e = E_dot *dt_e /gamma_ave/c^2)
 		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 		
 		// Calculate the launch time of each shell since the start of the launch 
@@ -275,7 +275,7 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 		if(shell_status.at(i) == 1)
 		{			
 			// Set the Mass for each shell 
-			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt_e = E_dot *dt_e /gamma_ave/c^2)
 			shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 			
 			// Calculate the launch time of each shell since the start of the launch 
@@ -368,7 +368,7 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 		if(shell_status.at(i) == 1)
 		{
 			// Set the Mass for each shell 
-			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt_e = E_dot *dt_e /gamma_ave/c^2)
 			shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 			
 			// Calculate the launch time of each shell since the start of the launch 
@@ -468,7 +468,7 @@ void ShellDist::fred_inject(float dte, float gamma_ave, float decay, int num_fre
 		if(shell_status.at(i) == 1)
 		{
 			// Set the Mass for each shell 
-			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
+			// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt_e = E_dot *dt_e /gamma_ave/c^2)
 			shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
 			
 			// Calculate the launch time of each shell since the start of the launch 

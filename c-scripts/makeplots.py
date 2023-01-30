@@ -1,7 +1,7 @@
 """
 Author: Michael Moss
 Contact: mikejmoss3@gmail.com
-Last Edited: 2021-11-26
+Last Edited: 2022-11-01
 
 
 Meta script to plot desired simulation results created by c++ code.
@@ -38,6 +38,11 @@ def plot_aesthetics(ax,fontsize=14,fontweight='bold',xax=True,yax=True):
 			tick.label2.set_fontsize(fontsize=fontsize)
 			tick.label2.set_fontweight(fontweight)
 
+		for tick in ax.xaxis.get_minor_ticks():
+			tick.label1.set_fontweight(fontweight)
+
+			tick.label2.set_fontweight(fontweight)
+
 	if yax is True:
 		for tick in ax.yaxis.get_major_ticks():
 			tick.label1.set_fontsize(fontsize=fontsize)
@@ -45,10 +50,15 @@ def plot_aesthetics(ax,fontsize=14,fontweight='bold',xax=True,yax=True):
 
 			tick.label2.set_fontsize(fontsize=fontsize)
 			tick.label2.set_fontweight(fontweight)
+
+		for tick in ax.yaxis.get_minor_ticks():
+			tick.label1.set_fontweight(fontweight)
+
+			tick.label2.set_fontweight(fontweight)
 		
 ##############################################################################################################################
 
-def plot_lor_prof(file_name,ax=None,fig=None,color="C0",save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",joined=True,title=True,zoom_inset=False,ind_start=0,alpha=0.7,linestyle="solid"):
+def plot_lor_prof(file_name,ax=None,color="C0",save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",joined=True,title=True,zoom_inset=False,ind_start=0,alpha=0.7,linestyle="solid"):
 	"""
 	Method to plot the given Lorentz factor distribution saved in the text file with path name "file_name".
 	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string".
@@ -72,19 +82,20 @@ def plot_lor_prof(file_name,ax=None,fig=None,color="C0",save_pref=None,xlabel=Tr
 	"""
 
 	# Load data
-	lor_time_list, lor_dist_list = load_lor_dist(file_name)
+	lor_time_list, lor_dist_list = load_lor_dist(file_name,separator_string)
 
 	# Make plot instance if it doesn't exist
-	if fig is None:
-		fig = plt.figure()
 	if ax is None:
-		ax = fig.gca()
+		ax = plt.figure().gca()
+	fig = plt.gcf()
 
 	ind = np.array([ind_start])
 	def on_press(event):
-		if event.key == 'right':
+		# if event.key == 'right':
+		if event.key == 'down':
 			ind[0] +=1
-		elif event.key == 'left':
+		# elif event.key == 'left':
+		elif event.key == 'up':
 			ind[0] -=1
 
 		# Loop back to beginning 
@@ -122,9 +133,9 @@ def plot_lor_prof(file_name,ax=None,fig=None,color="C0",save_pref=None,xlabel=Tr
 
 	## Plot distribution as a function of the shell number 
 	if(joined == True):
-		line_shell_ind, = ax.step(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
+		line_shell_ind, = ax.step(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle,label=label)
 	elif(joined == False):
-		line_shell_ind = ax.scatter(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],marker=marker,color=color,alpha=alpha)
+		line_shell_ind = ax.scatter(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],marker=marker,color=color,alpha=alpha,label=label)
 
 	# Include zoom within an inset if specified 	
 	if zoom_inset is True:
@@ -149,7 +160,6 @@ def plot_lor_prof(file_name,ax=None,fig=None,color="C0",save_pref=None,xlabel=Tr
 
 		plot_aesthetics(axins,fontsize=fontsize-2,fontweight=fontweight)
 
-
 	ax.set_ylim(0,np.max(lor_dist_list[0]['GAMMA']+10))
 	ax.set_xlim(0,np.max(lor_dist_list[0]['TE']))
 	ax.invert_xaxis()
@@ -167,7 +177,7 @@ def plot_lor_prof(file_name,ax=None,fig=None,color="C0",save_pref=None,xlabel=Tr
 	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
 
 	if label is not None:
-		ax.legend(fontsize=fontsize)
+		ax.legend(fontsize=fontsize-2)
 
 	plt.tight_layout()
 
@@ -177,7 +187,7 @@ def plot_lor_prof(file_name,ax=None,fig=None,color="C0",save_pref=None,xlabel=Tr
 
 ##############################################################################################################################
 
-def plot_lor_prof_simple(file_name,indices,ax=None,color_map=cm.PuBuGn,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",title=True,zoom_inset=False,alpha=0.7,linestyle="solid"):
+def plot_lor_prof_simple(file_name,indices,ax=None,color_map=cm.PuBuGn,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",title=True,zoom_inset=False,zoom_inset_range=[13,25,0,30],alpha=0.7,linestyle="solid",cm_norm_min=0.1,cm_norm_max=0.9,color_bar = True):
 	"""
 	Method to plot the given Lorentz factor distribution saved in the text file with path name "file_name".
 	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string".
@@ -201,19 +211,17 @@ def plot_lor_prof_simple(file_name,indices,ax=None,color_map=cm.PuBuGn,save_pref
 	"""
 
 	# Load data
-	lor_time_list, lor_dist_list = load_lor_dist(file_name)
+	lor_time_list, lor_dist_list = load_lor_dist(file_name,separator_string)
 
 	# Make plot instance if it doesn't exist
 	if ax is None:
 		ax = plt.figure().gca()
 
-	colors = color_map( np.linspace(0.2,0.8,len(indices)) )
+	colors = color_map( np.linspace(cm_norm_min,cm_norm_max,len(indices)) )
 
 	for i in range(len(indices)):
 		## Plot distribution as a function of the shell number 
 		line_shell_ind, = ax.step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=colors[i],alpha=alpha,linestyle=linestyle)
-
-
 
 
 	# Include zoom within an inset if specified 	
@@ -225,13 +233,18 @@ def plot_lor_prof_simple(file_name,indices,ax=None,color_map=cm.PuBuGn,save_pref
 
 		# sub region of the original image
 		# x1, x2, y1, y2 = 12, np.max(lor_dist_list[indices[0]]['TE']), 5, 15
-		x1, x2, y1, y2 = 12, 23, 5, 16
+		x1, x2, y1, y2 = zoom_inset_range[0], zoom_inset_range[1], zoom_inset_range[2], zoom_inset_range[3]
 		axins.set_xlim(x1, x2)
 		axins.set_ylim(y1, y2)
 
 		axins.invert_xaxis()
 
 		plot_aesthetics(axins,fontsize=fontsize-2,fontweight=fontweight)
+
+
+	if color_bar is True:
+		fig = plt.gcf()
+		fig.colorbar(cm.ScalarMappable(norm=plt.Normalize(vmin=cm_norm_min,vmax=cm_norm_max), cmap=color_map),location='top',orientation="horizontal",ticks=None)
 
 
 	ax.set_ylim(0,np.max(lor_dist_list[indices[0]]['GAMMA']+10))
@@ -252,6 +265,55 @@ def plot_lor_prof_simple(file_name,indices,ax=None,color_map=cm.PuBuGn,save_pref
 
 	if save_pref is not None :
 		plt.savefig('figs/{}-lorentz-profile-simple.png'.format(save_pref))
+
+##############################################################################################################################
+
+def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',color="C0", separator_string = "// Next step\n",title=True,zoom_inset=False,zoom_inset_range=[13,25,0,30],alpha=0.7,linestyle="solid"):
+
+	# Load data
+	lor_time_list, lor_dist_list = load_lor_dist(file_name,separator_string)
+
+	fig, ax = plt.subplots(len(indices),1,figsize=(6,int(len(indices*6))),sharex=True,sharey=True,gridspec_kw={'hspace':0})
+
+	for i in range(len(indices)):
+		ax[i].step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
+
+		if zoom_inset is True:
+			axins = ax[i].inset_axes([0.1, 0.5, 0.37, 0.37])
+
+			line_inset, = axins.step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
+
+			# sub region of the original image
+			# x1, x2, y1, y2 = 12, np.max(lor_dist_list[indices[0]]['TE']), 5, 15
+			x1, x2, y1, y2 = zoom_inset_range[0], zoom_inset_range[1], zoom_inset_range[2], zoom_inset_range[3]
+			axins.set_xlim(x1, x2)
+			axins.set_ylim(y1, y2)
+
+			axins.invert_xaxis()
+
+			plot_aesthetics(axins,fontsize=fontsize-2,fontweight=fontweight)
+
+
+		ax[i].set_ylim(0,np.max(lor_dist_list[indices[0]]['GAMMA']+10))
+		ax[i].set_xlim(0,np.max(lor_dist_list[indices[0]]['TE']))
+		ax[i].invert_xaxis()
+
+		if (xlabel is True) and ( i == len(indices)-1):
+			print("test")
+			ax[i].set_xlabel('Initial Ejection Time (sec)',fontsize=fontsize,fontweight=fontweight)
+		if ylabel is True:
+			ax[i].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
+
+		plot_aesthetics(ax[i],fontsize=fontsize,fontweight=fontweight)
+
+	if label is not None:
+		ax[0].legend(fontsize=fontsize)
+
+	plt.tight_layout()
+
+	if save_pref is not None :
+		plt.savefig('figs/{}-lorentz-profile-simple.png'.format(save_pref))
+
 
 
 ##############################################################################################################################
@@ -278,7 +340,7 @@ def plot_lor_dist_anim(file_name,ax=None,save_pref=None,xlabel=True,ylabel=True,
 	separator_string = the string between each snapshot of the Lorentz distribution
 	"""
 	# Load data
-	lor_time_list, lor_dist_list = load_lor_dist(file_name)
+	lor_time_list, lor_dist_list = load_lor_dist(file_name,separator_string)
 
 	# Make plot instance if it doesn't exist
 	fig, ax = plt.subplots(1,2,figsize=(16, 6))	
@@ -576,7 +638,7 @@ def add_SwiftBAT_band(ax,fontsize=12,axis="x",plt_ratio_min=0.5,plt_ratio_max=1,
 
 ##############################################################################################################################
 
-def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None, Tmax=None, save_pref=None,color="C0", alpha=1, fontsize=14,fontweight='bold', logscale=False,y_factor=1,guidelines=False,xax_units="s",smoothed=False):
+def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, save_pref=None,color="C0", alpha=1, fontsize=14,fontweight='bold', logscale=False,y_factor=1,guidelines=False,xax_units="s",smoothed=False,linestyle="solid"):
 	"""
 	Method to plot the input light curve data files
 
@@ -602,10 +664,9 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None,
 		return;
 	else:
 		# Make plot instance if it doesn't exist
-		if fig is None:
-			fig = plt.figure() 
 		if ax is None:
-			ax = fig.gca()
+			ax = plt.figure.gca()
+		fig = plt.gcf()
 
 		# Load light curve data
 		light_curve_data = np.genfromtxt(file_name,dtype=[("TIME",float),("RATE",float)])
@@ -626,16 +687,16 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, fig = None, Tmin=None,
 		if(z>0):
 			# ax.scatter(light_curve_data['TIME']*(1+z),light_curve_data['RATE']/(4*np.pi*lum_dis(z)**2),label=label,marker=".")
 			if smoothed is False:
-				ax.step(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color=color,alpha=alpha)
+				ax.step(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color=color,alpha=alpha,linestyle=linestyle)
 			elif smoothed is True:
-				ax.plot(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",color=color,alpha=alpha)
+				ax.plot(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",color=color,alpha=alpha,linestyle=linestyle)
 		else: 
 			# If z = 0, return luminosity
 			# ax.scatter(light_curve_data['TIME'],light_curve_data['RATE'],label=label,marker=".")
 			if smoothed is False:
-				ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color,alpha=alpha)
+				ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color,alpha=alpha,linestyle=linestyle)
 			elif smoothed is True:
-				ax.plot(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",color=color,alpha=alpha)
+				ax.plot(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",color=color,alpha=alpha,linestyle=linestyle)
 
 		if guidelines is True:
 			# rhowindline = lambda t, t0, norm: norm*np.power(t/t0,-5./4.)
@@ -1179,8 +1240,20 @@ def load_rs_emission(file_name):
 
 ##############################################################################################################################
 
+def load_mass_evolution(file_name):
+	"""
+	Method to load reverse shock emission data from the given file name
+	"""
+
+	dtype = np.dtype([('TE',float),('TA',float),('MASSFS',float),('MASSRS',float),('MASSEJ',float)])
+
+	return np.genfromtxt(file_name,dtype=dtype)
+
+
+##############################################################################################################################
+
 def plot_param_vs_time(emission_comp,param,frame="obs",ax=None,z=0, y_factor=1, label=None, Tmin=None, Tmax=None,save_pref=None,fontsize=14,fontweight='bold',disp_xax=True,disp_yax=True,
-	color='C0',marker='.',markersize=7,alpha=1):
+	color='C0',marker='.',markersize=7,linestyle="solid",alpha=1,joined=False):
 	"""
 	Plot emission parameters as a function of time
 
@@ -1228,7 +1301,10 @@ def plot_param_vs_time(emission_comp,param,frame="obs",ax=None,z=0, y_factor=1, 
 	# Multiply by input factor
 	ax_param = emission_comp[param][(emission_comp[time_str]>Tmin) & (emission_comp[time_str] < Tmax)] * y_factor
 
-	ax.scatter(x=ax_time,y=ax_param,label=label,c=color,marker=marker,s=markersize, picker=True,alpha=alpha)
+	if joined is False:
+		ax.scatter(x=ax_time,y=ax_param,label=label,color=color,marker=marker,s=markersize, picker=True,alpha=alpha)
+	else:
+		ax.plot(ax_time,ax_param,label=label,color=color,marker=marker,markersize=markersize, picker=True,alpha=alpha,linestyle=linestyle)
 
 	if disp_yax is True:
 		ax.set_ylabel(param,fontsize=fontsize,fontweight=fontweight)
@@ -2020,16 +2096,24 @@ if __name__ == '__main__':
 	z = 0
 
 
-	# save_pref = "2022-11-01/2022-11-01"
+	# save_pref = "2022-11-17/2022-11-17"
 
 	"""
 	Shell Lorentz Distribution
 	"""
 	
-	fig = plt.figure()
-	ax = fig.gca()
-	# plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,fig=fig,title=None)
-	plot_lor_prof_simple('data-file-dir/synthGRB_shell_dist.txt',indices= [0,1,2,5,7],ax=ax,zoom_inset=True,alpha=1,linestyle="solid")
+	ax = plt.figure().gca()
+	plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None)
+	# plot_lor_prof_simple('data-file-dir/synthGRB_shell_dist.txt',ax=ax,alpha=0.8,linestyle="solid",
+	# 	color_map=cm.turbo, cm_norm_min=0.1, cm_norm_max=0.9,color_bar=True,
+	# 	zoom_inset=True, zoom_inset_range = [25,33,0,45],
+	# 	indices= [0,6,10,15])
+
+	# plot_lor_prof_column('data-file-dir/synthGRB_shell_dist.txt',alpha=0.8,linestyle="solid",
+	# 	zoom_inset=True, zoom_inset_range = [25,33,0,45],
+	# 	indices= [0,3,5,15])
+
+
 	# ax.invert_xaxis()
 	
 	# plot_lor_dist('data-file-dir/synthGRB_shell_dist.txt',show_zoomed=False)
@@ -2039,14 +2123,14 @@ if __name__ == '__main__':
 	Synthetic spectrum 
 	"""
 
-	# ax_spec = plt.figure().gca()
+	ax_spec = plt.figure().gca()
 
 	# Synthetic spectra with each component
-	# plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,color="C0",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_FS.txt",ax=ax_spec,z=z,color="C1",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_RS.txt",ax=ax_spec,z=z,color="C2",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,color="r",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_TOT.txt",ax=ax_spec,z=z,color="k",joined=True,fontsize=20)
+	plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,color="C0",joined=True)
+	plot_spec("data-file-dir/synthGRB_spec_FS.txt",ax=ax_spec,z=z,color="C1",joined=True)
+	plot_spec("data-file-dir/synthGRB_spec_RS.txt",ax=ax_spec,z=z,color="C2",joined=True)
+	plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,color="r",joined=True)
+	plot_spec("data-file-dir/synthGRB_spec_TOT.txt",ax=ax_spec,z=z,color="k",joined=True,fontsize=20)
 
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-4}$",color="hotpink",joined=True,alpha=0.7)
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-3}$",color="C2",joined=True,alpha=1)
@@ -2086,13 +2170,12 @@ if __name__ == '__main__':
 	"""
 	Synthetic light curve
 	"""	
-	# fig = plt.figure(figsize=(18,6))
-	# ax_lc = fig.gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,fig=fig,z=z,logscale=False,color="k")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc, fig=fig,z=z,color="r")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc, fig=fig,z=z,color="C0")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc, fig=fig,z=z,color="C1")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc, fig=fig,z=z,color="C2")
+	ax_lc = plt.figure(figsize=(18,6)).gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,logscale=False,color="k")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,color="r")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,color="C0")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,color="C1")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,color="C2")
 
 	# ax_lc.set_xlim(0,15)
 
@@ -2103,22 +2186,24 @@ if __name__ == '__main__':
 	# ax_afg_lc = plt.figure().gca()
 	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_afg_lc,z=z,label="Prompt: Fermi-GBM",logscale=True,color="k")
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_gbm.txt",ax=ax_afg_lc,z=z,label="AG: Fermi-GBM",logscale=True,color="C0")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt",ax=ax_afg_lc, fig = fig, z=z,label="AG: XRT",logscale=True,color="C4")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt.txt",ax=ax_afg_lc, fig = fig, z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="C1")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_xrt.txt",ax=ax_afg_lc, z=z,label="AG: XRT",logscale=True,color="C4")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt.txt",ax=ax_afg_lc, z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="C1")
 	# ax_afg_lc.set_ylim(1e43,1e49)
 	# ax_afg_lc.set_xlim(0.1)
 
-	# fig = plt.figure()
-	# ax_afg_lc = fig.gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc, fig=fig ,z=z,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="FS",logscale=True,color="C1",xax_units="s")
-	# # plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc, fig=fig ,z=z,label="RS",logscale=True,color="C2",xax_units="s")
+	# ax_afg_lc = plt.figure().gca()
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="FS",logscale=True,color="C1",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="RS",logscale=True,color="C2",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_th.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="TH",logscale=True,color="r",xax_units="s")
 
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-4}$",logscale=True,color="hotpink",xax_units="s",alpha=0.3)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-3}$",logscale=True,color="C2",xax_units="s")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-2}$",logscale=True,color="C0",xax_units="s",alpha=0.3)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_afg_lc, fig=fig ,z=z,label=r"RS $\xi$ = 10$^{-1}$",logscale=True,color="purple",xax_units="s",alpha=0.3)
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-4}$",logscale=True,color="hotpink",xax_units="s",alpha=0.3)
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-3}$",logscale=True,color="k",alpha=0.5,xax_units="s",smoothed=True)
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-2}$",logscale=True,color="C0",alpha=0.5,xax_units="s",smoothed=True)
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-1}$",logscale=True,color="purple",xax_units="s",alpha=0.3)
 
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot_xi-3.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"Total $\xi$ = 10$^{-3}$",logscale=True,color="k",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot_xi-2.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"Total $\xi$ = 10$^{-2}$",logscale=True,color="C0",xax_units="s")
 
 
 	"""
@@ -2161,6 +2246,98 @@ if __name__ == '__main__':
 
 	# # Display Fermi/GBM - NAI energy band
 	# ax_synch_reg.axhspan(ymin=1e-3,ymax=5e-3,xmin=0,xmax=1,alpha=0.4,facecolor='grey',label='Optical Band')
+
+
+	"""
+	External Shock Mass Diagnostics
+
+	"""
+	
+
+	"""
+	file_list = [
+	"15s_xi2_gamma150",
+	"15s_xi2_gamma250_15s",
+	"15s_xi2_gamma250",
+	"5s_xi2_gamma150",
+	"5s_xi2_gamma250",
+	"5s_xi3_gamma250",	
+	]
+
+	# index_list = [0,1,2,3,4,5] # all comparison
+	index_list = [0,2] # gamma_comp
+	# index_list = [4,5] # xi_comp
+	# index_list = [2,4] # early_width_comp
+	# index_list = [1,2] # late_width_comp
+
+	y_fac_list = [1,1,1,1,1,1]
+
+	ax_lp = plt.figure().gca()
+	ax_lc = plt.figure().gca()
+	ax_mass = plt.figure().gca()
+	colors = cm.brg( np.linspace(0.,0.8,len(file_list)) )
+	for i in index_list:
+
+		plt.sca(ax_lp)
+		plot_lor_prof("data-file-dir/2022-11-15/synthGRB_shell_dist_{}.txt".format(file_list[i]),joined=False,ax=ax_lp,title=None,color=colors[i],label=file_list[i])
+
+		tmp_y_factor = y_fac_list[i]
+
+		plt.sca(ax_lc)
+		plot_light_curve("data-file-dir/2022-11-15/synthGRB_light_curve_afterglow_opt_zoom_tot_{}.txt".format(file_list[i]),ax=ax_lc, z=z, y_factor=tmp_y_factor,smoothed=True,logscale=True,color=colors[i],xax_units="s")
+		plot_light_curve("data-file-dir/2022-11-15/synthGRB_light_curve_afterglow_opt_zoom_fs_{}.txt".format(file_list[i]),ax=ax_lc, z=z, y_factor=tmp_y_factor,smoothed=True,logscale=True,color=colors[i],xax_units="s",linestyle="dashed",alpha=0.5)
+		plot_light_curve("data-file-dir/2022-11-15/synthGRB_light_curve_afterglow_opt_zoom_rs_{}.txt".format(file_list[i]),ax=ax_lc, z=z, y_factor=tmp_y_factor,smoothed=True,logscale=True,color=colors[i],xax_units="s",linestyle="dashdot",alpha=0.5)
+
+		mass_data = load_mass_evolution('data-file-dir/2022-11-15/synthGRB_jet_params_MA_{}.txt'.format(file_list[i]))
+		mass_data['MASSEJ'][(mass_data['TA']>1e4) & (mass_data['MASSEJ']>0)] = np.ones(shape=len(mass_data[(mass_data['TA']>1e4) & (mass_data['MASSEJ']>0)]))*np.sum(mass_data["MASSEJ"][(mass_data['TA']>1e4) & (mass_data['MASSEJ']>0)])
+		mass_data_tot = np.copy(mass_data)
+		mass_data_tot['MASSRS'] += mass_data_tot['MASSFS']
+
+		plt.sca(ax_mass)
+		plot_param_vs_time(mass_data,'MASSRS', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color=colors[i],frame="obs",joined=True,marker=None,linestyle="dashed",alpha=0.5)
+		plot_param_vs_time(mass_data,'MASSFS', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color=colors[i],frame="obs",joined=True,marker=None,linestyle="dashdot",alpha=0.5)
+		plot_param_vs_time(mass_data,'MASSEJ', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color=colors[i],frame="obs",marker="s")
+		plot_param_vs_time(mass_data_tot,'MASSRS', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color=colors[i],frame="obs",joined=True,marker=None,label=file_list[i])
+	
+	ax_lp.set_xlim(30,0)
+	# ax_lc.set_ylim(1e44,1e47)
+	ax_mass.set_ylim(1e27,1e33)
+	
+	ax_mass.set_xscale('log')
+	ax_mass.set_yscale('log')
+	plot_aesthetics(ax_mass)
+	plt.tight_layout()
+
+
+	# plt.sca(ax_lp)
+	# plt.savefig("figs/2022-11-15/combined-lorentz-profiles.png")
+	# plt.sca(ax_lc)
+	# plt.savefig("figs/2022-11-15/combined-light-curves.png")
+	# plt.sca(ax_mass)
+	# plt.savefig("figs/2022-11-15/combined-mass-evolution-tracks.png")
+	"""
+
+	"""
+	mass_data = load_mass_evolution('data-file-dir/synthGRB_jet_params_MA.txt')
+	# mass_data['MASSEJ'][(mass_data['TA']>1e4) & (mass_data['MASSEJ']>0)] = np.ones(shape=len(mass_data[(mass_data['TA']>1e4) & (mass_data['MASSEJ']>0)]))*np.sum(mass_data["MASSEJ"][(mass_data['TA']>1e4) & (mass_data['MASSEJ']>0)])
+	mass_data_tot = np.copy(mass_data)
+	mass_data_tot['MASSRS'] += mass_data_tot['MASSFS']
+
+	ax_mass = plt.figure().gca()
+	plot_param_vs_time(mass_data,'MASSRS', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color="C2",frame="obs",joined=True,marker=None,linestyle="dashed",alpha=0.5)
+	plot_param_vs_time(mass_data,'MASSFS', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color="C1",frame="obs",joined=True,marker=None,linestyle="dashdot",alpha=0.5)
+	plot_param_vs_time(mass_data,'MASSEJ', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color="C0",frame="obs",marker="s")
+	plot_param_vs_time(mass_data_tot,'MASSRS', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color="k",frame="obs",joined=True,marker=None)
+	
+	ax_mass.set_ylim(1e27,1e33)
+	
+	ax_mass.set_xscale('log')
+	ax_mass.set_yscale('log')
+	plot_aesthetics(ax_mass)
+	plt.tight_layout()
+	
+	# plt.savefig("figs/2022-11-17/combined-mass-evolution-tracks-v00.png")
+	"""
 	
 
 	"""
