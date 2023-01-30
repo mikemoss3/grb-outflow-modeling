@@ -641,7 +641,14 @@ void SynthGRB::reset_simulation()
 	nu_m_rs.resize(0);
 	shell_ind_rs.resize(0);
 	// eps_star_rs.resize(0);
-	// rho_rs.resize(0);	
+	// rho_rs.resize(0);
+
+	mass_te.resize(0);
+	mass_ta.resize(0);
+	mass_rs.resize(0);
+	mass_fs.resize(0);
+	mass_ej.resize(0);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1271,6 +1278,12 @@ void SynthGRB::SimulateJetDynamics()
 				eps_star_fs.push_back(tmp_eps_star); // Internal energy dissipated in a collision 
 				num_swept_e_fs.push_back((*p_model_params).zeta_ext * m_swept_tot / mp); // Number of swept up electrons in the shock
 				theta_fs.push_back(tmp_theta); // rad, Jet opening angle, assumes sound speed = c / sqrt(3)
+
+				mass_te.push_back(tmp_te); // s; Source frame time when mass is added to external shock material
+				mass_ta.push_back(tmp_te - tmp_fs_r); // s; Observer frame time when mass is added to external shock material
+				mass_rs.push_back(tmp_rs_m*m_bar); // g; Mass of material previously passed by reverse shock
+				mass_fs.push_back(tmp_fs_m*m_bar); // g; Mass of material previously passed by forward shock
+				mass_ej.push_back(0.); // g; Mass of material colliding with reverse shock material
 			}
 
 
@@ -1451,6 +1464,12 @@ void SynthGRB::SimulateJetDynamics()
 				shell_ind_rs.push_back(active_inds.at(0)); // The index of the shell which was crossed by the reverse shock
 				// eps_star_rs.push_back(tmp_eps_star); // erg / g, Internal energy dissipated in a collision 
 				// rho_rs.push_back(rho); // g cm^-3, Density of the collision region
+				
+				mass_te.push_back(tmp_te); // s; Source frame time when mass is added to external shock material
+				mass_ta.push_back(tmp_te - tmp_fs_r); // s; Observer frame time when mass is added to external shock material
+				mass_rs.push_back(tmp_rs_m*m_bar); // g; Mass of material previously passed by reverse shock
+				mass_fs.push_back(tmp_fs_m*m_bar); // g; Mass of material previously passed by forward shock
+				mass_ej.push_back(tmp_ej_m*m_bar); // g; Mass of material colliding with reverse shock material
 			}
 
 		}
@@ -1654,7 +1673,7 @@ void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 	{
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
-		if ( ta_is.at(i) <= tmax)
+		if ( (ta_is.at(i) <= tmax) and ( (ta_is.at(i)+ 7.*delt_is.at(i)) >= tmin) )
 		{
 			// The emission will only be observable if the relativistic velocity is great than the local sound speed v_s/c = 0.1
 			// And if the wind is transparent to the radiation
@@ -1693,7 +1712,7 @@ void SynthGRB::MakeFSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 	{
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
-		if ( ta_fs.at(i) <= tmax )
+		if ( (ta_fs.at(i) <= tmax ) and ( (ta_fs.at(i)+ 7.*delt_fs.at(i)) >= tmin) )
 		{
 			// Integrated emission profile factor
 			double profile_factor = _calc_pulse_profile_factor(ta_fs.at(i), delt_fs.at(i), tmin, tmax, theta_fs.at(i), rad_coll_fs.at(i) );
@@ -1715,7 +1734,7 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 	{
 		// We only want to take the emission that occurs between the specified Tmin and Tmax. 
 		// The emission occurs between (ta+delt), if any of it overlaps with Tmin and Tmax, calculate its contribution.
-		if ( ta_rs.at(i) <= tmax)
+		if ( (ta_rs.at(i) <= tmax) and ( (ta_rs.at(i)+ 7.*delt_rs.at(i)) >= tmin) )
 		{
 			// Integrated emission profile factor
 			double profile_factor = _calc_pulse_profile_factor(ta_rs.at(i), delt_rs.at(i), tmin, tmax, (*p_model_params).theta, (te_rs.at(i) - ta_rs.at(i)));
@@ -1985,6 +2004,29 @@ void SynthGRB::write_out_jet_params(std::string dir_path_name)
 		++i;
 	}
 	rs_params_file.close(); // Close file
+
+
+	ofstream mass_params_file; // Construct file 
+	mass_params_file.open(dir_path_name+"synthGRB_jet_params_MA.txt"); // Open text file with this name
+	i=0;
+	mass_params_file << "# Shell Mass Evolution" << endl;
+	mass_params_file << "# t_e (s) \t t_a (s) \t Mass FS (g) \t Mass RS (g) \t Mass EJ (g)" << endl << endl;
+	// For each time bin, write the time and count rate to the file.
+	while ( i < mass_te.size())
+	{
+		mass_params_file << mass_te.at(i);
+		mass_params_file << " \t ";
+		mass_params_file << mass_ta.at(i);
+		mass_params_file << " \t ";
+		mass_params_file << mass_fs.at(i);
+		mass_params_file << " \t ";
+		mass_params_file << mass_rs.at(i);
+		mass_params_file << " \t ";
+		mass_params_file << mass_ej.at(i);
+		mass_params_file << endl;	
+		++i;
+	}
+	mass_params_file.close(); // Close file
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////

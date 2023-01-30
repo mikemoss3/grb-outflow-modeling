@@ -122,11 +122,11 @@ The distribution of the shell Lorentz factors can be specified by the user befor
 	N(\Gamma_2) &= N_{tot} - N(\Gamma_1) \\ 
 \end{align}
 
- For the oscillatory distribution, we adapt the function from Equation 16 in \citet{2013A&A...551A.124H}, but has been made more general,
+For the oscillatory distribution, we adapt the function from Equation 16 in \citet{2013A&A...551A.124H}, but has been made more general,
 
- \begin{align}
+\begin{align}
 	\Gamma_i = \Gamma_{mean} * \left(1+A\cos\left(\pi f\left(1-\frac{i}{N_{tot}}\right)\right)\right)*e^{-\lambda \frac{i}{N_{tot}}} 
- \end{align}
+\end{align}
 
 where $\Gamma_{mean}$ is the mean Lorentz, A is the amplitude, f is the frequency, i is the shell number, and $\lambda$ is the decay constant.
 
@@ -150,7 +150,7 @@ The radius of the jet computed as,
 	R_{0,i} = \beta_i * t_{e,i}\text{ cm/c}
 \end{align}
 
-where $\beta_i = \sqrt(1 - \Gamma^{-2})$ Notice that these are in units of $R/c$, for the remainder of this discussion distances will be in units of light seconds. Distances should be multiplied by $c$ in order to obtain distance units. Recall that the values of $t_{e,i}$ are negative, so these radii will also be negative. We set $R = 0 = R_{0,0}$ and all shells begin at negative distances.
+where $\beta_i = \sqrt{1 - \Gamma^{-2}}$ Notice that these are in units of $R/c$, for the remainder of this discussion distances will be in units of light seconds. Distances should be multiplied by $c$ in order to obtain distance units. Recall that the values of $t_{e,i}$ are negative, so these radii will also be negative. We set $R = 0 = R_{0,0}$ and all shells begin at negative distances.
 
 The status of a shell indicates whether it is currently active or not. An active shell is one that is currently propagating through the jet. An inactive shell is one that has not been launched yet or alternatively has already collided. 
 
@@ -270,16 +270,16 @@ $R_{phot,i}$ & Radius of the photosphere for shell $i$. \\
 
 \subsubsection{Internal Shock Shell Dynamics and Emission}
 
-When considering the collisions between shells, we take each pair of adjacent active shells (shells which have already been launched) and calculate the time till they collide (see Appendix A). Selecting the minimum time until collision, $t_{coll,min}$, we move all shells according to $R_{new,i} = R_{old,i} + ()\beta_i * t_{coll,min})$. The two shells that collide will have an initial average Lorentz factor given by
+When considering the collisions between shells, we take each pair of adjacent active shells (shells which have already been launched) and calculate the time till they collide (see Appendix A). Selecting the minimum time until collision, $t_{coll,min}$, we move all shells according to $R_{new,i} = R_{old,i} + (\beta_i * t_{coll,min})$. The two shells that collide will have an initial average Lorentz factor given by
 
 \begin{align}
-	\Gamma_r \sim \sqrt(\Gamma_s \Gamma_r)
+	\Gamma_r \sim \sqrt{\Gamma_s \Gamma_r}
 \end{align}
 
 for the slow and rapid shells. Once the momentum and energy of the shells has been fully redistributed the final Lorentz factor will be 
 
 \begin{align}
-	\Gamma_f = \sqrt(\Gamma_s \Gamma_r \frac{m_1 \Gamma_1 + m_2 \Gamma_2}{m_1\Gamma_2 + m_2\Gamma_1})
+	\Gamma_f = \sqrt{\Gamma_s \Gamma_r \frac{m_1 \Gamma_1 + m_2 \Gamma_2}{m_1\Gamma_2 + m_2\Gamma_1}}
 \end{align}
 
 The new mass will be the sum of the two colliding shell masses. 

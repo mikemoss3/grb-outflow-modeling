@@ -77,7 +77,7 @@ void ShellDist::step(float dte, float g1, float g2, float mfrac, bool fluctuatio
 		// Set the Mass for each shell 
 		// Define the mass as M/M_ave, where M_ave is the average mass per shell (M_ave = M_dot * dt = E_dot *dte /gamma_ave/c^2)
 		shell_mass.at(i) = gamma_bar / shell_gamma.at(i);
-		
+
 		// Calculate the launch time of each shell since the start of the launch 
 		shell_te.at(i) = i*dte;
 
@@ -245,7 +245,7 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 	// For all shells that still have a Lorentz factor of 1, deactivate them,
 	for(float i=0; i<numshells; ++i)
 	{
-		if(shell_gamma.at(i) <= 1.)
+		if(shell_gamma.at(i) <= 2.)
 		{
 			// De-activate all shells
 			shell_status.at(i) = 0;
@@ -338,7 +338,7 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 	// For all shells that still have a Lorentz factor of 1, deactivate them,
 	for(float i=0; i<numshells; ++i)
 	{
-		if(shell_gamma.at(i) <= 1.)
+		if(shell_gamma.at(i) <= 2.)
 		{
 			// De-activate all shells
 			shell_status.at(i) = 0;
@@ -439,7 +439,7 @@ void ShellDist::fred_inject(float dte, float gamma_ave, float decay, int num_fre
 	// For all shells that still have a Lorentz factor of 1, deactivate them,
 	for(float i=0; i<numshells; ++i)
 	{
-		if(shell_gamma.at(i) <= 1.)
+		if(shell_gamma.at(i) <= 2.)
 		{
 			// De-activate all shells
 			shell_status.at(i) = 0;
@@ -577,4 +577,26 @@ void ShellDist::WriteToTXT(string filename, double time, bool append)
 	}
 	shell_dist_file.close(); // Close file
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

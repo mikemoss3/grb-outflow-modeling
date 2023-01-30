@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.10.3)  3 JAN 2023 11:47
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.10.3)  23 JAN 2023 14:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**project-outline.tex
-(./project-outline.tex
+**shell-crossing-time.tex
+(./shell-crossing-time.tex
 LaTeX2e <2021-11-15> patch level 1
 L3 programming layer <2022-01-21> (./aastex631.cls
 Document Class: aastex631 2020/12/20 Version 6.3.1d/AAS markup document class
@@ -531,39 +531,39 @@ Package: enumitem 2019/06/20 v3.9 Customized lists
 \enitdp@description=\count350
 )
 Class revtex4-1 Info: Unrecognized array package. Please update this document c
-lass! (Proceeding with fingers crossed.) on input line 33.
+lass! (Proceeding with fingers crossed.) on input line 34.
 Class revtex4-1 Info: Patching unrecognized longtable package. (Proceeding with
- fingers crossed) on input line 33.
-Class revtex4-1 Info: cite was not loaded (OK!) on input line 33.
-Class revtex4-1 Info: mcite was not loaded (OK!) on input line 33.
-Class revtex4-1 Info: multicol was not loaded (OK!) on input line 33.
+ fingers crossed) on input line 34.
+Class revtex4-1 Info: cite was not loaded (OK!) on input line 34.
+Class revtex4-1 Info: mcite was not loaded (OK!) on input line 34.
+Class revtex4-1 Info: multicol was not loaded (OK!) on input line 34.
 
 (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2022-01-12 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count351
 \l__pdf_internal_box=\box90
 )
-(./project-outline.aux)
-\openout1 = `project-outline.aux'.
+(./shell-crossing-time.aux)
+\openout1 = `shell-crossing-time.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 33.
-LaTeX Font Info:    ... okay on input line 33.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 34.
+LaTeX Font Info:    ... okay on input line 34.
 
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -587,7 +587,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring ON on input line 33.
+Package hyperref Info: Link coloring ON on input line 34.
 
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2021-04-02 v2.47 Cross-referencing by name of section
@@ -600,80 +600,80 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
 \c@section@level=\count358
 )
-LaTeX Info: Redefining \ref on input line 33.
-LaTeX Info: Redefining \pageref on input line 33.
-LaTeX Info: Redefining \nameref on input line 33.
+LaTeX Info: Redefining \ref on input line 34.
+LaTeX Info: Redefining \pageref on input line 34.
+LaTeX Info: Redefining \nameref on input line 34.
 
-(./project-outline.out) (./project-outline.out)
+(./shell-crossing-time.out) (./shell-crossing-time.out)
 \@outlinefile=\write4
-\openout4 = `project-outline.out'.
+\openout4 = `shell-crossing-time.out'.
 
 Class revtex4-1 Info: Overriding lineo.sty, restoring output routine, on input 
-line 33.
-Class revtex4-1 Info: Reinvoke \linenumbers on input line 33.
-Class revtex4-1 Info: Overriding \@LN@LLerror on input line 33.
-LaTeX Font Info:    Trying to load font information for U+lasy on input line 46
+line 34.
+Class revtex4-1 Info: Reinvoke \linenumbers on input line 34.
+Class revtex4-1 Info: Overriding \@LN@LLerror on input line 34.
+LaTeX Font Info:    Trying to load font information for U+lasy on input line 41
 .
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/ulasy.fd
 File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 46.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 41.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 46.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 41.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3] [4] [5] (./pro
-ject-outline.bbl)
-[6] [7] [8] [9] [10] [11] [12] [13] [14] [15] [16] [17] (./project-outline.aux)
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-Package rerunfilecheck Info: File `project-outline.out' has not changed.
-(rerunfilecheck)             Checksum: F75BF97FBF2E32F2EF31EC155BB2EECC;4442.
+)
+<schematic.png, id=24, 963.6pt x 542.025pt>
+File: schematic.png Graphic file (type png)
+<use schematic.png>
+Package pdftex.def Info: schematic.png  used on input line 55.
+(pdftex.def)             Requested size: 410.4955pt x 230.89929pt.
+ [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+<shell-cross-time.png, id=55, 462.528pt x 346.896pt>
+File: shell-cross-time.png Graphic file (type png)
+<use shell-cross-time.png>
+Package pdftex.def Info: shell-cross-time.png  used on input line 108.
+(pdftex.def)             Requested size: 230.90128pt x 173.17761pt.
+ [2 <./schematic.png (PNG copy)> <./shell-cross-time.png>] (./shell-crossing-ti
+me.aux)
+Package rerunfilecheck Info: File `shell-crossing-time.out' has not changed.
+(rerunfilecheck)             Checksum: C6892AB1B6AD4135BA980209ADEC3497;718.
  ) 
 Here is how much of TeX's memory you used:
- 13851 strings out of 478287
- 205934 string characters out of 5849289
- 585004 words of memory out of 5000000
- 31625 multiletter control sequences out of 15000+600000
- 480313 words of font info for 72 fonts, out of 8000000 for 9000
+ 13505 strings out of 478287
+ 201411 string characters out of 5849289
+ 575716 words of memory out of 5000000
+ 31504 multiletter control sequences out of 15000+600000
+ 478969 words of font info for 68 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,15n,77p,748b,557s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 75i,11n,77p,1099b,415s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dis
 t/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
-mr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb
-></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/s
-hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/tex
-live/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/share/texlive/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
-ublic/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
-msfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cms
-y9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb
-></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti8.pfb></usr/
-share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/share/t
-exlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on project-outline.pdf (17 pages, 410778 bytes).
+s/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
+r7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><
+/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/sha
+re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/share/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/amsfonts/symbols/msam10.pfb>
+Output written on shell-crossing-time.pdf (2 pages, 289969 bytes).
 PDF statistics:
- 601 PDF objects out of 1000 (max. 8388607)
- 524 compressed objects within 6 object streams
- 241 named destinations out of 1000 (max. 500000)
- 185 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 147 PDF objects out of 1000 (max. 8388607)
+ 104 compressed objects within 2 object streams
+ 19 named destinations out of 1000 (max. 500000)
+ 43 words of extra memory for PDF output out of 10000 (max. 10000000)
 

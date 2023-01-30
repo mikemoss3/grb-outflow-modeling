@@ -215,7 +215,6 @@ private:
 	std::vector<double> eps_star_fs; // Internal energy dissipated in a collision 
 	std::vector<double> num_swept_e_fs; // Number of swept up electrons in the shock
 	std::vector<double> theta_fs; // rad, Jet opening angle
-
 	
 	std::vector<float> te_rs; // sec, Time of emission (in the rest frame of the jet)
 	std::vector<float> ta_rs; // sec, Time when the emission arrives at the observer (in the observer rest frame)
@@ -230,6 +229,12 @@ private:
 	std::vector<int> shell_ind_rs; // The index of the shell which was crossed by the reverse shock
 	// std::vector<double> eps_star_rs; // Internal energy dissipated in a collision 
 	// std::vector<double> rho_rs; // g cm^-3, Density of the collision region
+
+	std::vector<float> mass_ta; // s; Source frame time when mass is added to external shock material
+	std::vector<float> mass_te; // s; Observer frame time when mass is added to external shock material
+	std::vector<double> mass_rs; // g; Mass of material previously passed by reverse shock
+	std::vector<double> mass_fs; // g; Mass of material previously passed by forward shock
+	std::vector<double> mass_ej; // g; Mass of material colliding with reverse shock material
 
 
 };
