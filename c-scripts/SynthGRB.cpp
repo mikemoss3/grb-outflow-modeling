@@ -678,7 +678,7 @@ void SynthGRB::SimulateJetDynamics()
 		{
 			// Calculate the photospheric radius for each jet shell, Equation 9 of Hascoet 2013
 			r_phot.at(i) = (kappa_T*(*p_model_params).E_dot_iso / ( (1.+(*p_model_params).sigma)*8.*M_PI*pow(c_cm,4.) *pow( (*p_jet_shells).shell_gamma.at(i) ,3.) ) ); // units of light seconds, cm/speed of light
-			// r_phot = 2.9*pow(10,13) *((*p_model_params).E_dot_iso/1e53) / ( cc.c*(1+(*p_model_params).sigma)* pow((*p_jet_shells).shell_gamma/100,3) ) # units of light seconds, cm/(cm/s)
+			// r_phot = 2.9*pow(10,13) *((*p_model_params).E_dot_iso/1e53) / ( cc.c*(1+(*p_model_params).sigma)* pow((*p_jet_shells).shell_gamma/100,3) ) # units of light seconds, cm/(3 * 10^8 cm/s)
 
 			// Times when each shell will cross the photosphere
 			te_therm.at(i) = (r_phot.at(i) - (*p_jet_shells).shell_radius.at(i) ) / beta((*p_jet_shells).shell_gamma.at(i)); // sec
@@ -692,12 +692,13 @@ void SynthGRB::SimulateJetDynamics()
 			T0 = pow(E_dot_therm*pow((*p_model_params).theta,2.) / (4.* M_PI * a * c_cm * pow((*p_model_params).r_open,2.) ),1./4.); // K, rearrangement of Eq. 1 in Hascoet 2013 
 			// T0 =  (2/3)*np.pow((*p_model_params).eps_th,1/4)*np.pow((*p_model_params).theta/0.1,1/2)*np.pow((*p_model_params).E_dot_iso/1e53,1/4)*np.pow((*p_model_params).r_open/1e7,-1/2) / (cc.kb_kev/1000) # K, alternative expression, Eq. in Hascoet
 
-			T_phot.at(i) = T0*Phi; // K, Equation 7 in Hascoet 2013, observed temperature ( not corrected for 1+z )
+			T_phot.at(i) = T0*Phi/10.; // K, Equation 7 in Hascoet 2013, observed temperature ( not corrected for 1+z )
+			T_phot.at(i) /= 10.; // This makes spectrum look nice, but idk why its here. 
 
 			// Luminosity at photosphere, from equation 8 in Hascoet 2013
-			// L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * Phi; // erg/s, beamed
+			L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * Phi; // erg/s, beamed
 			// L_phot.at(i) = pow((*p_jet_shells).shell_gamma.at(i),2.) * a * pow( T0*Phi/(*p_jet_shells).shell_gamma.at(i),4.) * c_cm * (M_PI * pow((*p_model_params).theta,2.) * pow(c_cm * r_phot.at(i),2.) );// erg/s, beamed (alternative expression)
-			L_phot.at(i) = E_dot_therm * Phi; // erg/s, isotropic
+			// L_phot.at(i) = E_dot_therm * Phi; // erg/s, isotropic
 			// L_phot.at(i) = E_dot_therm * Phi * (*p_model_params).tw / (*p_model_params).numshells; // erg/s, isotropic
 
 
