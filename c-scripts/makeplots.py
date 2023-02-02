@@ -273,7 +273,7 @@ def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=Tru
 	# Load data
 	lor_time_list, lor_dist_list = load_lor_dist(file_name,separator_string)
 
-	fig, ax = plt.subplots(len(indices),1,figsize=(6,int(len(indices*6))),sharex=True,sharey=True,gridspec_kw={'hspace':0})
+	fig, ax = plt.subplots(len(indices),1,figsize=(6,int(len(indices*2))),sharex=True,sharey=True,gridspec_kw={'hspace':0.1})
 
 	for i in range(len(indices)):
 		ax[i].step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
@@ -299,7 +299,6 @@ def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=Tru
 		ax[i].invert_xaxis()
 
 		if (xlabel is True) and ( i == len(indices)-1):
-			print("test")
 			ax[i].set_xlabel('Initial Ejection Time (sec)',fontsize=fontsize,fontweight=fontweight)
 		if ylabel is True:
 			ax[i].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
@@ -309,10 +308,8 @@ def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=Tru
 	if label is not None:
 		ax[0].legend(fontsize=fontsize)
 
-	plt.tight_layout()
-
 	if save_pref is not None :
-		plt.savefig('figs/{}-lorentz-profile-simple.png'.format(save_pref))
+		plt.savefig('figs/{}-lorentz-profile-column.png'.format(save_pref))
 
 
 
@@ -509,6 +506,8 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, s
 	if spec_type == "pow":
 		y_factor = spec_data['ENERG']
 
+	ylims = ax.get_ylim()
+
 	if joined is True:
 		# Plot spectrum data
 		if unc is True:
@@ -525,9 +524,6 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, s
 	# Plot aesthetics
 	ax.set_xscale('log')
 	ax.set_yscale('log')
-
-	# Force lower bound
-	# ax.set_ylim(1e48,1e52)
 
 	# For axis labels
 	ax.set_xlabel('E (keV)',fontsize=fontsize,fontweight=fontweight)
@@ -549,9 +545,14 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, s
 		else:
 			ax.set_ylabel( r"N(E) photons sec$^{-1}$ keV$^{-1}$",fontsize=fontsize,fontweight=fontweight)
 
-	# curr_ymin, curr_ymax = ax.get_ylim()
 	# ax.set_ylim(curr_ymin,curr_ymax)
 	# ax.set_xlim(Emin,Emax)
+
+	# Force lower bound
+	if np.max(norm*spec_data['RATE']*y_factor) < ylims[1]:
+		ax.set_ylim(ylims[1]/(10**5),ylims[1])
+	else:
+		ax.set_ylim(ylims[1]/(10**5), np.max(norm*spec_data['RATE']*y_factor) * 10)
 
 	# Add label names to plot if supplied
 	if label is not None:
@@ -979,6 +980,11 @@ def plot_light_curve_interactive(init_Tmin, init_Tmax, init_dT, init_Emin, init_
 		# Update plotted spectrum data
 		spec_tot_line.set_xdata(tmp_comp_data['ENERGY']/(1+z))
 		spec_tot_line.set_ydata(tmp_comp_data['RATE']* tmp_comp_data['ENERGY']**2)
+
+		if np.max(tmp_comp_data['RATE'] * tmp_comp_data['ENERGY']**2) > ax[1].get_ylim()[1]:
+			ax[1].set_ylim(ax[1].get_ylim()[0],np.max(tmp_comp_data['RATE'] * tmp_comp_data['ENERGY']**2)*10)
+		if np.min(tmp_comp_data['RATE'] * tmp_comp_data['ENERGY']**2) < ax[1].get_ylim()[0]:
+			ax[1].set_ylim( np.max(tmp_comp_data['RATE'] * tmp_comp_data['ENERGY']**2)/100 ,ax[1].get_ylim()[1] )
 
 		# Redraw the figure to implement updates
 		ax[0].redraw_in_frame()
@@ -2096,22 +2102,21 @@ if __name__ == '__main__':
 	z = 0
 
 
-	# save_pref = "2022-11-17/2022-11-17"
+	# save_pref = "2023-02-01/2023-02-01-sigma-0"
+	save_pref = None
 
 	"""
 	Shell Lorentz Distribution
 	"""
 	
-	ax = plt.figure().gca()
-	plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None)
+	# ax = plt.figure().gca()
+	# plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None)
 	# plot_lor_prof_simple('data-file-dir/synthGRB_shell_dist.txt',ax=ax,alpha=0.8,linestyle="solid",
-	# 	color_map=cm.turbo, cm_norm_min=0.1, cm_norm_max=0.9,color_bar=True,
-	# 	zoom_inset=True, zoom_inset_range = [25,33,0,45],
-	# 	indices= [0,6,10,15])
+	# 	color_map=cm.Blues, cm_norm_min=0.1, cm_norm_max=0.9,color_bar=True,
+	# 	indices= [0,1,2,3,4])
 
 	# plot_lor_prof_column('data-file-dir/synthGRB_shell_dist.txt',alpha=0.8,linestyle="solid",
-	# 	zoom_inset=True, zoom_inset_range = [25,33,0,45],
-	# 	indices= [0,3,5,15])
+		# indices= [0,2,3,4,5],save_pref=save_pref)
 
 
 	# ax.invert_xaxis()
@@ -2138,13 +2143,12 @@ if __name__ == '__main__':
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-1}$",color="purple",joined=True,alpha=0.7)
 	# ax_spec.vlines(x=0.75, ymin=1.e39,ymax=1.e44,color="k",alpha=0.6,linestyle="dotted")
 
-	# ax_spec.set_xlim(8,5*10**(4))
-	# ax_spec.set_ylim(1.e48,1.e50)
+	ax_spec.set_xlim(8,5*10**(4))
 
 	# add_FermiGBM_band(ax_spec,plt_ratio_min=0.9,plt_ratio_max=1,inc_legend=False)
 	# add_SwiftBAT_band(ax_spec,plt_ratio_min=0.8,plt_ratio_max=0.9,inc_legend=False)
 
-	# plt.tight_layout()
+	plt.tight_layout()
 	# plt.savefig("./figs/2022-10-13/2022-10-13-spec-interval-1.png")
 
 	# plot_spec("data-file-dir/synthGRB_spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
@@ -2170,17 +2174,18 @@ if __name__ == '__main__':
 	"""
 	Synthetic light curve
 	"""	
-	ax_lc = plt.figure(figsize=(18,6)).gca()
+	# ax_lc = plt.figure(figsize=(18,6)).gca()
+	ax_lc = plt.figure().gca()
 	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,logscale=False,color="k")
 	plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,color="r")
 	plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,color="C0")
 	plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,color="C1")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,color="C2")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,color="C2",save_pref=save_pref)
 
 	# ax_lc.set_xlim(0,15)
 
 	# Interactive light curve
-	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 13, init_dT=0.2, init_Emin = 8, init_Emax = 40000,z=z,label="Total",with_comps=True)
+	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 13, init_dT=0.2, init_Emin = 8, init_Emax = 40000,z=z,label="Total",with_comps=True,logscale=False)
 
 	# Afterglow light curve
 	# ax_afg_lc = plt.figure().gca()

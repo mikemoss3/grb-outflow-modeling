@@ -692,7 +692,7 @@ void SynthGRB::SimulateJetDynamics()
 			T0 = pow(E_dot_therm*pow((*p_model_params).theta,2.) / (4.* M_PI * a * c_cm * pow((*p_model_params).r_open,2.) ),1./4.); // K, rearrangement of Eq. 1 in Hascoet 2013 
 			// T0 =  (2/3)*np.pow((*p_model_params).eps_th,1/4)*np.pow((*p_model_params).theta/0.1,1/2)*np.pow((*p_model_params).E_dot_iso/1e53,1/4)*np.pow((*p_model_params).r_open/1e7,-1/2) / (cc.kb_kev/1000) # K, alternative expression, Eq. in Hascoet
 
-			T_phot.at(i) = T0*Phi/10.; // K, Equation 7 in Hascoet 2013, observed temperature ( not corrected for 1+z )
+			T_phot.at(i) = T0*Phi; // K, Equation 7 in Hascoet 2013, observed temperature ( not corrected for 1+z )
 			T_phot.at(i) /= 10.; // This makes spectrum look nice, but idk why its here. 
 
 			// Luminosity at photosphere, from equation 8 in Hascoet 2013
