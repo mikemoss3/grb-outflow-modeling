@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.10.3)  23 JAN 2023 14:05
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2022.10.3)  8 FEB 2023 20:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -629,31 +629,43 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 41.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-<schematic.png, id=24, 963.6pt x 542.025pt>
-File: schematic.png Graphic file (type png)
-<use schematic.png>
-Package pdftex.def Info: schematic.png  used on input line 55.
-(pdftex.def)             Requested size: 410.4955pt x 230.89929pt.
- [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-<shell-cross-time.png, id=55, 462.528pt x 346.896pt>
+) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+<shell-width.png, id=47, 462.528pt x 346.896pt>
+File: shell-width.png Graphic file (type png)
+<use shell-width.png>
+Package pdftex.def Info: shell-width.png  used on input line 112.
+(pdftex.def)             Requested size: 230.90128pt x 173.17761pt.
+<shell-cross-time.png, id=51, 635.37375pt x 482.80376pt>
 File: shell-cross-time.png Graphic file (type png)
 <use shell-cross-time.png>
-Package pdftex.def Info: shell-cross-time.png  used on input line 108.
-(pdftex.def)             Requested size: 230.90128pt x 173.17761pt.
- [2 <./schematic.png (PNG copy)> <./shell-cross-time.png>] (./shell-crossing-ti
-me.aux)
+Package pdftex.def Info: shell-cross-time.png  used on input line 119.
+(pdftex.def)             Requested size: 230.90128pt x 175.45206pt.
+<schematic-pre-rs-complete.png, id=52, 963.6pt x 542.025pt>
+File: schematic-pre-rs-complete.png Graphic file (type png)
+<use schematic-pre-rs-complete.png>
+Package pdftex.def Info: schematic-pre-rs-complete.png  used on input line 127.
+
+(pdftex.def)             Requested size: 359.18063pt x 202.03482pt.
+<schematic-aft-rs-complete.png, id=53, 963.6pt x 542.025pt>
+File: schematic-aft-rs-complete.png Graphic file (type png)
+<use schematic-aft-rs-complete.png>
+Package pdftex.def Info: schematic-aft-rs-complete.png  used on input line 129.
+
+(pdftex.def)             Requested size: 359.18063pt x 202.03482pt.
+ [2 <./shell-width.png> <./shell-cross-time.png>] [3 <./schematic-pre-rs-comple
+te.png (PNG copy)> <./schematic-aft-rs-complete.png (PNG copy)>] (./shell-cross
+ing-time.aux)
 Package rerunfilecheck Info: File `shell-crossing-time.out' has not changed.
-(rerunfilecheck)             Checksum: C6892AB1B6AD4135BA980209ADEC3497;718.
+(rerunfilecheck)             Checksum: 0277051F6EE1A1A495162CCE657FA795;571.
  ) 
 Here is how much of TeX's memory you used:
- 13505 strings out of 478287
- 201411 string characters out of 5849289
- 575716 words of memory out of 5000000
- 31504 multiletter control sequences out of 15000+600000
+ 13521 strings out of 478287
+ 201928 string characters out of 5849289
+ 575932 words of memory out of 5000000
+ 31519 multiletter control sequences out of 15000+600000
  478969 words of font info for 68 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,11n,77p,1099b,415s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 75i,12n,77p,1132b,463s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/share
 /texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/texliv
@@ -668,12 +680,13 @@ r7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><
 /usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/sha
 re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dis
-t/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on shell-crossing-time.pdf (2 pages, 289969 bytes).
+xmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmsy9.pfb>
+Output written on shell-crossing-time.pdf (3 pages, 399343 bytes).
 PDF statistics:
- 147 PDF objects out of 1000 (max. 8388607)
+ 154 PDF objects out of 1000 (max. 8388607)
  104 compressed objects within 2 object streams
- 19 named destinations out of 1000 (max. 500000)
- 43 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 18 named destinations out of 1000 (max. 500000)
+ 45 words of extra memory for PDF output out of 10000 (max. 10000000)
 
