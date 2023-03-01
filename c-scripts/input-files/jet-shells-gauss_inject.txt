@@ -1,16 +1,16 @@
 ### median ###
 0
 ### decay ###
-6.
+0.
 ### number of injected Gaussians ###
-4
+3
 ### Gaussian means ###
-3.2 10.1 19.28 23.7
+0.7 7.1 15
 ### Gaussian amplitudes ###
-300. 300. 90. 90.
+300. 200. 90.
 ### Gaussian sigmas ###
-1.7 1.7 1.3 0.7
+1.7 1.7 1.3
 ### Number of standard deviations from the mean ###
-4 4. 4. 4.
+4 4. 4.
 ### fluctuations ###
 False

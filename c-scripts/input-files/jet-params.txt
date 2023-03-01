@@ -1,7 +1,7 @@
 ### tw, sec ###
-10.
+25.
 ### dte, sec ###
-0.02
+0.01
 ### E_dot_iso, erg/s ###
 1.e52
 ### theta, rad ###
@@ -9,7 +9,7 @@
 ### r_open, cm ###
 3.e6
 ### eps_th, fraction ###
-0.03
+0.02
 ### sigma, dimensionless ###
 0.1
 ### eps_e internal, fraction ###
@@ -17,7 +17,7 @@
 ### eps_b internal, fraction ###
 0.1
 ### zeta internal, fraction ###
-1.e-3
+1.e-2
 ### p internal, dimensionless ###
 2.2
 ### eps_e external, fraction ###
@@ -33,6 +33,6 @@
 ### rho_not, density normalization (for k = 0, g cm^-3, i.e., n0*mp = n0*1.672e-24 | for k = 2, g cm^-1, i.e.,A_star * 5.e11 ) ###
 1.672e-24
 ### LorentzDist, i.e., step, smoothstep, osci, linear ###
-osci
+square_inject
 ### ShellDistParamsFile, i.e., ./input-files/jet-shells-"LorentzDist".txt. Default example values can be specified by writing "Default" below. ###
-./input-files/jet-shells-osci.txt
+./input-files/jet-shells-square_inject.txt

@@ -137,8 +137,8 @@ int main(int argc, char const *argv[])
 	/* Testing SynthGRB default Light Curve and Spectrum making */
 	
 
-	float energ_min = 8.;
-	float energ_max = 3.e4;
+	float energ_min = 8;
+	float energ_max = 5.e4;
 	float energ_min_lc = energ_min; 
 	float energ_max_lc = energ_max;
 	float num_energ_bins = 400;
@@ -160,36 +160,36 @@ int main(int argc, char const *argv[])
 	test_grb.write_out_jet_params("./data-file-dir/");
 
 	// // Spectrum time interval
-	float tlo = 1.5; // The T90? essentially.
-	float thi = 1.7;
+	float tlo = 5.6; // The T90? essentially.
+	float thi = 5.8;
 
 	// // Total spectrum
-	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_TOT.txt");
+	// test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi);
+	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_TOT.txt");
 
-	// // // Component spectrum
-	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "TH");
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_TH.txt");
-	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "IS");
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_IS.txt");
-	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "FS");
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_FS.txt");
-	test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "RS");
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_RS.txt");
+	// // Component spectrum
+	// test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "TH");
+	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_TH.txt");
+	// test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "IS");
+	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_IS.txt");
+	// test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "FS");
+	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_FS.txt");
+	// test_grb.make_source_spectrum(energ_min, energ_max, num_energ_bins, tlo, thi, "RS");
+	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_RS.txt");
 
 	// // Total light curve
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve.txt");
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve.txt");
 
-	// // Component light curves
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "TH", false);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_TH.txt");
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "IS", false);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_IS.txt");
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "FS", false);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_FS.txt");
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "RS", false);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_RS.txt");
+	// // // Component light curves
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "TH", false);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_TH.txt");
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "IS", false);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_IS.txt");
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "FS", false);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_FS.txt");
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "RS", false);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_RS.txt");
 
 	// Looking at after glows 
 	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, 15, 4e5, dt, "FS", true);

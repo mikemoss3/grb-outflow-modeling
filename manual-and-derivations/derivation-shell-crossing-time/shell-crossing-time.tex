@@ -48,87 +48,86 @@ The goal of this derivation to estimate the time it will take a reverse shock to
 
 \section{Introduction}
 {
-    In the refreshed shock model, the wind of a GRB can be separated into two regions, (i) early outflow launched with $\bar{\Gamma}\sim150$ and (ii) later ejecta launched launched with $\bar{\Gamma}\sim15$. The early material is responsible for producing the prompt emission and the afterglow continuum emission. The later ejecta will eventually catch up to the early ejecta as it sweeps up circumburst medium and decelerates. When the later ejecta catches up and collides with the early material, a ``refreshed'' shock occurs, injecting energy into the front of the outflow and may be witnessed as bumps in the afterglow light curves (potentially in the optical regime). In this work, we would like to estimate the time it takes the incoming energy injected from the later ejecta to be distributed across the newly shocked material. This timescale should be dominated by the shell crossing time $t_{\Delta }$, where we model the incoming late ejecta as a shell with width $\Delta$, density $n_4$, and Lorentz factor $\gamma_{4}\sim15$ (see Figure \ref{fig: schematic} for a schematic). 
+    In the refreshed shock model, the wind of a GRB can be separated into two regions, (i) early outflow launched with $\bar{\Gamma}\sim150$ and (ii) later ejecta launched launched with $\bar{\Gamma}\sim15$. The early material is responsible for producing the prompt emission and the afterglow continuum emission. The later ejecta will eventually catch up to the early ejecta as it sweeps up circumburst medium and decelerates. When the later ejecta catches up and collides with the early material, a ``refreshed'' shock occurs, injecting energy into the front of the outflow and may be witnessed as bumps in the afterglow light curves (potentially in the optical regime). In this work, we would like to estimate the time it takes the incoming energy injected from the later ejecta to be distributed across the newly shocked material. This timescale should be dominated by the shell crossing time $t_{\Delta }$, where we model the incoming late ejecta as a shell with width $\Delta$, density $n_4$, and Lorentz factor $\gamma_{4}\sim15$. 
 
-    To estimate $t_{\Delta}$, we must estimate the density of the rapid material ($n_4$) and the material which the late ejecta is colliding with ($n_1$). 
+    To estimate $t_{\Delta}$, we must estimate the density of the rapid material ($n_4$) and the material which the late ejecta is colliding with ($n_1$).
 }
 
 \section{Estimating Density of Zone 1 Material}
 {
-    The average particle density of the outflow material $n_{ej}$ (fluid frame) can be approximated as,
+    The material that the late ejecta is colliding with is composed of early ejecta material that has been crossed by the reverse shock and has time had time to relax. The average particle density of this material $n_1$ (fluid frame) can be approximated as,
 
     \begin{align}
-    n_{ej}(t) &= \frac{E_{iso}\Gamma(t)}{4\pi m_p c^2 \Gamma_0 R(t)^3} \label{eq: dens estim}
+        n_{ej}(t) &= n_{1}(t) = \frac{E_{iso}\Gamma(t)}{4\pi m_p c^2 \Gamma_0 R(t)^2 \Delta_1(t)} \label{eq: dens estim} \\
     \end{align}
 
-    where $R(t)$ is the distance of the material from the central engine, $E_{iso}$ is the isotropic equivalent energy, $\Gamma_0$ is the initial bulk Lorentz factor of the ejecta, and $\Gamma(t)$ is the bulk Lorentz factor as a function of time (all in the central engine frame).
+    where $R(t)$ is the distance of the material from the central engine, $E_{iso}$ is the isotropic equivalent energy, $\Gamma_0$ is the initial bulk Lorentz factor of the ejecta, and $\Gamma(t)$ is the bulk Lorentz factor as a function of time (all in the central engine frame). $\Delta_1(t)$ is the initial width of the material. 
 
-    We can estimate this density using a fiducial values for the isotropic equivalent energy $\dot{E}_{iso} = 10^{52}$ erg/s and for the radius and Lorentz factor of the material, but as stated in the introduction, we are most likely in the situation where the Zone 1 material we are considering will be early ejecta that has already been crossed by the external forward shock. The location and associated Lorentz factor when this material is completely crossed by a forward shock is not known, as such I will use an upper and lower limit for both, $R=10^{15}$ ($10^{16}$) cm, and $\bar{\Gamma} = 150$ (50) which results in a density of $n_{ej,upr} \approx 5.3\times 10^{9}$ ($\approx 1.7\times 10^{6}$) cm$^{-3}$. This will be the approximate density of the early ejecta before being crossed by the external reverse shock.
-
-    Now, we must find the density increase between the unshocked and shocked early ejecta. Following Sari and Piran 1995 (hereafter SP95), we will designated the density and Lorentz factor of the unshocked ejecta material as $n_{4,SP} = n_{ej}$ and $\gamma_{4,SP} \sim 150$, respectively. Likewise, the density and Lorentz factor of the material already crossed by the external reverse shock material is noted as $n_{3,SP}$ (fluid frame), which can be approximated as
+    $\Delta_1(t)$ can take two extremes, if we assume that the early material relaxes as it propagates along the jet then $\Delta_1(t) \approx R(t)/\Gamma_1^2(t)$, and the density approximations becomes
 
     \begin{align}
-        n_{3,SP} &= n_{4,SP}\bigg(2\bigg[\sqrt{2\gamma_{4,SP}} \left(\frac{n_{1,SP}}{n_{4,SP}}\right)^{1/4}+\nonumber\\ 
-        & \sqrt{\frac{1}{2\gamma_{4,SP}}} \left(\frac{n_{4,SP}}{n_{1,SP}}\right)^{1/4} \bigg] + 3\bigg)
+        n_{1,min}(t) = \frac{E_{iso}\Gamma(t)}{4\pi m_p c^2 \Gamma_0 R(t)^3} \label{eq: dens estim min} \\
     \end{align}
 
-    Where $n_{1,SP} \sim 1 $ cm$^{-3}$ is the circumburst density and leads to an estimate of $n_{3,SP} \sim 2\times10^{11}$ ($\sim 2\times10^{7}$) cm$^{-3}$. This is very uncertain and most likely a large underestimation of the true density in the shocked material.
+    In the other extreme, if the material does not relax and the width of the material is approximately $\Delta \sim \beta_0 ct_{inj}$ where $t_{inj}$ is the duration of the injection time and $\beta_0 = \sqrt{1 - 1/\Gamma_0^2}$. This makes the approximation of the density 
+
+    \begin{align}
+        n_{1,max}(t) = \frac{E_{iso}\Gamma(t)}{4\pi m_p c^3 \Gamma_0 R(t)^2 t_{inj}} \label{eq: dens estim max} \\
+    \end{align}
+
+    We can estimate this density using a fiducial values $E_{iso} = 10^{53}$ erg/s, $\Gamma_0 = 150$, $R(t_{coll}) = 10^{17}$ cm, $\Gamma (t_{coll}) = 5$, and $t_{inj} = 20$ sec, which leads to a density estimate of $n_{1,min}=1.8\times10^{2}$ cm$^{-3}$ and $n_{1,max} = 3 \times 10^{7}$ cm$^{-3}$.
 }
 
 \section{Estimating the Shell Crossing Time}
 {
-    We can describe the width of the incoming late ejecta shell with respect to the density of the material, 
+    The width of the late time ejecta can be described as
 
     \begin{align}
-        \Delta &= \frac{E_{late,iso}}{4 \pi m_p c^2 \gamma_4^2 R^2 n_4} \label{eq: delta}
+        \Delta(t) = \Delta_0 + R(t)/\gamma^2(t)
     \end{align}
 
-    where $E_{iso,late}\sim10^{52}$ erg is the isotropic equivalent energy of the late material. Following SP95, the time it takes an incoming relativistic shell to be crossed by a reverse shock is given by the expression, 
+    where $\Delta_0 = \beta c t_{inj}$ is the approximate width of the material launched from the central engine over an interval $t_{inj}$ and $R(t)/\gamma^t(t)$ accounts for the spread of the material as it propagates away from the central engine. The minimum width assumes there is no spreading, i.e., $\Delta_{min} \approx \Delta_0$. The maximum width will be dominated by the spread $\Delta_{max}\approx R(t)/\gamma^2(t)$. For the relevant parameter values of our scenario
 
     \begin{align}
-        t_{\Delta} = \frac{\Delta}{c(\beta_4 - \beta_2)} \left(1-\frac{\gamma_4 n_4}{\gamma_3 n_3}\right)
-    \end{align} 
-
-    where $\beta_i = \sqrt{1 - 1/\gamma_i^2}$.
-
-    The shell crossing time depends on the density ratio $f = n_4/n_1$, where in this scenario $n_1 = n_{3,SP}$ found earlier. If $\gamma_4^2 \gg f$, the we are in a relativistic regime and the shell crossing time can be expressed as 
-
-    \begin{align}
-        t_{\Delta} = \Delta \gamma_4 \frac{\sqrt{f}}{2c}
+        \Delta_{min} &\approx 6\times10^{11} \text{ cm}\\
+        \Delta_{max} &\approx 4.5\times10^{14} \text{ cm}
     \end{align}
 
-    Note, in this formalism, if $n_4> 2 n_1 / \gamma_4$, then the shock crosses the shell faster than the speed of light. 
-
-    If $f\gg\gamma_4^2$, then the reverse shock is in a Newtonian regime and the shell crossing time is expressed as
+    Following Sari and Piran 1995 (hereafter SP95), the observed timescale of emission is
 
     \begin{align}
-        t_{\Delta} = \sqrt{\frac{9}{14}}\Delta\gamma_4\frac{\sqrt{f}}{c}
+        \Delta t_{obs} &= R_e / \gamma^2_4c \label{eq: t_obs} \\
+        &= \bigg\{ \begin{array}{ll}
+            \Delta/c, & \text{if } \xi < 1\text{ (Relativistic)}\\
+            l\gamma^{8/3}c, & \text{if } \xi > 1 \text{ (Newtownian)}
+        \end{array}
     \end{align}
 
-    The shell width and shell crossing time are displayed as a function of the late ejecta density in Figure \ref{fig: shell width} and \ref{fig: shell cross time}, respectively. 
+    where $l = (E/n_1 m_p c^2)$ is the Sedov length and we have replaced their $\gamma_2$ with $\gamma_4$ as the relevant Lorentz factor for our incoming thin-shell situation. According to the density ratio we are within the relativistic regime, i.e., $f = n_4/n_1 << \gamma^2$, but when estimating the dimensionless quantity $\xi = (l/\Delta)^{1/2} \gamma^{-4/3}$ we are in the commonly in the Newtownian regime, i.e., $\xi > 1$. Luckily, we do no have to worry about this, because estimating $\Delta t_{obs}$ in the relativistic regime using $\Delta_{min}$ and $\Delta_{max}$ encompasses the Newtownian estimate.
 
-    \begin{figure}[t!]
-        \centering
-        \includegraphics[width=0.45\textwidth]{shell-width.png}
-        \caption{Late ejecta shell width $\Delta$ as a function of the density of the material (see Equation \ref{eq: delta}) }
-        \label{fig: shell width}
-    \end{figure}
-
-    \begin{figure}[t!]
-        \centering
-        \includegraphics[width=0.45\textwidth]{shell-cross-time.png}
-        \caption{Shell crossing time as a function of the density of the late ejecta material responsible for the refreshed shocks. The estimated density (which is likely an underestimate) is shown by the orange, dashed line and is estimated as $n_4 \sim 7.8 \times 10^{6}$ cm$^{-3}$. The green line indicates $10^{5}$ seconds, which is the approximate rise time of the bumps in optical afterglow of GRB030329.}
-        \label{fig: shell cross time}
-    \end{figure}
+    For our situation, we would like $\Delta t_{obs} = \Delta/c \lesssim 3\times10^4$ sec, which gives the upper limit to the shell width $\Delta \lesssim 9\times10^{14}$ cm, which is greater than $\Delta_{max}$. So, I think we are good. 
 }
 
-    \begin{figure*}[t!]
-        \centering
-        \includegraphics[width=0.7\textwidth]{schematic-pre-rs-complete.png}\\
-        \vspace{1cm}
-        \includegraphics[width=0.7\textwidth]{schematic-aft-rs-complete.png}
-        \caption{Schematic of the scenario (in the central engine frame). There are two ``reverse shocks'' in question, the reverse shock arising from the bulk of the jet decelerating as it sweeps up circumburst medium, which will be referred to as the external reverse shock, and an internal reverse shock arising from the deceleration of the incoming later ejecta decelerating as it rams the material in front of it (which happens to be the material previously crossed by the external reverse shock). The top panel shows a the situation we encounter if the late ejecta catches up to early material before the external reverse shock completely crosses the early material. It is more common that we will be in the case where the late material is colliding with early that has already been completely crossed by the external reverse shock (bottom panel).}
-        \label{fig: schematic}
-    \end{figure*}
+\section{Estimating Spread of The Lorentz Factor}
+{
+    We can use the spread of the late time material as an upper limit to what the possible spread of the Lorentz factor can be in the late material. Consider two photon launched at the same time and position with Lorentz factor $\gamma$ and $\gamma+\delta \gamma$. At a later time $t$, the distance between the two photons can be expressed as
 
+    \begin{align}
+        \Delta &= \beta_f ct - \beta_s ct \\
+        &= ct\left[\left(1-\frac{1}{2(\gamma+\delta \gamma)^2}\right)- \left(1 - \frac{1}{2\gamma^2}\right)\right]\\
+        &\approx ct \frac{\delta \gamma}{\gamma^3}
+    \end{align}
+
+    where $\beta_f$ and $\beta_s$ are the defined for the faster and slower photons, respectively. Using Equation \ref{eq: t_obs}, this can be written in terms of the observed time scales, 
+
+    \begin{align}
+        \frac{\Delta}{c} &\approx \frac{t}{\gamma^2} \frac{\delta \gamma}{\gamma}\\
+        \Delta t_{obs} &= t_{obs} \frac{\delta \gamma}{\gamma}\\
+        \frac{\Delta t_{obs}}{t_{obs}} &= \frac{\delta \gamma}{\gamma}
+    \end{align}
+
+    Using the observed timescale from the rise times of the jumps in the light of GRB 030329, i.e., $\Delta t_{obs}/t_{obs} \sim 0.3$, we can constrain the spread of the Lorentz factors as a function of the average Lorentz factor, i.e., $\delta \gamma \lesssim 0.3 \gamma $.
+}
+
+    
 \end{document}

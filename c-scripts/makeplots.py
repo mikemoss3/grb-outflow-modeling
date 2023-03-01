@@ -20,6 +20,7 @@ from matplotlib.ticker import FormatStrFormatter
 
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from matplotlib.ticker import MaxNLocator
 
 kb_kev = 8.617*1e-8
 kev_to_erg = 1.6022*np.power(10.,-9.)
@@ -56,9 +57,13 @@ def plot_aesthetics(ax,fontsize=14,fontweight='bold',xax=True,yax=True):
 
 			tick.label2.set_fontweight(fontweight)
 		
+	ax.tick_params(direction="in",which="both")
+	ax.margins(x=0,y=0)
+
+
 ##############################################################################################################################
 
-def plot_lor_prof(file_name,ax=None,color="C0",save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",joined=True,title=True,zoom_inset=False,ind_start=0,alpha=0.7,linestyle="solid"):
+def plot_lor_prof(file_name,ax=None,color="C0",save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',marker='.', separator_string = "// Next step\n",joined=True,title=True,zoom_inset=False,ind_start=0,alpha=0.7,linestyle="solid",linewidth=1.5):
 	"""
 	Method to plot the given Lorentz factor distribution saved in the text file with path name "file_name".
 	Multiple snapshots of the Lorentz distribution can be given in a single file. Each Lorentz distribution must be separated by a line with the string indicated by "separator_string".
@@ -133,7 +138,7 @@ def plot_lor_prof(file_name,ax=None,color="C0",save_pref=None,xlabel=True,ylabel
 
 	## Plot distribution as a function of the shell number 
 	if(joined == True):
-		line_shell_ind, = ax.step(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle,label=label)
+		line_shell_ind, = ax.step(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle,label=label,linewidth=linewidth)
 	elif(joined == False):
 		line_shell_ind = ax.scatter(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],marker=marker,color=color,alpha=alpha,label=label)
 
@@ -142,12 +147,12 @@ def plot_lor_prof(file_name,ax=None,color="C0",save_pref=None,xlabel=True,ylabel
 		axins = ax.inset_axes([0.1, 0.5, 0.47, 0.47])
 
 		if(joined == True):
-			line_inset, = axins.step(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],where="pre",color="k",alpha=0.5,linestyle="dashed")
+			line_inset, = axins.step(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],where="pre",color="k",alpha=0.5,linestyle="dashed",linewidth=linewidth)
 		elif(joined == False):
 			line_inset = axins.scatter(lor_dist_list[0]['TE'],lor_dist_list[0]['GAMMA'],marker=marker,color="k",alpha=0.5)
 
 		if(joined == True):
-			line_inset, = axins.step(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
+			line_inset, = axins.step(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth)
 		elif(joined == False):
 			line_inset = axins.scatter(lor_dist_list[ind_start]['TE'],lor_dist_list[ind_start]['GAMMA'],marker=marker,color=color,alpha=alpha)
 
@@ -162,6 +167,7 @@ def plot_lor_prof(file_name,ax=None,color="C0",save_pref=None,xlabel=True,ylabel
 
 	ax.set_ylim(0,np.max(lor_dist_list[0]['GAMMA']+10))
 	ax.set_xlim(0,np.max(lor_dist_list[0]['TE']))
+	ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 	ax.invert_xaxis()
 
 	if xlabel is True:
@@ -506,6 +512,7 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, s
 	if spec_type == "pow":
 		y_factor = spec_data['ENERG']
 
+	ax.set_ylim(1e47,1e52)
 	ylims = ax.get_ylim()
 
 	if joined is True:
@@ -520,6 +527,9 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, s
 			line = ax.errorbar(x=spec_data['ENERG'],y=norm*spec_data['RATE']*y_factor,yerr=spec_data['UNC']*(spec_data['ENERG']**2),label=label,fmt=" ",marker="+",color=color,alpha=alpha)
 		else:
 			line = ax.errorbar(x=spec_data['ENERG'],y=norm*spec_data['RATE']*y_factor,label=label,fmt=" ",marker="+",color=color,alpha=alpha)
+
+	# Custom power law index annotation
+	annot = ax.annotate("", xy=(-100,-100), xytext=(20,20),textcoords="offset points", bbox=dict(boxstyle="round", fc="w"),arrowprops=dict(arrowstyle="->"))
 
 	# Plot aesthetics
 	ax.set_xscale('log')
@@ -559,6 +569,57 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, s
 		ax.legend(fontsize=fontsize-2)
 
 	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
+
+	def onclick(event, points):
+		"""
+		Function used to making a line and calculating the power law index of the line
+		"""
+
+		# If this is the first point being clicked on, add it to the list of points
+		if len(points) == 0:
+			points.append([event.xdata, event.ydata])
+		# If this is the second point being clicked on, add it to the list of points, make the connecting line, and show the power law index
+		elif len(points) == 1:
+			# Append points to list
+			points.append([event.xdata, event.ydata])
+
+			# Make connecting line
+			ax.plot([points[0][0] , points[1][0]] ,[points[0][1], points[1][1]],color="m")
+
+			# Calculate the power law index
+			ratio_F = points[1][1]/points[0][1] # Ratio of flux 
+			ratio_E = points[1][0]/points[0][0] # Ratio of energy
+			alpha = (np.log(ratio_F) / np.log(ratio_E) ) - 2.
+
+			# Set the position of the annotation and make it visible
+			annot.xy = points[1]
+			annot.set(visible = True)
+
+			# Display the point index
+			text = r"$\alpha$ = {}".format(alpha)
+			annot.set_text(text)
+
+		# If this is the third point selected, remove the line and reset the points
+		elif len(points) == 2:
+			# Remove the line
+			ax.lines[-1].remove()
+
+			# Hide the annotation
+			annot.set(visible = False)
+
+			# Reset points list
+			points.clear()
+
+
+		# Redraw the figure to implement updates
+		ax.redraw_in_frame()
+		plt.gcf().canvas.draw_idle()
+
+		
+	# Call function for making line between two points
+	points = []
+	plt.gcf().canvas.mpl_connect('button_press_event', lambda event: onclick(event, points) )
+
 	
 	plt.tight_layout()
 	if save_pref is not None:
@@ -1314,13 +1375,15 @@ def plot_param_vs_time(emission_comp,param,frame="obs",ax=None,z=0, y_factor=1, 
 
 	if disp_yax is True:
 		ax.set_ylabel(param,fontsize=fontsize,fontweight=fontweight)
+		plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight,xax=False)
 	if disp_xax is True:
 		if(time_str == "TA"):
 			ax.set_xlabel(r't$_a$',fontsize=fontsize,fontweight=fontweight)
 		elif(time_str == "TE"):
 			ax.set_xlabel(r't$_e$',fontsize=fontsize,fontweight=fontweight)
-
-	plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight,xax=False,yax=False)
+		plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight,yax=False)
+	if disp_xax is True and disp_yax is True:
+		plot_aesthetics(ax,fontsize=fontsize,fontweight=fontweight)
 		
 	if save_pref is not None:
 		plt.savefig('figs/{}-param-{}-vs-t.png'.format(save_pref,param))
@@ -2102,40 +2165,35 @@ if __name__ == '__main__':
 	z = 0
 
 
-	# save_pref = "2023-02-01/2023-02-01-sigma-0"
-	save_pref = None
+	save_pref = "2023-02-17/2023-02-17-square_inject"
+	# save_pref = None
 
 	"""
 	Shell Lorentz Distribution
 	"""
 	
-	# ax = plt.figure().gca()
-	# plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None)
+	ax = plt.figure().gca()
+	plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None,fontsize=20,save_pref=save_pref,alpha=1,linewidth=3)
 	# plot_lor_prof_simple('data-file-dir/synthGRB_shell_dist.txt',ax=ax,alpha=0.8,linestyle="solid",
 	# 	color_map=cm.Blues, cm_norm_min=0.1, cm_norm_max=0.9,color_bar=True,
 	# 	indices= [0,1,2,3,4])
-
 	# plot_lor_prof_column('data-file-dir/synthGRB_shell_dist.txt',alpha=0.8,linestyle="solid",
 		# indices= [0,2,3,4,5],save_pref=save_pref)
 
 
-	# ax.invert_xaxis()
-	
-	# plot_lor_dist('data-file-dir/synthGRB_shell_dist.txt',show_zoomed=False)
-	# ani = plot_lor_dist_anim('data-file-dir/synthGRB_shell_dist.txt')
 
 	"""
 	Synthetic spectrum 
 	"""
 
-	ax_spec = plt.figure().gca()
+	# ax_spec = plt.figure().gca()
 
-	# Synthetic spectra with each component
-	plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,color="C0",joined=True)
-	plot_spec("data-file-dir/synthGRB_spec_FS.txt",ax=ax_spec,z=z,color="C1",joined=True)
-	plot_spec("data-file-dir/synthGRB_spec_RS.txt",ax=ax_spec,z=z,color="C2",joined=True)
-	plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,color="r",joined=True)
-	plot_spec("data-file-dir/synthGRB_spec_TOT.txt",ax=ax_spec,z=z,color="k",joined=True,fontsize=20)
+	# # Synthetic spectra with each component
+	# plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,color="C0",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_FS.txt",ax=ax_spec,z=z,color="C1",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_RS.txt",ax=ax_spec,z=z,color="C2",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,color="r",joined=True)
+	# plot_spec("data-file-dir/synthGRB_spec_TOT.txt",ax=ax_spec,z=z,color="k",joined=True,fontsize=20,save_pref=save_pref)
 
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-4}$",color="hotpink",joined=True,alpha=0.7)
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-3}$",color="C2",joined=True,alpha=1)
@@ -2143,15 +2201,7 @@ if __name__ == '__main__':
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-1}$",color="purple",joined=True,alpha=0.7)
 	# ax_spec.vlines(x=0.75, ymin=1.e39,ymax=1.e44,color="k",alpha=0.6,linestyle="dotted")
 
-	ax_spec.set_xlim(8,5*10**(4))
-
-	# add_FermiGBM_band(ax_spec,plt_ratio_min=0.9,plt_ratio_max=1,inc_legend=False)
-	# add_SwiftBAT_band(ax_spec,plt_ratio_min=0.8,plt_ratio_max=0.9,inc_legend=False)
-
-	plt.tight_layout()
-	# plt.savefig("./figs/2022-10-13/2022-10-13-spec-interval-1.png")
-
-	# plot_spec("data-file-dir/synthGRB_spec_total.txt",ax=ax_spec,z=z,label="Total",color="k")
+	# ax_spec.set_xlim(8,5*10**(4))
 
 	## Synthetic spectrum before convolusion
 	# plot_spec("data-file-dir/spec_source.txt",ax=ax_spec,unc=False,label="Source")
@@ -2175,14 +2225,12 @@ if __name__ == '__main__':
 	Synthetic light curve
 	"""	
 	# ax_lc = plt.figure(figsize=(18,6)).gca()
-	ax_lc = plt.figure().gca()
-	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,logscale=False,color="k")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,color="r")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,color="C0")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,color="C1")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,color="C2",save_pref=save_pref)
-
-	# ax_lc.set_xlim(0,15)
+	# # ax_lc = plt.figure().gca()
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,color="r")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,color="C0")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,color="C1")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,color="C2")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,logscale=False,color="k",fontsize=20,save_pref=save_pref)
 
 	# Interactive light curve
 	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 13, init_dT=0.2, init_Emin = 8, init_Emax = 40000,z=z,label="Total",with_comps=True,logscale=False)
@@ -2202,62 +2250,11 @@ if __name__ == '__main__':
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="RS",logscale=True,color="C2",xax_units="s")
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_th.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="TH",logscale=True,color="r",xax_units="s")
 
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-4}$",logscale=True,color="hotpink",xax_units="s",alpha=0.3)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-3}$",logscale=True,color="k",alpha=0.5,xax_units="s",smoothed=True)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-2}$",logscale=True,color="C0",alpha=0.5,xax_units="s",smoothed=True)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-1}$",logscale=True,color="purple",xax_units="s",alpha=0.3)
-
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot_xi-3.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"Total $\xi$ = 10$^{-3}$",logscale=True,color="k",xax_units="s")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot_xi-2.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"Total $\xi$ = 10$^{-2}$",logscale=True,color="C0",xax_units="s")
-
-
-	"""
-	Jet dynamics plots 
 	
-	"""
-	
-	# therm_emission = load_therm_emission("data-file-dir/synthGRB_jet_params_TH.txt")
-	# plot_evo_therm(therm_emission,xlogscale=False,z=1)
-	
-	# is_data = load_is_emission("data-file-dir/synthGRB_jet_params_IS.txt")
-	# fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_FS.txt")
-	# rs_data = load_rs_emission("data-file-dir/synthGRB_jet_params_RS.txt")
-
-	# Plot everything together:
-	# fig0, fig1 = plot_together(is_data=is_data,fs_data=fs_data,rs_data=rs_data,inc_legend=False,markregime=False,fontsize=16)
-	# fig0, fig1 = plot_together(fs_data=fs_data,rs_data=rs_data)
-	# fig0, fig1 = plot_together(fs_data=fs_data,guidelines=True)
-
-	# ax = plt.figure(figsize=(18,4)).gca()
-	# plot_together_single_plot(ax=ax,is_data=is_data,rs_data=rs_data,fontsize=16)
-	# ax.set_xlim(0,15)
-
-	# plot_together_single_plot(is_data=is_data,fs_data=fs_data,rs_data=rs_data,inc_legend=False,markregime=False,fontsize=16)
-	
-	# Plot nu_c and nu_m: 
-	# ax_synch_reg = plt.figure(figsize=(10,8)).gca()
-	# markers = [".","^"]
-	# plot_synch_cooling_regime(is_data,ax=ax_synch_reg,Tmin=0,Tmax=20,label="IS",color="C0",markers=markers,alpha=0.8,markersize=16)
-	# plot_synch_cooling_regime(fs_data,ax=ax_synch_reg,label="FS",color="C1",markers=markers,alpha=0.6,markersize=16,frame="obs")
-	# plot_synch_cooling_regime(rs_data,ax=ax_synch_reg,label="RS",color="C2",markers=markers,alpha=0.8,markersize=16,frame="obs")
-	# add_FermiGBM_band(ax_synch_reg,axis="y")
-
-
-	# ax = plt.figure().gca()
-	# plot_param_vs_time(fs_data,'DELT', ax=ax, z=0,disp_xax=True, disp_yax=True,color="C1",frame="obs")
-	# plot_param_vs_time(rs_data,'DELT', ax=ax, z=0,disp_xax=True, disp_yax=True,color="C2",frame="obs")
-	# ax.set_yscale('log')
-	# ax.set_xscale('log')
-
-	# # Display Fermi/GBM - NAI energy band
-	# ax_synch_reg.axhspan(ymin=1e-3,ymax=5e-3,xmin=0,xmax=1,alpha=0.4,facecolor='grey',label='Optical Band')
-
-
 	"""
 	External Shock Mass Diagnostics
 
 	"""
-	
 
 	"""
 	file_list = [
@@ -2323,29 +2320,6 @@ if __name__ == '__main__':
 	"""
 
 	"""
-	mass_data = load_mass_evolution('data-file-dir/synthGRB_jet_params_MA.txt')
-	# mass_data['MASSEJ'][(mass_data['TA']>1e4) & (mass_data['MASSEJ']>0)] = np.ones(shape=len(mass_data[(mass_data['TA']>1e4) & (mass_data['MASSEJ']>0)]))*np.sum(mass_data["MASSEJ"][(mass_data['TA']>1e4) & (mass_data['MASSEJ']>0)])
-	mass_data_tot = np.copy(mass_data)
-	mass_data_tot['MASSRS'] += mass_data_tot['MASSFS']
-
-	ax_mass = plt.figure().gca()
-	plot_param_vs_time(mass_data,'MASSRS', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color="C2",frame="obs",joined=True,marker=None,linestyle="dashed",alpha=0.5)
-	plot_param_vs_time(mass_data,'MASSFS', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color="C1",frame="obs",joined=True,marker=None,linestyle="dashdot",alpha=0.5)
-	plot_param_vs_time(mass_data,'MASSEJ', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color="C0",frame="obs",marker="s")
-	plot_param_vs_time(mass_data_tot,'MASSRS', ax=ax_mass, z=0,disp_xax=True, disp_yax=True,color="k",frame="obs",joined=True,marker=None)
-	
-	ax_mass.set_ylim(1e27,1e33)
-	
-	ax_mass.set_xscale('log')
-	ax_mass.set_yscale('log')
-	plot_aesthetics(ax_mass)
-	plt.tight_layout()
-	
-	# plt.savefig("figs/2022-11-17/combined-mass-evolution-tracks-v00.png")
-	"""
-	
-
-	"""
 	Observables
 	"""
 	"""
@@ -2356,13 +2330,31 @@ if __name__ == '__main__':
 	"""
 
 
+
 	"""
-	Testing
+	Other
 	"""
-	# fs_data = load_fs_emission("data-file-dir/synthGRB_jet_params_FS.txt")
-	# ax = plt.figure().gca()
-	# plot_param_vs_time(fs_data,"THETA",frame="obs",ax=ax)
-	# ax.set_xscale('log')
+
+	# is_emission = load_is_emission("data-file-dir/synthGRB_jet_params_IS.txt")
+	# rs_emission = load_rs_emission("data-file-dir/synthGRB_jet_params_RS.txt")
+
+	# ax = plt.figure(figsize=(18,6)).gca()
+	# plot_param_vs_time(is_emission,'BEQ', ax=ax, z=0,disp_xax=True, disp_yax=True,frame="obs",alpha=0.5,color="orange",fontsize=20,save_pref=save_pref)
+	# plot_param_vs_time(rs_emission,'BEQ', ax=ax, z=0,disp_xax=True, disp_yax=True,frame="obs",alpha=0.5,color="orange",fontsize=20,save_pref=save_pref)
+
+	# ax.set_ylabel(r"B$_{eq}$ (erg$^{1/2}$ cm$^{-3/2}$)",fontsize=20,fontweight="bold")
+
+	# ax.set_xlim(0,15)
+
+	# at = ax.twinx()
+	# plot_param_vs_time(is_emission,'GAMMAE', ax=at, z=0,disp_xax=True, disp_yax=True,frame="obs",alpha=0.5,color="purple",fontsize=20,save_pref=save_pref)
+	# plot_param_vs_time(rs_emission,'GAMMAE', ax=at, z=0,disp_xax=True, disp_yax=True,frame="obs",alpha=0.5,color="purple",fontsize=20,save_pref=save_pref)
+
+	# plt.tight_layout()
+
+	# plt.savefig("figs/2023-02-10/2023-02-10-osci-micro-params.png")
+
+
 
 
 	plt.show()
