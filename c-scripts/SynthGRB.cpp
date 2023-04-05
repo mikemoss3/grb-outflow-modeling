@@ -512,7 +512,7 @@ void SynthGRB::set_jet_shells()
 
 			// Make shell distribution with input parameters
 			bool fluc;
-			istringstream(inputs[7]) >> fluc; 			
+			istringstream(inputs[7]) >> fluc;
 			(*p_jet_shells).fred_inject((*p_model_params).dte, stof(inputs[0]), stof(inputs[1]), stof(inputs[2]), vec_vec.at(0), vec_vec.at(1), vec_vec.at(2), vec_vec.at(3), fluc);
 		}
 	}

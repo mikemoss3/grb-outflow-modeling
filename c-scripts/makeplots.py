@@ -22,6 +22,9 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from matplotlib.ticker import MaxNLocator
 
+import subprocess
+from subprocess import DEVNULL, STDOUT
+
 kb_kev = 8.617*1e-8
 kev_to_erg = 1.6022*np.power(10.,-9.)
 planck_kev = 4.136 * np.power(10,-18.) # keV Hz^-1
@@ -274,7 +277,7 @@ def plot_lor_prof_simple(file_name,indices,ax=None,color_map=cm.PuBuGn,save_pref
 
 ##############################################################################################################################
 
-def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',color="C0", separator_string = "// Next step\n",title=True,zoom_inset=False,zoom_inset_range=[13,25,0,30],alpha=0.7,linestyle="solid"):
+def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',color="C0", separator_string = "// Next step\n",title=True,zoom_inset=False,zoom_inset_range=[13,25,0,30],alpha=0.7,linestyle="solid",linewidth=1.5):
 
 	# Load data
 	lor_time_list, lor_dist_list = load_lor_dist(file_name,separator_string)
@@ -282,12 +285,12 @@ def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=Tru
 	fig, ax = plt.subplots(len(indices),1,figsize=(6,int(len(indices*2))),sharex=True,sharey=True,gridspec_kw={'hspace':0.1})
 
 	for i in range(len(indices)):
-		ax[i].step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
+		ax[i].step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth)
 
 		if zoom_inset is True:
 			axins = ax[i].inset_axes([0.1, 0.5, 0.37, 0.37])
 
-			line_inset, = axins.step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
+			line_inset, = axins.step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth)
 
 			# sub region of the original image
 			# x1, x2, y1, y2 = 12, np.max(lor_dist_list[indices[0]]['TE']), 5, 15
@@ -313,6 +316,8 @@ def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=Tru
 
 	if label is not None:
 		ax[0].legend(fontsize=fontsize)
+
+	# plt.tight_layout()
 
 	if save_pref is not None :
 		plt.savefig('figs/{}-lorentz-profile-column.png'.format(save_pref))
@@ -512,7 +517,7 @@ def plot_spec(file_name, z=0, joined=False, label = None, color="C0", ax=None, s
 	if spec_type == "pow":
 		y_factor = spec_data['ENERG']
 
-	ax.set_ylim(1e47,1e52)
+	ax.set_ylim(1e47)
 	ylims = ax.get_ylim()
 
 	if joined is True:
@@ -700,7 +705,7 @@ def add_SwiftBAT_band(ax,fontsize=12,axis="x",plt_ratio_min=0.5,plt_ratio_max=1,
 
 ##############################################################################################################################
 
-def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, save_pref=None,color="C0", alpha=1, fontsize=14,fontweight='bold', logscale=False,y_factor=1,guidelines=False,xax_units="s",smoothed=False,linestyle="solid"):
+def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, save_pref=None,color="C0", alpha=1, fontsize=14,fontweight='bold', logscale=False,y_factor=1,guidelines=False,xax_units="s",smoothed=False,linestyle="solid",linewidth=1.5):
 	"""
 	Method to plot the input light curve data files
 
@@ -749,16 +754,16 @@ def plot_light_curve(file_name, z=0, label=None, ax=None, Tmin=None, Tmax=None, 
 		if(z>0):
 			# ax.scatter(light_curve_data['TIME']*(1+z),light_curve_data['RATE']/(4*np.pi*lum_dis(z)**2),label=label,marker=".")
 			if smoothed is False:
-				ax.step(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color=color,alpha=alpha,linestyle=linestyle)
+				ax.step(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",where="mid",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth)
 			elif smoothed is True:
-				ax.plot(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",color=color,alpha=alpha,linestyle=linestyle)
+				ax.plot(light_curve_data['TIME']*(1+z),light_curve_data['RATE']*y_factor/(4*np.pi*lum_dis(z)**2),label=label,marker=" ",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth)
 		else: 
 			# If z = 0, return luminosity
 			# ax.scatter(light_curve_data['TIME'],light_curve_data['RATE'],label=label,marker=".")
 			if smoothed is False:
-				ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color,alpha=alpha,linestyle=linestyle)
+				ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth)
 			elif smoothed is True:
-				ax.plot(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",color=color,alpha=alpha,linestyle=linestyle)
+				ax.plot(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth)
 
 		if guidelines is True:
 			# rhowindline = lambda t, t0, norm: norm*np.power(t/t0,-5./4.)
@@ -2164,21 +2169,26 @@ if __name__ == '__main__':
 
 	z = 0
 
+	# save_pref = "2023-04-03/ex-shock-burst-unif-long-03"
+	save_pref = None
 
-	save_pref = "2023-02-17/2023-02-17-square_inject"
-	# save_pref = None
+	if save_pref is not None:
+		subprocess.run(['cp ./input-files/jet-params.txt ./figs/{}-jet-params.txt'.format(save_pref)],shell=True,stderr=STDOUT)
+		subprocess.run(['cp ./input-files/jet-shells-fred_inject.txt ./figs/{}-prof-inject.txt'.format(save_pref)],shell=True,stderr=STDOUT)
+		# subprocess.run(['cp ./input-files/jet-shells-osci.txt ./figs/{}-prof-inject.txt'.format(save_pref)],shell=True,stderr=STDOUT)
+
 
 	"""
 	Shell Lorentz Distribution
 	"""
 	
 	ax = plt.figure().gca()
-	plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None,fontsize=20,save_pref=save_pref,alpha=1,linewidth=3)
+	plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None,fontsize=20,save_pref=save_pref,alpha=0.9,linewidth=1)
 	# plot_lor_prof_simple('data-file-dir/synthGRB_shell_dist.txt',ax=ax,alpha=0.8,linestyle="solid",
 	# 	color_map=cm.Blues, cm_norm_min=0.1, cm_norm_max=0.9,color_bar=True,
 	# 	indices= [0,1,2,3,4])
 	# plot_lor_prof_column('data-file-dir/synthGRB_shell_dist.txt',alpha=0.8,linestyle="solid",
-		# indices= [0,2,3,4,5],save_pref=save_pref)
+		# indices= [0,2,3,5,8],save_pref=save_pref,linewidth=1)
 
 
 
@@ -2186,14 +2196,15 @@ if __name__ == '__main__':
 	Synthetic spectrum 
 	"""
 
-	# ax_spec = plt.figure().gca()
+	ax_spec = plt.figure().gca()
 
-	# # Synthetic spectra with each component
-	# plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,color="C0",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_FS.txt",ax=ax_spec,z=z,color="C1",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_RS.txt",ax=ax_spec,z=z,color="C2",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,color="r",joined=True)
-	# plot_spec("data-file-dir/synthGRB_spec_TOT.txt",ax=ax_spec,z=z,color="k",joined=True,fontsize=20,save_pref=save_pref)
+	# Synthetic spectra with each component
+	plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,color="C0",joined=True)
+	plot_spec("data-file-dir/synthGRB_spec_FS.txt",ax=ax_spec,z=z,color="C1",joined=True)
+	plot_spec("data-file-dir/synthGRB_spec_RS.txt",ax=ax_spec,z=z,color="C2",joined=True)
+	plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,color="r",joined=True)
+	ax_spec.set_ylim(1e45,1e52)
+	plot_spec("data-file-dir/synthGRB_spec_TOT.txt",ax=ax_spec,z=z,color="k",joined=True,fontsize=20,save_pref=save_pref)
 
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-4}$",color="hotpink",joined=True,alpha=0.7)
 	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-3}$",color="C2",joined=True,alpha=1)
@@ -2225,12 +2236,15 @@ if __name__ == '__main__':
 	Synthetic light curve
 	"""	
 	# ax_lc = plt.figure(figsize=(18,6)).gca()
-	# # ax_lc = plt.figure().gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,color="r")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,color="C0")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,color="C1")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,color="C2")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,logscale=False,color="k",fontsize=20,save_pref=save_pref)
+	# ax_lc = plt.figure(figsize=(10,5)).gca()
+	ax_lc = plt.figure().gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,color="r")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,color="C0")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,color="C1")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,color="C2")
+	# ax_lc.set_xlim(0,4)
+	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,logscale=False,color="k",fontsize=20,save_pref=save_pref)
+
 
 	# Interactive light curve
 	# tbox = plot_light_curve_interactive(init_Tmin = 0, init_Tmax = 13, init_dT=0.2, init_Emin = 8, init_Emax = 40000,z=z,label="Total",with_comps=True,logscale=False)

@@ -2,6 +2,7 @@ import numpy as np
 import scipy.optimize as opt
 import matplotlib.pyplot as plt
 import warnings
+
 # import Fitting
 
 #suppress warnings
@@ -191,19 +192,20 @@ for i in range(3):
 	# Load synthetic data
 	file_name = file_name_arr[i]
 	data = np.genfromtxt(file_name,dtype=[("ENERGY",np.float32),("RATE",np.float64),("ERR",np.float64)])
-	data['ENERGY'] = data['ENERGY']/2
+	data['ENERGY'] = data['ENERGY']/2 # Place the burst at z = 1
 	data = data[data['ENERGY']<8e3]
 
 
 	data['RATE'] /= 5e42
 	data['ERR'] = np.sqrt(data['RATE'])*5
+	data['RATE'] = np.random.normal(loc=data['RATE'],scale=np.sqrt(data['RATE'])) # Add Gaussian fluctuations
 	# data['ERR'] = data['RATE']/10
 
 	# Make it so data can be put into float32 type
 	data['RATE'].astype(np.float32)
 	data['ERR'].astype(np.float32)
 
-	# Use every 5 data points 
+	# Use every N data points 
 	data = data[::10]
 
 	# Perform fit
@@ -289,8 +291,10 @@ for i in range(3):
 plt.tight_layout()
 fig.subplots_adjust(hspace=0,wspace=0)
 
-plt.savefig("fitted-synth-data-v02.png")
+# plt.savefig("fitted-synth-data-v03.png")
 
-plt.show()
+# plt.show()
 
+print(np.log(data['ENERGY'][1:])/np.log(data['ENERGY'][0:-1]))
+print( np.exp (np.log(data['ENERGY'][1:])/np.log(data['ENERGY'][0:-1]) ) )
 

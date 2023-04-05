@@ -86,7 +86,7 @@ The goal of this derivation to estimate the time it will take a reverse shock to
         \Delta(t) = \Delta_0 + R(t)/\gamma^2(t)
     \end{align}
 
-    where $\Delta_0 = \beta c t_{inj}$ is the approximate width of the material launched from the central engine over an interval $t_{inj}$ and $R(t)/\gamma^t(t)$ accounts for the spread of the material as it propagates away from the central engine. The minimum width assumes there is no spreading, i.e., $\Delta_{min} \approx \Delta_0$. The maximum width will be dominated by the spread $\Delta_{max}\approx R(t)/\gamma^2(t)$. For the relevant parameter values of our scenario
+    where $\Delta_0 = \beta c t_{inj}$ is the approximate width of the material launched from the central engine over an interval $t_{inj}$ and $R(t)/\gamma^2(t)$ accounts for the spread of the material as it propagates away from the central engine. The minimum width assumes there is no spreading, i.e., $\Delta_{min} \approx \Delta_0$. The maximum width will be dominated by the spread $\Delta_{max}\approx R(t)/\gamma^2(t)$. For the relevant parameter values of our scenario
 
     \begin{align}
         \Delta_{min} &\approx 6\times10^{11} \text{ cm}\\
@@ -115,18 +115,26 @@ The goal of this derivation to estimate the time it will take a reverse shock to
     \begin{align}
         \Delta &= \beta_f ct - \beta_s ct \\
         &= ct\left[\left(1-\frac{1}{2(\gamma+\delta \gamma)^2}\right)- \left(1 - \frac{1}{2\gamma^2}\right)\right]\\
-        &\approx ct \frac{\delta \gamma}{\gamma^3}
+        &\approx R \frac{\delta \gamma}{\gamma^3} \label{eq: delta}
     \end{align}
 
-    where $\beta_f$ and $\beta_s$ are the defined for the faster and slower photons, respectively. Using Equation \ref{eq: t_obs}, this can be written in terms of the observed time scales, 
+    where $\beta_f$ and $\beta_s$ are the defined for the faster and slower photons, respectively. The dynamical timescale of the system is determined by the Lorentz factor of the early material. In principle, the early material is constantly decelerating as it sweeps up circumburst material, but to an order unity we can write 
 
     \begin{align}
-        \frac{\Delta}{c} &\approx \frac{t}{\gamma^2} \frac{\delta \gamma}{\gamma}\\
-        \Delta t_{obs} &= t_{obs} \frac{\delta \gamma}{\gamma}\\
-        \frac{\Delta t_{obs}}{t_{obs}} &= \frac{\delta \gamma}{\gamma}
+        t_{dyn} &\approx \frac{R}{2c\gamma_1^2} \\
+        &\Rightarrow \frac{R}{c} \approx 2 \gamma_1^2 t \label{eq: t dyn}
     \end{align}
 
-    Using the observed timescale from the rise times of the jumps in the light of GRB 030329, i.e., $\Delta t_{obs}/t_{obs} \sim 0.3$, we can constrain the spread of the Lorentz factors as a function of the average Lorentz factor, i.e., $\delta \gamma \lesssim 0.3 \gamma $.
+    Substituting Equation \ref{eq: delta} and \ref{eq: t dyn} into Equation \ref{eq: t_obs} (assuming we are in the relativistic regime), we obtain
+
+    \begin{align}
+        \Delta t_{obs} &= \frac{\Delta}{c} \\
+        &= \frac{R}{c} \frac{\Delta \gamma}{\gamma^3}\\
+        &= 2 t \frac{\Delta \gamma}{\gamma} \left(\frac{\gamma_1}{\gamma}\right)^2 \\
+        \frac{\Delta t}{t} &= 2 \frac{\Delta \gamma}{\gamma} \left(\frac{\gamma_1}{\gamma}\right)^2
+    \end{align}
+
+    Using the observed timescale from the rise times of the jumps in the light of GRB 030329, i.e., $\Delta t_{obs}/t_{obs} \sim 0.3$, and assuming that the early and late ejecta have a Lorentz factor ratio of $\gamma_1/\gamma_4 \sim 1/3$ (or $\sim 1/2$), we can constrain the spread of the Lorentz factors as a function of the average Lorentz factor, i.e., $\delta \gamma / \gamma  \sim 1.14$ (or $\sim 0.6$).
 }
 
     

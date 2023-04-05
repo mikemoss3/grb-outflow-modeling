@@ -15,6 +15,8 @@ The shells will be used to simulated the prompt emission.
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <random>
+#include <chrono>
 
 // Import Custom Libraries
 #include "cosmology.hpp"
@@ -91,6 +93,23 @@ void ShellDist::step(float dte, float g1, float g2, float mfrac, bool fluctuatio
 
 	// Eliminate possible divide by zero error (still insignificantly small).
 	shell_radius.at(0) = 1./c_cm;
+
+	// If indicated, add Poisson fluctuations to the Lorentz distributions
+	if(fluctuations==true)
+	{
+		// construct a trivial random generator engine from a time-based seed:
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::default_random_engine generator (seed);
+
+		// Add fluctuations
+		for (float i=0; i<numshells; ++i) {
+			std::poisson_distribution<int> dist( shell_gamma.at(i) );
+		    shell_gamma.at(i) = dist(generator);
+		}
+
+	}
+
+	return;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,6 +165,23 @@ void ShellDist::smoothstep(float dte, float g1, float g2, float tfrac, bool fluc
 
 	// Eliminate possible divide by zero error (still insignificantly small).
 	shell_radius.at(0) = 1./c_cm;
+
+	// If indicated, add Poisson fluctuations to the Lorentz distributions
+	if(fluctuations==true)
+	{
+		// construct a trivial random generator engine from a time-based seed:
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::default_random_engine generator (seed);
+
+		// Add fluctuations
+		for (float i=0; i<numshells; ++i) {
+			std::poisson_distribution<int> dist( shell_gamma.at(i) );
+		    shell_gamma.at(i) = dist(generator);
+		}
+
+	}
+
+	return;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,6 +227,23 @@ void ShellDist::oscillatory(float dte, float median, float amp, float freq, floa
 
 	// Eliminate possible divide by zero error (still insignificantly small).
 	shell_radius.at(0) = 1./c_cm;
+
+	// If indicated, add Poisson fluctuations to the Lorentz distributions
+	if(fluctuations==true)
+	{
+		// construct a trivial random generator engine from a time-based seed:
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::default_random_engine generator (seed);
+
+		// Add fluctuations
+		for (float i=0; i<numshells; ++i) {
+			std::poisson_distribution<int> dist( shell_gamma.at(i) );
+		    shell_gamma.at(i) = dist(generator);
+		}
+
+	}
+
+	return;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -290,6 +343,21 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 	// Eliminate possible divide by zero error (still insignificantly small).
 	shell_radius.at(0) = 1./c_cm;
 
+	// If indicated, add Poisson fluctuations to the Lorentz distributions
+	if(fluctuations==true)
+	{
+		// construct a trivial random generator engine from a time-based seed:
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::default_random_engine generator (seed);
+
+		// Add fluctuations
+		for (float i=0; i<numshells; ++i) {
+			std::poisson_distribution<int> dist( shell_gamma.at(i) );
+		    shell_gamma.at(i) = dist(generator);
+		}
+
+	}
+
 	return;
 }
 
@@ -382,6 +450,21 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 
 	// Eliminate possible divide by zero error (still insignificantly small).
 	shell_radius.at(0) = 1./c_cm;
+
+	// If indicated, add Poisson fluctuations to the Lorentz distributions
+	if(fluctuations==true)
+	{
+		// construct a trivial random generator engine from a time-based seed:
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::default_random_engine generator (seed);
+
+		// Add fluctuations
+		for (float i=0; i<numshells; ++i) {
+			std::poisson_distribution<int> dist( shell_gamma.at(i) );
+		    shell_gamma.at(i) = dist(generator);
+		}
+
+	}
 
 	return;
 }
@@ -483,6 +566,22 @@ void ShellDist::fred_inject(float dte, float gamma_ave, float decay, int num_fre
 	// Eliminate possible divide by zero error (still insignificantly small).
 	shell_radius.at(0) = 1./c_cm;
 
+
+	// If indicated, add Poisson fluctuations to the Lorentz distributions
+	if(fluctuations==true)
+	{
+		// construct a trivial random generator engine from a time-based seed:
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::default_random_engine generator (seed);
+
+		// Add fluctuations
+		for (float i=0; i<numshells; ++i) {
+			std::poisson_distribution<int> dist( shell_gamma.at(i) );
+		    shell_gamma.at(i) = dist(generator);
+		}
+
+	}
+
 	return;
 }
 
@@ -536,6 +635,21 @@ void ShellDist::linear(float dte, float g1, float g2, bool fluctuations)
 
 		// Activate all shells
 		shell_status.at(i) = 1;
+	}
+
+	// If indicated, add Poisson fluctuations to the Lorentz distributions
+	if(fluctuations==true)
+	{
+		// construct a trivial random generator engine from a time-based seed:
+		unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+		std::default_random_engine generator (seed);
+
+		// Add fluctuations
+		for (float i=0; i<numshells; ++i) {
+			std::poisson_distribution<int> dist( shell_gamma.at(i) );
+		    shell_gamma.at(i) = dist(generator);
+		}
+
 	}
 
 	return;
