@@ -1,7 +1,7 @@
 ### tw, sec ###
-43.
+50.
 ### dte, sec ###
-0.05
+0.01
 ### E_dot_iso, erg/s ###
 1e51
 ### theta, rad ###

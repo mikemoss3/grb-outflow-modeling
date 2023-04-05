@@ -2170,12 +2170,12 @@ if __name__ == '__main__':
 	"""
 	Synthetic light curve
 	"""	
-	ax_lc = plt.figure(figsize=(18,6)).gca()
-	plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,logscale=False,color="k")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,color="r")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,color="C0")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,color="C1")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,color="C2")
+	# ax_lc = plt.figure(figsize=(18,6)).gca()
+	# plot_light_curve("data-file-dir/synthGRB_light_curve.txt",ax=ax_lc,z=z,logscale=False,color="k")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_TH.txt",ax=ax_lc,z=z,color="r")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_IS.txt",ax=ax_lc,z=z,color="C0")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_FS.txt",ax=ax_lc,z=z,color="C1")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_RS.txt",ax=ax_lc,z=z,color="C2")
 
 	# ax_lc.set_xlim(0,15)
 
@@ -2191,16 +2191,20 @@ if __name__ == '__main__':
 	# ax_afg_lc.set_ylim(1e43,1e49)
 	# ax_afg_lc.set_xlim(0.1)
 
-	# ax_afg_lc = plt.figure().gca()
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="FS",logscale=True,color="C1",xax_units="s")
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="RS",logscale=True,color="C2",xax_units="s")
+	ax_afg_lc = plt.figure().gca()
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="FS",logscale=True,color="C1",xax_units="s")
+	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="RS",logscale=True,color="C2",xax_units="s")
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_th.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="TH",logscale=True,color="r",xax_units="s")
 
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-4}$",logscale=True,color="hotpink",xax_units="s",alpha=0.3)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-3}$",logscale=True,color="k",alpha=0.5,xax_units="s",smoothed=True)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-2}$",logscale=True,color="C0",alpha=0.5,xax_units="s",smoothed=True)
-	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-1}$",logscale=True,color="purple",xax_units="s",alpha=0.3)
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"RS $\xi$ = 10$^{-3}$",logscale=True,color="C3",alpha=0.5,xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-2}$",logscale=True,color="C2",alpha=0.5,xax_units="s",smoothed=True)
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"RS $\xi$ = 10$^{-1}$",logscale=True,color="purple",xax_units="s",alpha=0.3)
+
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_eps-7.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"RS $\epsilon_e = 0.7$",logscale=True,color="C3",alpha=0.5,xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_eps-03.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"RS $\epsilon_e = 0.03$",logscale=True,color="purple",xax_units="s",alpha=0.3)
+
 
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot_xi-3.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"Total $\xi$ = 10$^{-3}$",logscale=True,color="k",xax_units="s")
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot_xi-2.txt",ax=ax_afg_lc ,z=z,smoothed=True,label=r"Total $\xi$ = 10$^{-2}$",logscale=True,color="C0",xax_units="s")

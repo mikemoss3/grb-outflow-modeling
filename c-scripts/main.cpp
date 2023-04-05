@@ -178,28 +178,29 @@ int main(int argc, char const *argv[])
 	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_rs.txt");
 
 	// Prompt Total light curve
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve.txt");
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve.txt");
 
-	// Prompt Component light curves
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "TH", false);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_TH.txt");
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "IS", false);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_IS.txt");
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "FS", false);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_FS.txt");
-	test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "RS", false);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_RS.txt");
+	// // Prompt Component light curves
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "TH", false);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_TH.txt");
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "IS", false);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_IS.txt");
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "FS", false);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_FS.txt");
+	// test_grb.make_source_light_curve(energ_min_lc, energ_max_lc, tmin, tmax, dt, "RS", false);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_RS.txt");
 
 	// Looking at afterglow light curves 
-	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e4, 6e5, dt, "all", true);
-	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt");
-	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e4, 6e5, dt, "FS", true);
-	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt");
-	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e4, 6e5, dt, "RS", true);
-	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt");
+	dt = 0.1;
+	test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "all", true);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt");
+	test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "FS", true);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt");
+	test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "RS", true);
+	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt");
 
-	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e4, 1e6, dt, "TH", true);
+	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e4, 8e6, dt, "TH", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_th.txt");
 
 	// Looking at various values of xi_int 
@@ -208,8 +209,8 @@ int main(int argc, char const *argv[])
 	// test_grb.make_source_spectrum(1e-6, 1e3, 120, 1e5, 2e5, "RS");
 	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt");
 
-	// test_grb.write_out_jet_params("./data-file-dir/xi-3_");
-	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-3.txt");
+	// test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "RS", true);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_eps-03.txt");
 
 	return 0;
 	
