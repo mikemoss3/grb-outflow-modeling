@@ -273,7 +273,7 @@ def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=Tru
 	# Load data
 	lor_time_list, lor_dist_list = load_lor_dist(file_name,separator_string)
 
-	fig, ax = plt.subplots(len(indices),1,figsize=(6,int(len(indices*6))),sharex=True,sharey=True,gridspec_kw={'hspace':0})
+	fig, ax = plt.subplots(len(indices),1,figsize=(6,int(len(indices*3))),sharex=True,sharey=True,gridspec_kw={'hspace':0})
 
 	for i in range(len(indices)):
 		ax[i].step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
@@ -299,7 +299,6 @@ def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=Tru
 		ax[i].invert_xaxis()
 
 		if (xlabel is True) and ( i == len(indices)-1):
-			print("test")
 			ax[i].set_xlabel('Initial Ejection Time (sec)',fontsize=fontsize,fontweight=fontweight)
 		if ylabel is True:
 			ax[i].set_ylabel(r'$\Gamma$',fontsize=fontsize,fontweight=fontweight)
@@ -2096,22 +2095,22 @@ if __name__ == '__main__':
 	z = 0
 
 
-	# save_pref = "2022-11-17/2022-11-17"
+	# save_pref = "2022-11-17"
 
 	"""
 	Shell Lorentz Distribution
 	"""
 	
-	ax = plt.figure().gca()
-	plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None)
+	# ax = plt.figure().gca()
+	# plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None)
 	# plot_lor_prof_simple('data-file-dir/synthGRB_shell_dist.txt',ax=ax,alpha=0.8,linestyle="solid",
 	# 	color_map=cm.turbo, cm_norm_min=0.1, cm_norm_max=0.9,color_bar=True,
 	# 	zoom_inset=True, zoom_inset_range = [25,33,0,45],
 	# 	indices= [0,6,10,15])
 
-	# plot_lor_prof_column('data-file-dir/synthGRB_shell_dist.txt',alpha=0.8,linestyle="solid",
-	# 	zoom_inset=True, zoom_inset_range = [25,33,0,45],
-	# 	indices= [0,3,5,15])
+	plot_lor_prof_column('data-file-dir/synthGRB_shell_dist.txt',alpha=0.8,linestyle="solid",
+		zoom_inset=True, zoom_inset_range = [25,50,0,35],
+		indices= [0,3,10,25])
 
 
 	# ax.invert_xaxis()
@@ -2191,10 +2190,10 @@ if __name__ == '__main__':
 	# ax_afg_lc.set_ylim(1e43,1e49)
 	# ax_afg_lc.set_xlim(0.1)
 
-	ax_afg_lc = plt.figure().gca()
-	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="FS",logscale=True,color="C1",xax_units="s")
-	plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="RS",logscale=True,color="C2",xax_units="s")
+	# ax_afg_lc = plt.figure().gca()
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="AG: OPT, (1e-3, 5e-3) keV",logscale=True,color="k",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="FS",logscale=True,color="C1",xax_units="s")
+	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="RS",logscale=True,color="C2",xax_units="s")
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_th.txt",ax=ax_afg_lc ,z=z,smoothed=True,label="TH",logscale=True,color="r",xax_units="s")
 
 	# plot_light_curve("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_afg_lc ,z=z,label=r"RS $\xi$ = 10$^{-4}$",logscale=True,color="hotpink",xax_units="s",alpha=0.3)
