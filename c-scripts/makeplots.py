@@ -273,7 +273,7 @@ def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=Tru
 	# Load data
 	lor_time_list, lor_dist_list = load_lor_dist(file_name,separator_string)
 
-	fig, ax = plt.subplots(len(indices),1,figsize=(6,int(len(indices*3))),sharex=True,sharey=True,gridspec_kw={'hspace':0})
+	fig, ax = plt.subplots(len(indices),1,figsize=(6,int(len(indices*2))),sharex=True,sharey=True,gridspec_kw={'hspace':0})
 
 	for i in range(len(indices)):
 		ax[i].step(lor_dist_list[indices[i]]['TE'],lor_dist_list[indices[i]]['GAMMA'],where="pre",color=color,alpha=alpha,linestyle=linestyle)
@@ -311,7 +311,7 @@ def plot_lor_prof_column(file_name,indices,save_pref=None,xlabel=True,ylabel=Tru
 	plt.tight_layout()
 
 	if save_pref is not None :
-		plt.savefig('figs/{}-lorentz-profile-simple.png'.format(save_pref))
+		plt.savefig('figs/{}-lor-prof-colum.png'.format(save_pref))
 
 
 
@@ -2095,7 +2095,7 @@ if __name__ == '__main__':
 	z = 0
 
 
-	# save_pref = "2022-11-17"
+	# save_pref = "2023-04-07"
 
 	"""
 	Shell Lorentz Distribution
@@ -2108,9 +2108,9 @@ if __name__ == '__main__':
 	# 	zoom_inset=True, zoom_inset_range = [25,33,0,45],
 	# 	indices= [0,6,10,15])
 
-	plot_lor_prof_column('data-file-dir/synthGRB_shell_dist.txt',alpha=0.8,linestyle="solid",
-		zoom_inset=True, zoom_inset_range = [25,50,0,35],
-		indices= [0,3,10,25])
+	# plot_lor_prof_column('data-file-dir/synthGRB_shell_dist.txt',alpha=0.8,linestyle="solid",
+	# 	zoom_inset=True, zoom_inset_range = [25,50,0,35],
+	# 	indices= [0,3,10,25])
 
 
 	# ax.invert_xaxis()
@@ -2122,7 +2122,7 @@ if __name__ == '__main__':
 	Synthetic spectrum 
 	"""
 
-	# ax_spec = plt.figure().gca()
+	ax_spec = plt.figure().gca()
 
 	# Synthetic spectra with each component
 	# plot_spec("data-file-dir/synthGRB_spec_IS.txt",ax=ax_spec,z=z,color="C0",joined=True)
@@ -2131,11 +2131,11 @@ if __name__ == '__main__':
 	# plot_spec("data-file-dir/synthGRB_spec_TH.txt",ax=ax_spec,z=z,color="r",joined=True)
 	# plot_spec("data-file-dir/synthGRB_spec_TOT.txt",ax=ax_spec,z=z,color="k",joined=True,fontsize=20)
 
-	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-4}$",color="hotpink",joined=True,alpha=0.7)
-	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-3}$",color="C2",joined=True,alpha=1)
-	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-2}$",color="C0",joined=True,alpha=0.7)
-	# plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-1}$",color="purple",joined=True,alpha=0.7)
-	# ax_spec.vlines(x=0.75, ymin=1.e39,ymax=1.e44,color="k",alpha=0.6,linestyle="dotted")
+	plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-4.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-4}$",color="hotpink",joined=True,alpha=0.7)
+	plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-3}$",color="C2",joined=True,alpha=1)
+	plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-2.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-2}$",color="C0",joined=True,alpha=0.7)
+	plot_spec("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-1.txt",ax=ax_spec,z=z,label=r"RS $\xi$ = 10$^{-1}$",color="purple",joined=True,alpha=0.7)
+	ax_spec.vlines(x=0.75, ymin=1.e39,ymax=1.e44,color="k",alpha=0.6,linestyle="dotted")
 
 	# ax_spec.set_xlim(8,5*10**(4))
 	# ax_spec.set_ylim(1.e48,1.e50)
