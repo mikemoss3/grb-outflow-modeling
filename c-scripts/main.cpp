@@ -192,22 +192,22 @@ int main(int argc, char const *argv[])
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_RS.txt");
 
 	// Looking at afterglow light curves 
-	dt = 0.1;
-	test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "all", true);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt");
-	test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "FS", true);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt");
-	test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "RS", true);
-	test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt");
+	// dt = 0.1;
+	// test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "all", true);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_tot.txt");
+	// test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "FS", true);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_fs.txt");
+	// test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "RS", true);
+	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs.txt");
 
 	// test_grb.make_source_light_curve(1e-3, 5e-3, 1e4, 8e6, dt, "TH", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_th.txt");
 
 	// Looking at various values of xi_int 
-	// test_grb.make_source_spectrum(1e-6, 1e3, 120, 8e4, 2e5, "FS");
+	// test_grb.make_source_spectrum(1e-6, 1e3, 120, 9e4, 1.5e5, "FS");
 	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_fs.txt");
-	// test_grb.make_source_spectrum(1e-6, 1e3, 120, 1e5, 2e5, "RS");
-	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt");
+	test_grb.make_source_spectrum(1e-6, 1e3, 120, 9e4, 1.5e5, "RS");
+	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-1.txt");
 
 	// test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "RS", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_eps-03.txt");

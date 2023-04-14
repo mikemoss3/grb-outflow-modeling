@@ -17,7 +17,7 @@
 ### eps_b internal, fraction ###
 0.001
 ### zeta internal, fraction ###
-1.e-2
+1.e-1
 ### p internal, dimensionless ###
 2.2
 ### eps_e external, fraction ###
