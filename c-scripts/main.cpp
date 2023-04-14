@@ -204,10 +204,10 @@ int main(int argc, char const *argv[])
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_th.txt");
 
 	// Looking at various values of xi_int 
-	// test_grb.make_source_spectrum(1e-6, 1e3, 120, 9e4, 1.5e5, "FS");
+	// test_grb.make_source_spectrum(1e-7, 1e3, 120, 9e4, 1.5e5, "FS");
 	// test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spec_fs.txt");
-	test_grb.make_source_spectrum(1e-6, 1e3, 120, 9e4, 1.5e5, "RS");
-	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-1.txt");
+	test_grb.make_source_spectrum(1e-7, 1e3, 120, 9e4, 1.5e5, "RS");
+	test_grb.WriteSpectrumToTXT("data-file-dir/synthGRB_spectrum_afterglow_opt_zoom_rs_xi-3.txt");
 
 	// test_grb.make_source_light_curve(1e-3, 5e-3, 4e3, 4e6, dt, "RS", true);
 	// test_grb.WriteLightCurveToTXT("data-file-dir/synthGRB_light_curve_afterglow_opt_zoom_rs_eps-03.txt");
