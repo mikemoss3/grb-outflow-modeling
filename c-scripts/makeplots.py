@@ -2098,14 +2098,14 @@ if __name__ == '__main__':
 	z = 0
 
 
-	# save_pref = "initial-"
+	save_pref = "initial-"
 
 	"""
 	Shell Lorentz Distribution
 	"""
 	
 	ax = plt.figure().gca()
-	plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None)
+	plot_lor_prof('data-file-dir/synthGRB_shell_dist.txt',joined=True,ax=ax,title=None,save_pref=save_pref)
 	# plot_lor_prof_simple('data-file-dir/synthGRB_shell_dist.txt',ax=ax,alpha=0.8,linestyle="solid",
 	# 	color_map=cm.turbo, cm_norm_min=0.1, cm_norm_max=0.9,color_bar=True,
 	# 	zoom_inset=True, zoom_inset_range = [25,33,0,45],
