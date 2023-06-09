@@ -4,27 +4,36 @@ Contact: mikejmoss3@gmail.com
 
 This purpose of this project is to investigate GRB prompt emission by using theoretical descriptions of the acceleration mechanisms and emission processes occurring within the jet to simulate the internal and external jet dynamics in order to calculate the emitted spectra and light curves.
 
-There is a manual that outlines how to use the simulation code and plotting functions located at writeups/code-manual/code-manual.pdf
-
 Directory Descriptions:
-c-scripts/ -- contains all files for simulations (a description of how to use the code is below)
-instr-files/ -- useful instrument response matrix files are be stored here  
-writeups/ -- various write-ups and derivations are stored here
+files-data/ 				-- Location to store data files generated during simulation/analysis
+files-derivation-manual/ 	-- Stores the derivations of the model used to simulate GRB outflows
+files-figs/ 				-- Location to store figures generated during analysis 
+packages-analysis/ 			-- Contains scripts used for fitting and analyzing real and synthetic data
+packages-instruments/ 		-- Contains scripts for generating instrument response matrices and scripts for folding simulation data with the response matrices
+packages-simulations/ 		-- Contains all source and build files for simulations
 
 
-Code Description:
-main.cpp -- The desired simulation and outputs can be obtained by editing and running main.cpp
-SynthGRB.cpp -- Main script for simulating jet dynamics and spectra/light curve generation methods
-ObsGRB.cpp -- Main script to handle observed GRB data
-DataAnalysis.cpp -- Main for data analysis between simulated and observed GRBs 
+Analysis packages:
+	data_package.py 	-- Contains methods for loading and access data
+	fit_package.py 		-- Contains methods for fitting models to data
+	model_package.py 	-- Contains definitions of model classes (e.g., the Band model)
+	plot_package.py 	-- Contains methods for plotting model and observed spectra 
+	perform-analysis.py -- Main file to perform analysis
 
-cosmology.cpp -- Defines useful cosmological constants
-utilfuncs.cpp -- Defines useful common utility functions used by many scripts throughout the code
+Simulation packages:
+	main.cpp 			-- The desired simulation and outputs can be obtained by editing and running main.o
+	makeplots.py 		-- Plot all simulation results 
+	SynthGRB.cpp 		-- Main script for simulating jet dynamics and spectra/light curve generation methods
+	ObsGRB.cpp 			-- Main script to handle observed GRB data
+	DataAnalysis.cpp 	-- Main for data analysis between simulated and observed GRBs 
 
-ShellDist.cpp -- Contains the definition of the class object and respective methods for ShellDistribtuon (used by SynthGRB.cpp)
-Spectrum.cpp -- Contains the definition of the class object and respective methods for Spectra
-LightCurve.cpp -- Contains the definition of the class object and respective methods for Light Curves
-Response.cpp -- Contains the definition of the class object and respective methods for Response Matrices
-TTEs.cpp -- Contains the definition of the class object and respective methods for Time Tagged Event data
-ModelParams.cpp -- Contains the definition of the class object and respective methods for ModelParams (used by DataAnalysis.cpp)
-FitStats.cpp -- Contains the definition of the class object and respective methods for FitStatics (use by DataAnalysis.cpp)
+	cosmology.cpp 		-- Defines useful cosmological constants
+	utilfuncs.cpp 		-- Defines useful common utility functions used by many scripts throughout the code
+
+	ShellDist.cpp 		-- Contains the definition of the class object and respective methods for ShellDistribtuon (used by SynthGRB.cpp)
+	Spectrum.cpp 		-- Contains the definition of the class object and respective methods for Spectra
+	LightCurve.cpp 		-- Contains the definition of the class object and respective methods for Light Curves
+	Response.cpp 		-- Contains the definition of the class object and respective methods for Response Matrices
+	TTEs.cpp 			-- Contains the definition of the class object and respective methods for Time Tagged Event data
+	ModelParams.cpp 	-- Contains the definition of the class object and respective methods for ModelParams (used by DataAnalysis.cpp)
+	FitStats.cpp 		-- Contains the definition of the class object and respective methods for FitStatics (use by DataAnalysis.cpp)
