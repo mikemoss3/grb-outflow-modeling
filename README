@@ -9,7 +9,6 @@ files-data/ 				-- Location to store data files generated during simulation/anal
 files-derivation-manual/ 	-- Stores the derivations of the model used to simulate GRB outflows
 files-figs/ 				-- Location to store figures generated during analysis 
 packages-analysis/ 			-- Contains scripts used for fitting and analyzing real and synthetic data
-packages-instruments/ 		-- Contains scripts for generating instrument response matrices and scripts for folding simulation data with the response matrices
 packages-simulations/ 		-- Contains all source and build files for simulations
 
 
@@ -18,6 +17,7 @@ Analysis packages:
 	fit_package.py 		-- Contains methods for fitting models to data
 	model_package.py 	-- Contains definitions of model classes (e.g., the Band model)
 	plot_package.py 	-- Contains methods for plotting model and observed spectra 
+	response_package.py -- Contains scripts for generating instrument response matrices and scripts for folding simulation data with the response matrices
 	perform-analysis.py -- Main file to perform analysis
 
 Simulation packages:
