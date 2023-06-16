@@ -517,8 +517,6 @@ def plot_model_spec(model, spec_type = 0,y_factor=1, inc_comps=True, emin=8, ema
 	if spec_type == 2:
 		y_factor *= energy_axis**2
 
-	ax.set_ylim(1e47)
-	ylims = ax.get_ylim()
 
 	if isinstance(model, CompoundModel) and inc_comps:
 		for i in range(model.n_submodels):
@@ -529,11 +527,13 @@ def plot_model_spec(model, spec_type = 0,y_factor=1, inc_comps=True, emin=8, ema
 	# Plot aesthetics
 	ax.set_xscale('log')
 	ax.set_yscale('log')
+
+	ylims = ax.get_ylim()
 	# Force lower bound
 	if np.max(model(energy_axis)*y_factor) < ylims[1]:
-		ax.set_ylim(ylims[1]/(10**5),ylims[1])
+		ax.set_ylim(np.min(model(energy_axis)*y_factor)/10,ylims[1])
 	else:
-		ax.set_ylim(ylims[1]/(10**5), np.max(model(energy_axis)*y_factor) * 10)
+		ax.set_ylim(np.min(model(energy_axis)*y_factor)/10, np.max(model(energy_axis)*y_factor) * 10)
 	ax.set_ylim(ymin,ymax)
 
 	if xlabel is True:
