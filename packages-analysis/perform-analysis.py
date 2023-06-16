@@ -1,43 +1,44 @@
 # Import custom classes
 # from data_package import *
-from packages.model_package import *
-from packages.fit_package import *
-from packages.plot_package import *
+from model_package import *
+from fit_package import *
+from plot_package import *
 
 if __name__ == "__main__":
 
-	# from astropy.modeling.powerlaws import BrokenPowerLaw1D
-	# from astropy.modeling import CompoundModel
+	fn = []
+	fn.append('../files-data/synthetic-data/synthGRB_spec_TOT_0.txt')
+	fn.append('../files-data/synthetic-data/synthGRB_spec_TOT_1.txt')
+	fn.append('../files-data/synthetic-data/synthGRB_spec_TOT_2.txt')
+	
+	tstart = [0,1,2]
+	tend = [1,2,3]
+	colors= ["C0","C1","C2"]
 
-
-	data = np.genfromtxt('data-files/synthGRB_spec_TOT_0.txt',dtype=[("ENERGY",float),("RATE",float),("ERR",float)])
-	data = data[data['ENERGY']<1e4]
-	data['RATE'] /= np.min(data['RATE'])
-	data['ERR'] = np.sqrt(data['RATE'])*3
-	data['RATE'] = np.random.normal(loc=data['RATE'],scale=np.sqrt(data['RATE'])) # Add Gaussian fluctuations
-	data['RATE'][data['RATE']<0] = 0
-
-	# test = make_3comp(
-	# TH_Tp=20,TH_alpha=0.4,TH_norm=1e5,
-	# nTH1_e0=5e4,nTH1_alpha=-0.7,nTH1_beta=-8.5,nTH1_norm=1e3,
-	# nTH2_e0=1e7,nTH2_alpha=-1.5,nTH2_beta=-8.5,nTH2_norm=1e3)
-
-	# test = Blackbody(temp=20,alpha=0.4,norm=5e5) + Band(e0=5e3,alpha=-1.1,beta=-2.5,norm=5e4)
-	test = Blackbody(temp=40,alpha=0.4,norm=3e3) + Band(e0=5e2,alpha=-1.1,beta=-2.05,norm=10812.635)
-	test[0].color = "r"
-	test[0].alpha.fixed = True
-	# test[1].alpha.fixed = True
-	# test[1].beta.fixed = True
-
-	# test = Blackbody(temp=20,alpha=0.4,norm=5e5)
-	# test = Band(e0=5e3,alpha=-1.5,beta=-2,norm=5e4)
-
-	best_fit = FittedModel()
-	model, fitstat = best_fit.fit(test, data,verbose=True)
-
+	data = []
+	data_inst = Data()
 	ax = plt.figure().gca()
-	plot_data(data,ax=ax,spec_type=0)
-	# plot_model(test,ax=ax,spec_type=0)
-	plot_model(model,ax=ax,spec_type=0)
+	for i in range(len(fn)):
+		
+		data.append(np.genfromtxt(fn[i],dtype=[("ENERGY",float),("RATE",float),("ERR",float)]))
+		data[i]['ERR'] = np.sqrt(data[i]['RATE'])
+		np.savetxt(fn[i],data[i])
+
+		data_inst.load_spectrum(fn[i],tstart[i],tend[i])
+
+		# plot_data_spec(data_inst.spectra[i]['SPECTRUM'],ax=ax,color=colors[i],spec_type=2)
+
+		# model = Blackbody(temp=40,alpha=0.4,norm=3e3) + Band(e0=5e2,alpha=-1.1,beta=-2.05,norm=10812.635)
+		# model = Blackbody(temp=20,alpha=0.4,norm=5e5) + Band(e0=5e3,alpha=-1.1,beta=-2.5,norm=5e4)
+		model = Blackbody(temp=35,alpha=0.4,norm=3e4) + Band(e0=1e3,alpha=-1.1,beta=-2.3,norm=3e4)
+		model[0].alpha.fixed = True
+		model[0].color = colors[i]
+		model[1].color = "white"
+		model.color=colors[i]
+		fitter = FittedModel()
+		best_fit_model, fitstat = fitter.fit(model, data_inst.spectra[i]['SPECTRUM'],verbose=True)
+
+		plot_data_spec(data_inst.spectra[i]['SPECTRUM'],ax=ax,color=colors[i],spec_type=2)
+		plot_model_spec(best_fit_model,ax=ax,inc_comps=True,spec_type=2)
 
 	plt.show()	

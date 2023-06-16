@@ -22,7 +22,6 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from matplotlib.ticker import MaxNLocator
 
-import subprocess
 from subprocess import DEVNULL, STDOUT
 
 kb_kev = 8.617*1e-8

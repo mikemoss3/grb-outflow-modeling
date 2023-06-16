@@ -1,8 +1,8 @@
 import numpy as np
 from astropy.modeling import fitting
 
-from packages.model_package import *
-from packages.data_package import *
+from model_package import *
+from data_package import *
 
 class FittedModel(object):
 	def __init__(self,fitter = fitting.LMLSQFitter(), fit_stat = 0):
@@ -42,6 +42,7 @@ class FittedModel(object):
 			for i in range(len(self.best_fit_model.parameters)):
 				print("\t{} = {:.3f} +/- {:.3f}".format(self.best_fit_model.param_names[i],self.best_fit_model.parameters[i],getattr(self.best_fit_model,self.best_fit_model.param_names[i]).unc))
 			print("Fit statistic = {:.3f}".format(self.fit_stat))
+
 
 		return self.best_fit_model, self.fit_stat
 

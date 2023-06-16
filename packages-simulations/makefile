@@ -9,7 +9,7 @@ RM=rm -f
 # -g : this flag adds debugging information to the executable file
 
 # Define source file names
-MAINSRCS=main.cpp cosmology.cpp GammaFunction.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp ObsGRB.cpp DataAnalysis.cpp
+MAINSRCS=main.cpp cosmology.cpp GammaFunction.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp ObsGRB.cpp DataAnalysis.cpp InterPlot.cpp
 MAINOBS=$(subst .cpp,.o,$(MAINSRCS))
 
 # TSTSRCS=testbench.cpp cosmology.cpp utilfuncs.cpp Spectrum.cpp LightCurve.cpp TTEs.cpp Response.cpp FitStats.cpp ShellDist.cpp ModelParams.cpp SynthGRB.cpp ObsGRB.cpp DataAnalysis.cpp
@@ -40,6 +40,8 @@ ObsGRB.o: ObsGRB.cpp ObsGRB.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp
 
 FitStats.o: FitStats.cpp FitStats.hpp
 DataAnalysis.o: DataAnalysis.cpp DataAnalysis.hpp FitStats.hpp SynthGRB.hpp ModelParams.hpp ObsGRB.hpp utilfuncs.hpp cosmology.hpp
+
+InterPlot.o: InterPlot.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp GammaFunction.hpp cosmology.hpp
 
 main.o: main.cpp DataAnalysis.hpp FitStats.hpp ObsGRB.hpp Response.hpp TTEs.hpp LightCurve.hpp Spectrum.hpp utilfuncs.hpp GammaFunction.hpp cosmology.hpp
 
