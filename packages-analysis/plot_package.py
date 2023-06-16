@@ -522,7 +522,7 @@ def plot_model_spec(model, spec_type = 0,y_factor=1, inc_comps=True, emin=8, ema
 		for i in range(model.n_submodels):
 			ax.plot(energy_axis,y_factor*model[i](energy_axis),alpha=comp_alpha,color=model[i].color,linestyle=comp_linestyle,linewidth=comp_linewidth)
 
-	ax.plot(energy_axis,y_factor*model(energy_axis), alpha=alpha,color=model.color,linestyle=linestyle,linewidth=linewidth)
+	ax.plot(energy_axis,y_factor*model(energy_axis), alpha=alpha,color=model.color,linestyle=linestyle,linewidth=linewidth,label=label)
 
 	# Plot aesthetics
 	ax.set_xscale('log')
