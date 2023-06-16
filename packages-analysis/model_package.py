@@ -1,4 +1,5 @@
 import numpy as np
+import astropy
 from astropy.modeling import Fittable1DModel, CompoundModel, Parameter
 
 class ModelComponent():
@@ -251,11 +252,18 @@ def model_name(self):
 
 	return name;
 
-
 setattr(CompoundModel,'print_info', print_info) # Add information printing method
-setattr(CompoundModel,'color', 'k') # Add color, used when plotting total spectrum
 setattr(CompoundModel,'model_name', model_name) # Add name for compound model
-
+setattr(CompoundModel,'color', 'k') # Add color, used when plotting total spectrum
 
 # Add uncertainty to Parameter class
 setattr(Parameter, 'unc', np.nan)
+
+# Add attributes to default model classes of astropy
+attr_names = ['color']
+attr_vals = ['k']
+
+setattr(astropy.modeling.powerlaws.PowerLaw1D,"color","k")
+
+# for i in range(len(attr_vals)):
+# 	setattr(astropy.modeling.powerlaws.PowerLaw1D(),attr_names[i],attr_vals[i])

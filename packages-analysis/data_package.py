@@ -42,5 +42,35 @@ class Data(object):
 			self.spectrum = np.genfromtxt(file_name,dtype=[('ENERGY',float),('RATE',float),('ERR',float)])
 			return 0;
 
+	def set_spectrum(self,spec_array,tstart=None,tend=None):
+
+		# Check that the array is in the correct format
+		if spec_array.dtype.names != ('ENERGY','RATE','ERR'):
+			print("Please provide an array with three columns: ENERGY, RATE, and ERR (all floats)")
+
+		if tstart is not None:
+			# Check that both a start and stop time were given 
+			if tend is None:
+				print("Please provide both a start and end time.")
+				return 0;
+
+			# Check if this is the first loaded spectrum 
+			if len(self.spectra) == 0:
+				self.spectra = np.insert(self.spectra,0,(tstart,tend,spec_array))
+				return 0;
+			else:
+				# If not, find the index where to insert this spectrum (according to the time)
+				for i in range(len(self.spectra)):
+					if self.spectra[i]['TSTART'] > tstart:
+						# Insert the new spectrum 
+						self.spectra = np.insert(self.spectra,i,(tstart,tend,spec_array))
+						return 0;
+					# If the new spectrum is the last to start, append it to the end
+					self.spectra = np.insert(self.spectra,len(self.spectra),(tstart,tend,spec_array))
+					return 0;
+		else:
+			self.spectrum = spec_array
+			return 0;
+
 	def load_light_curve(self,file_name):
 		self.light_curve = np.genfromtxt(file_name,dtype=[('TIME',float),('RATE',float),('ERR',float)])

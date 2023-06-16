@@ -37,7 +37,10 @@ class FittedModel(object):
 		self.fit_stat = self.calc_fit_stat(self.best_fit_model,data)
 
 		if verbose == True:
-			print(self.best_fit_model.model_name())
+			if hasattr(self.best_fit_model, "model_name"):
+				print(self.best_fit_model.model_name())
+			else:
+				print(self.best_fit_model.name)
 			print("Best fit parameters:")
 			for i in range(len(self.best_fit_model.parameters)):
 				print("\t{} = {:.3f} +/- {:.3f}".format(self.best_fit_model.param_names[i],self.best_fit_model.parameters[i],getattr(self.best_fit_model,self.best_fit_model.param_names[i]).unc))

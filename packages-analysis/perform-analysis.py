@@ -4,33 +4,33 @@ from model_package import *
 from fit_package import *
 from plot_package import *
 
+import astropy
+
 if __name__ == "__main__":
 
 
 	
 	#### Generating synthetic data from empirical models 
-	input_model = Blackbody(norm=10) + Band()
-	input_model[0].color='r'
-	num = 120
-	energy_points = np.logspace(0,4,num)
+	# input_model = Blackbody(norm=10) + Band()
+	# input_model[0].color='r'
+	input_model = astropy.modeling.powerlaws.PowerLaw1D(amplitude=500)
+	num = 120 # Number of data points 
+	energy_points = np.logspace(0,4,num) # Make energy axis 
 
-	array_out = np.zeros(shape=num,dtype=[("ENERGY",float),("RATE",float),('ERR',float)])
-	array_out['ENERGY'] = energy_points
-	array_out['RATE'] = input_model(energy_points)
-	array_out['RATE'] = np.random.normal(loc=array_out['RATE'],scale=np.sqrt(array_out['RATE']))
-	array_out['RATE'][array_out['RATE']<0] *=-1 
-	array_out['ERR'] = np.sqrt(array_out['RATE'])
-
-	fn = '../files-data/synthetic-data/synth_emp_model_spec.txt'
-	np.savetxt(fn,array_out)
-	
+	# Initialize the data array to be printed
+	input_array = np.zeros(shape=num,dtype=[("ENERGY",float),("RATE",float),('ERR',float)])
+	input_array['ENERGY'] = energy_points # set energy axis
+	input_array['RATE'] = input_model(energy_points) # Evaluate the model at each energy 
+	input_array['RATE'] = np.random.normal(loc=input_array['RATE'],scale=np.sqrt(input_array['RATE'])) # Add Gaussian fluctuations
+	input_array['RATE'][input_array['RATE']<0] *=-1 # Remove negative fluctuations
+	input_array['ERR'] = np.sqrt(input_array['RATE']) # Calculate errors 
 
 	### Fitting synthetic data generated above
 
 	# Initialize a data class object
 	data_inst = Data()
-	# Load the spectrum data from a file 
-	data_inst.load_spectrum(fn)
+	# Set spectrum 
+	data_inst.set_spectrum(input_array)
 
 	ax = plt.figure().gca()
 
@@ -45,11 +45,14 @@ if __name__ == "__main__":
 		Band_beta 	= -2.5
 		Band_norm 	= 1
 	"""
-	model = Blackbody() + Band()
-	model[0].color = "r" # Make the thermal component a red color when plotting
-	model[0].alpha.fixed = True # Fix the spectral index of the thermal component
+	# model = Blackbody() + Band()
+	# model[0].color = "r" # Make the thermal component a red color when plotting
+	# model[0].alpha.fixed = True # Fix the spectral index of the thermal component
 	# model[1].alpha.fixed = True # Fix the low energy power law index of the Band component
 	# model[1].beta.fixed = True # Fix the high energy power law index of the Band component
+
+	model = astropy.modeling.powerlaws.PowerLaw1D()
+	model.x_0.fixed = True
 
 	# Initialize the fitter
 	fitter = FittedModel()
@@ -58,11 +61,11 @@ if __name__ == "__main__":
 	best_fit_model, fitstat = fitter.fit(model, data_inst.spectrum,verbose=True)
 
 	# Plot the data 
-	plot_data_spec(data_inst.spectrum,ax=ax,spec_type=2,alpha=0.5)
+	plot_data_spec(data_inst.spectrum,ax=ax,spec_type=0,alpha=0.5)
 	# Plot the input model used the generate the data
-	plot_model_spec(input_model,emin=data_inst.spectrum['ENERGY'][0],emax=data_inst.spectrum['ENERGY'][-1], ax=ax,inc_comps=True,spec_type=2,linestyle="dashdot",comp_linestyle="dashdot",alpha=0.6)
+	plot_model_spec(input_model,emin=data_inst.spectrum['ENERGY'][0],emax=data_inst.spectrum['ENERGY'][-1], ax=ax,inc_comps=True,spec_type=0,linestyle="dashdot",comp_linestyle="dashdot",alpha=0.6)
 	# Plot the best-fit model
-	plot_model_spec(best_fit_model,emin=data_inst.spectrum['ENERGY'][0],emax=data_inst.spectrum['ENERGY'][-1], ax=ax,inc_comps=True,spec_type=2,linewidth=3,comp_linewidth=3)
+	plot_model_spec(best_fit_model,emin=data_inst.spectrum['ENERGY'][0],emax=data_inst.spectrum['ENERGY'][-1], ax=ax,inc_comps=True,spec_type=0,linewidth=3,comp_linewidth=3)
 
 	plt.show()
 
