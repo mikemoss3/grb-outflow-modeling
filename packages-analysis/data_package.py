@@ -1,4 +1,5 @@
 import numpy as np
+from asymmetric_uncertainty import a_u
 
 # File used to define Data class
 
@@ -18,11 +19,15 @@ class Data(object):
 		if tstart is not None:
 			# Check that both a start and stop time were given 
 			if tend is None:
-				print("Please provide both a start and end time.")
+				print("Please provide both a start and end time (or neither).")
 				return 0;
 
 			# Load the spectrum designated by the file name
-			loaded_spectrum = np.genfromtxt(file_name,dtype=[('ENERGY',float),('RATE',float),('ERR',float)])
+			tmp_data = np.genfromtxt(file_name,dtype=[("ENERGY",float),("RATE",float),("ERR",float)])
+
+			loaded_spectrum = np.zeros(shape=len(tmp_data),dtype=[("ENERGY",float),("RATE",a_u)] )
+			loaded_spectrum['ENERGY'] = tmp_data['ENERGY']
+			loaded_spectrum['RATE'] = [a_u(tmp_data['RATE'][i], tmp_data['ERR'][i],tmp_data['ERR'][i]) for i in range(len(tmp_data))]
 
 			# Check if this is the first loaded spectrum 
 			if len(self.spectra) == 0:
@@ -39,14 +44,14 @@ class Data(object):
 					self.spectra = np.insert(self.spectra,len(self.spectra),(tstart,tend,loaded_spectrum))
 					return 0;
 		else:
-			self.spectrum = np.genfromtxt(file_name,dtype=[('ENERGY',float),('RATE',float),('ERR',float)])
+			self.spectrum = np.genfromtxt(file_name,dtype=[('ENERGY',float),('RATE',a_u)])
 			return 0;
 
 	def set_spectrum(self,spec_array,tstart=None,tend=None):
 
 		# Check that the array is in the correct format
-		if spec_array.dtype.names != ('ENERGY','RATE','ERR'):
-			print("Please provide an array with three columns: ENERGY, RATE, and ERR (all floats)")
+		if spec_array.dtype.names != ('ENERGY','RATE'):
+			print("Please provide an array with three columns: ENERGY and RATE (both floats)")
 
 		if tstart is not None:
 			# Check that both a start and stop time were given 
@@ -73,4 +78,4 @@ class Data(object):
 			return 0;
 
 	def load_light_curve(self,file_name):
-		self.light_curve = np.genfromtxt(file_name,dtype=[('TIME',float),('RATE',float),('ERR',float)])
+		self.light_curve = np.genfromtxt(file_name,dtype=[('TIME',float),('RATE',a_u)])
