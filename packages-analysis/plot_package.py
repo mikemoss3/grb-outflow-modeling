@@ -9,8 +9,10 @@ Package that contains all plotting functions for plotting synthetic and observed
 """
 
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from asymmetric_uncertainty import neg_errors, pos_errors
 # import subprocess
 
 # from matplotlib.widgets import TextBox
@@ -477,7 +479,7 @@ def add_SwiftBAT_band(ax,fontsize=12,axis="x",plt_ratio_min=0.5,plt_ratio_max=1,
 
 ##############################################################################################################################
 
-def plot_model_spec(model, spec_type = 0,y_factor=1, inc_comps=True, emin=8, emax=4e4,ymin=None,ymax=None,ax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold', alpha=1,linestyle="solid",linewidth=1.5,comp_alpha=0.8,comp_linestyle="dashed",comp_linewidth=1.,en_steps = None):
+def plot_model_spec(model, spec_type = 0,y_factor=1, inc_comps=True, emin=8, emax=4e4,ax=None,ymin=None,ymax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold', alpha=1,linestyle="solid",linewidth=1.5,comp_alpha=0.8,comp_linestyle="dashed",comp_linewidth=1.,en_steps = None, **kwargs):
 	"""
 	Method to plot the spectra stored in a model class 
 
@@ -520,9 +522,9 @@ def plot_model_spec(model, spec_type = 0,y_factor=1, inc_comps=True, emin=8, ema
 
 	if isinstance(model, CompoundModel) and inc_comps:
 		for i in range(model.n_submodels):
-			ax.plot(energy_axis,y_factor*model[i](energy_axis),alpha=comp_alpha,color=model[i].color,linestyle=comp_linestyle,linewidth=comp_linewidth)
+			ax.plot(energy_axis,y_factor*model[i](energy_axis),alpha=comp_alpha,color=model[i].color,linestyle=comp_linestyle,linewidth=comp_linewidth,**kwargs)
 
-	ax.plot(energy_axis,y_factor*model(energy_axis), alpha=alpha,color=model.color,linestyle=linestyle,linewidth=linewidth,label=label)
+	ax.plot(energy_axis,y_factor*model(energy_axis), alpha=alpha,color=model.color,linestyle=linestyle,linewidth=linewidth,label=label,**kwargs)
 
 	# Plot aesthetics
 	ax.set_xscale('log')
@@ -560,7 +562,7 @@ def plot_model_spec(model, spec_type = 0,y_factor=1, inc_comps=True, emin=8, ema
 
 ##############################################################################################################################
 
-def plot_data_spec(spec_data, spec_type = 0,y_factor=1 , joined=False, unc=True, emin=None, emax=None,ax=None,ymin=None,ymax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',alpha=1,linestyle="solid",linewidth=1.5,color="C0",marker="."):
+def plot_data_spec(spec_data, spec_type = 0,y_factor=1 , joined=False, unc=True, emin=None, emax=None,ax=None,ymin=None,ymax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',alpha=1,linestyle="solid",linewidth=1.5,color="C0",marker=".", **kwargs):
 	"""
 	Method to plot synthetic or observed spectra 
 
@@ -591,21 +593,21 @@ def plot_data_spec(spec_data, spec_type = 0,y_factor=1 , joined=False, unc=True,
 	if spec_type == 2:
 		y_factor *= spec_data['ENERGY']**2
 
-	ax.set_ylim(1e47)
-	ylims = ax.get_ylim()
+	# ax.set_ylim(1e47)
+	# ylims = ax.get_ylim()
 
 	# Plot spectrum data
 	if joined is True:
 		if unc is True:
-			line = ax.errorbar(x=spec_data['ENERGY'],y=spec_data['RATE']*y_factor,yerr=spec_data['ERR']*y_factor,label=label,color=color,alpha=alpha)
+			line = ax.errorbar(x=spec_data['ENERGY'],y=spec_data['RATE']*y_factor,yerr=(neg_errors(spec_data['RATE']),pos_errors(spec_data['RATE']))*y_factor,label=label,color=color,alpha=alpha,**kwargs)
 		else:
-			line, = ax.plot(spec_data['ENERGY'],spec_data['RATE']*y_factor,label=label,color=color,linestyle=linestyle,alpha=alpha)
+			line, = ax.plot(spec_data['ENERGY'],spec_data['RATE']*y_factor,label=label,color=color,linestyle=linestyle,alpha=alpha,**kwargs)
 	else:
 		# Plot spectrum data
 		if unc is True:
-			line = ax.errorbar(x=spec_data['ENERGY'],y=spec_data['RATE']*y_factor,yerr=spec_data['ERR']*y_factor,label=label,fmt=" ",color=color,alpha=alpha)
+			line = ax.errorbar(x=spec_data['ENERGY'],y=spec_data['RATE']*y_factor,yerr=(neg_errors(spec_data['RATE']),pos_errors(spec_data['RATE']))*y_factor,label=label,fmt=" ",color=color,alpha=alpha,**kwargs)
 		else:
-			line = ax.errorbar(x=spec_data['ENERGY'],y=spec_data['RATE']*y_factor,label=label,fmt=" ",marker="+",color=color,alpha=alpha)
+			line = ax.errorbar(x=spec_data['ENERGY'],y=spec_data['RATE']*y_factor,label=label,fmt=" ",marker="+",color=color,alpha=alpha,**kwargs)
 
 	# ax[1].errorbar(x=data['ENERGY'], y=resids2, yerr = 1 ,fmt=" ",color="C1",alpha=0.9,marker="+",zorder=0)
 
@@ -617,10 +619,10 @@ def plot_data_spec(spec_data, spec_type = 0,y_factor=1 , joined=False, unc=True,
 	ax.set_yscale('log')
 
 	# Force lower bound
-	if np.max(spec_data['RATE']*y_factor) < ylims[1]:
-		ax.set_ylim(ylims[1]/(10**5),ylims[1])
-	else:
-		ax.set_ylim(ylims[1]/(10**5), np.max(spec_data['RATE']*y_factor) * 10)
+	# if np.max(spec_data['RATE']*y_factor) < ylims[1]:
+	# 	ax.set_ylim(ylims[1]/(10**2),ylims[1])
+	# else:
+	# 	ax.set_ylim(ylims[1]/(10**2), np.max(spec_data['RATE']*y_factor) * 10)
 	ax.set_xlim(emin,emax)
 
 	if xlabel is True:
@@ -697,7 +699,61 @@ def plot_data_spec(spec_data, spec_type = 0,y_factor=1 , joined=False, unc=True,
 
 ##############################################################################################################################
 
-def plot_light_curve(light_curve_data,xax_units="s",y_factor=1, Tmin=None, Tmax=None, ax=None, save_pref=None, xlabel=True, ylabel=True ,label=None, fontsize=14,fontweight='bold', logscale=False,color="C0", alpha=1,step=True,linestyle="solid",linewidth=1.5):
+def plot_spec(spectrum_model=None,spectrum_data=None, plot_res=False, spec_type =0, y_factor = 1, joined=False, unc=True, emin=8, emax=4e4 ,ax=None,ymin=None,ymax=None,save_pref=None,xlabel=True,ylabel=True,label=None,fontsize=14,fontweight='bold',alpha=1,linestyle="solid",linewidth=1.5,color="C0",marker=".",inc_comps=True,comp_alpha=0.8,comp_linestyle="dashed",comp_linewidth=1.,en_steps = None, **kwargs):
+	"""
+	Method to plot the spectra stored in a model class or a data class. 
+
+	Unique attribute:
+		plot_res = boolean, indicates whether the residuals between a model and data should be displayed.
+	"""	
+
+	if (spectrum_model is None) and (spectrum_data is None):
+		print("Please supply either a model or data.")
+		return;
+
+	if (plot_res is True):
+		if (spectrum_data is None) or (spectrum_model is None):
+			print("To plot residuals, both a model spectrum and spectral data must be supplied.")
+			return;
+
+	# Make plot instance if it doesn't exist
+	if ax is not None:
+		if isinstance(ax,matplotlib.axes._axes.Axes):
+			ax_spec = ax
+		if isinstance(ax,np.ndarray):
+			ax_spec = ax[0]
+	if ax is None:
+		if plot_res is True:
+			fig, ax = plt.subplots(2,1,figsize=(6,8),sharex=True,gridspec_kw={'hspace':0.,'height_ratios':[2,1]})
+			ax_spec = ax[0]
+		else:
+			ax_spec = plt.figure().gca()
+
+	if spectrum_data is not None:
+		plot_data_spec(spectrum_data, spec_type = spec_type,y_factor=y_factor , joined=joined, unc=unc, emin=None, emax=None,ax=ax_spec,ymin=ymin,ymax=ymax,xlabel=xlabel,ylabel=ylabel,label=label,fontsize=fontsize,fontweight=fontweight,alpha=alpha,linewidth=linewidth,color=color,marker=".", **kwargs)
+	if spectrum_model is not None:
+		plot_model_spec(spectrum_model, spec_type = spec_type,y_factor=y_factor, inc_comps=inc_comps, emin=emin, emax=emax,ax=ax_spec,ymin=ymin,ymax=ymax,xlabel=xlabel,ylabel=ylabel,label=label,fontsize=fontsize,fontweight=fontweight, alpha=alpha,linewidth=linewidth,comp_alpha=0.8,comp_linestyle="dashed",comp_linewidth=1.,en_steps = None, **kwargs)
+
+	if plot_res is True:
+		res_arr = spectrum_model.calc_residuals(spectrum_data)
+		ax[1].errorbar(res_arr['ENERGY'],res_arr['RES'],yerr = 1,fmt = " ",color=color,alpha=alpha,**kwargs)
+
+		# Plot aesthetics
+		ax[1].set_xscale('log')
+
+		if xlabel is True:
+			ax[1].set_xlabel('Energy (keV)',fontsize=fontsize,fontweight=fontweight)
+		if ylabel is True:
+			ax[1].set_ylabel('Residuals',fontsize=fontsize,fontweight=fontweight)
+
+		plot_aesthetics(ax[1],fontsize=fontsize,fontweight=fontweight,**kwargs)
+
+	if save_pref is not None :
+		plt.savefig('{}.png'.format(save_pref))
+
+##############################################################################################################################
+
+def plot_light_curve(light_curve_data,xax_units="s",y_factor=1, Tmin=None, Tmax=None, ax=None, save_pref=None, xlabel=True, ylabel=True ,label=None, fontsize=14,fontweight='bold', logscale=False,color="C0", alpha=1,step=True,linestyle="solid",linewidth=1.5,**kwargs):
 	"""
 	Method to plot the input light curve data files
 
@@ -736,9 +792,9 @@ def plot_light_curve(light_curve_data,xax_units="s",y_factor=1, Tmin=None, Tmax=
 	# Plot light curve data
 
 	if step is True:
-		ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth)
+		ax.step(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",where="mid",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth,**kwargs)
 	elif step is False:
-		ax.plot(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth)
+		ax.plot(light_curve_data['TIME'],light_curve_data['RATE']*y_factor,label=label,marker=" ",color=color,alpha=alpha,linestyle=linestyle,linewidth=linewidth,**kwargs)
 
 	# Custom power law index annotation
 	annot = ax.annotate("", xy=(-100,-100), xytext=(20,20),textcoords="offset points", bbox=dict(boxstyle="round", fc="w"),arrowprops=dict(arrowstyle="->"))
@@ -827,7 +883,3 @@ def plot_light_curve(light_curve_data,xax_units="s",y_factor=1, Tmin=None, Tmax=
 	return fig
 
 ##############################################################################################################################
-
-
-## Maybe make a total simulation class
-## Add simulation dynamics plot functions, but this requires adding a model class that loads the model dynamics. 
