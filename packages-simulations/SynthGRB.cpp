@@ -900,7 +900,7 @@ void SynthGRB::SimulateJetDynamics()
 			// Keep track of the number of internal shocks that occur, this is used for taking snapshots of the Lorentz distribution
 			num_shocks +=1;
 
-			// Move to the emission time of the shell collision (in the rest frame of the jet)
+			// Move to the emission time of the shell collision (in the rest frame of the central engine)
 			tmp_te += t_IS_lowest;
 			// Move shells forward
 			for(int i=0; i<(*p_model_params).numshells; ++i)
@@ -1118,7 +1118,7 @@ void SynthGRB::SimulateJetDynamics()
 				num_fs_shocks = 0.;
 			}
 
-			// Move to the emission time of the shell collision (in the rest frame of the jet)
+			// Move to the emission time of the shell collision (in the rest frame of the central engine)
 			tmp_te += t_FS_sweep;
 
 			// Move shells forward
@@ -1301,7 +1301,7 @@ void SynthGRB::SimulateJetDynamics()
 			// Keep track of the number of reverse shocks that occur, this is used for taking snapshots of the Lorentz distribution
 			num_shocks +=1;
 
-			// Move to the emission time of the shell collision (in the rest frame of the jet)
+			// Move to the emission time of the shell collision (in the rest frame of the central engine)
 			tmp_te += t_RS_coll;
 
 			// Move shells forward
