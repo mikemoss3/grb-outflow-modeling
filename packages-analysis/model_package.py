@@ -1,6 +1,7 @@
 import numpy as np
 import astropy
 from astropy.modeling import Fittable1DModel, CompoundModel, Parameter
+from asymmetric_uncertainty import neg_errors, pos_errors
 
 class ModelComponent():
 	""" 
@@ -23,6 +24,21 @@ class ModelComponent():
 		Name of the compound model, automatically set as the combination of submodel names
 		"""
 		return self.name;
+
+	def calc_residuals(self,data):
+		"""
+		Method to calculate the residuals between the model and the supplied data
+		"""
+		res_arr = np.zeros(shape=len(data),dtype=[("ENERGY",float),("RES",float)])
+		res_arr['ENERGY'] = data['ENERGY']
+
+		# Determine which uncertainty to use by finding if the model above or below the respective data point
+		sigma_arr = np.asarray(neg_errors(data['RATE']))
+		sigma_arr[ np.flatnonzero(data['RATE'] > self(data['ENERGY'])) ] = np.asarray(pos_errors(data['RATE'][ data['RATE'] > self(data['ENERGY']) ]))
+
+		res_arr['RES'] = (self(data['ENERGY'])-data['RATE'])/sigma_arr
+
+		return res_arr
 
 class Band(Fittable1DModel,ModelComponent):
 	"""
@@ -47,7 +63,7 @@ class Band(Fittable1DModel,ModelComponent):
 	e0 = Parameter(default=1e3,name="Break Energy", description="Break energy",min=1e-99,max=1e10)
 	alpha = Parameter(default=-1,name="alpha",description="Low energy power law index",min=-1.99,max=2)
 	beta = Parameter(default=-2.5,name="beta",description="High energy power law index",min=-10,max=-2)
-	norm = Parameter(default=1,name="Normalization",description="Normalization",min=1e-99)
+	norm = Parameter(default=1,name="Normalization",description="Normalization",min=1e-99,max=1e99)
 	
 	@staticmethod
 	def evaluate(energy, e0, alpha, beta, norm):
@@ -140,7 +156,7 @@ class Blackbody(Fittable1DModel,ModelComponent):
 	# _outputs = ('y',)
 	temp = Parameter(default=20,name="Temperature",description="Temperature",min=1e-99,max=1e10)
 	alpha = Parameter(default=-0.4,name="alpha",description="Power law index",min=-10,max=5)
-	norm = Parameter(default=1,name="Normalization",description="Normalization",min=1e-99)
+	norm = Parameter(default=1,name="Normalization",description="Normalization",min=1e-99,max=1e99)
 
 	@staticmethod
 	def evaluate(energy, temp, alpha, norm):
@@ -252,9 +268,25 @@ def model_name(self):
 
 	return name;
 
+def calc_residuals(self,data):
+	"""
+	Method to calculate the residuals between the model and the supplied data
+	"""
+	res_arr = np.zeros(shape=len(data),dtype=[("ENERGY",float),("RES",float)])
+	res_arr['ENERGY'] = data['ENERGY']
+
+	# Determine which uncertainty to use by finding if the model above or below the respective data point
+	sigma_arr = np.asarray(neg_errors(data['RATE']))
+	sigma_arr[ np.flatnonzero(data['RATE'] > self(data['ENERGY'])) ] = np.asarray(pos_errors(data['RATE'][ data['RATE'] > self(data['ENERGY']) ]))
+
+	res_arr['RES'] = (self(data['ENERGY'])-data['RATE'])/sigma_arr
+
+	return res_arr
+
 setattr(CompoundModel,'print_info', print_info) # Add information printing method
 setattr(CompoundModel,'model_name', model_name) # Add name for compound model
 setattr(CompoundModel,'color', 'k') # Add color, used when plotting total spectrum
+setattr(CompoundModel,'calc_residuals', calc_residuals) # Add color, used when plotting total spectrum
 
 # Add uncertainty to Parameter class
 setattr(Parameter, 'unc', np.nan)
@@ -263,7 +295,5 @@ setattr(Parameter, 'unc', np.nan)
 attr_names = ['color']
 attr_vals = ['k']
 
-setattr(astropy.modeling.powerlaws.PowerLaw1D,"color","k")
-
-# for i in range(len(attr_vals)):
-# 	setattr(astropy.modeling.powerlaws.PowerLaw1D(),attr_names[i],attr_vals[i])
+for i in range(len(attr_vals)):
+	setattr(astropy.modeling.powerlaws.PowerLaw1D,attr_names[i],attr_vals[i])
