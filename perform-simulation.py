@@ -1,8 +1,8 @@
 from packages_simulations.file_write_package import *
-from packages_simulations.sim_package import *
+from packages_simulations.sim_package import run_main
 
 # Set jet parameters
-tw = 		15. 	# sec, duration of the wind
+tw = 		10. 	# sec, duration of the wind
 dte = 		0.01 	# sec, time between subsequent shell launches
 E_dot_iso = 1.e53 	# erg/s, isotropic equivalent energy injection rate
 theta = 	0.07 	# rad, jet opening angle
@@ -28,9 +28,24 @@ write_jet_params(tw, dte, E_dot_iso,
 	k, rho_not)
 
 # Write Lorentz distribution parameters
-write_lor_dis_fred_inject()
+write_lor_dis_fred_inject(num_freds=2,fred_start_arr=np.array([-0.6,5]),tau_1_arr=np.array([1,2]),tau_2_arr=np.array([3,4]),fred_amp_arr=np.array([450,350]),median=0,decay=0,fluctuate=True)
 
 # Run simulation code
-run_main()
-
-
+run_main(
+	spectra_time_ints=np.array([(1,2)]),
+	spectra_energy_int=np.array([1,10]),
+	save_dir = "./files-data/synthetic-data/2023-08-17/",
+	param_file_name = './packages_simulations/files-input/jet-params.txt',
+	write_lor_prof = False,
+	track_lor_prof_evo = False,
+	write_jet_params = False,
+	light_curve = False,
+	light_curve_time_int=np.array([-1e10,-1e9]),
+	light_curve_energy_int=np.array([-1e10,-1e9]),
+	time_log_scale = False,
+	time_step = 0.1,
+	spectra = True,
+	num_energy_bins = 400,
+	num_spectra = 1,
+	inc_comps = True
+	)

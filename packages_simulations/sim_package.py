@@ -4,21 +4,21 @@ from subprocess import STDOUT
 
 
 def run_main(
-	light_curve_time_int,
-	light_curve_energy_int,
-	spectra_time_ints,
-	spectra_energy_int,
-	save_dir = "../files-data/synthetic-data/",
-	param_file_name = 'jet-params.txt',
+	save_dir = "./files-data/synthetic-data/",
+	param_file_name = './packages_simulations/files-input/jet-params.txt',
 	write_lor_prof = False,
 	track_lor_prof_evo = False,
 	write_jet_params = False,
 	light_curve = True,
+	light_curve_time_int=np.array([-1e10,-1e9]),
+	light_curve_energy_int=np.array([-1e10,-1e9]),
 	time_log_scale = False,
 	time_step = 0.1,
 	spectra = True,
+	spectra_time_ints=np.array([(-1e10,-1e9)]),
+	spectra_energy_int=np.array([-1e10,-1e9]),
 	num_energy_bins = 400,
-	num_spectra = 1,
+	num_spectra = 0,
 	inc_comps = True
 	):
 	"""
@@ -51,26 +51,27 @@ def run_main(
 	command_string = "./packages_simulations/main {0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14} {15} {16} {17}".format(
 		save_dir,
 		param_file_name,
-		write_lor_prof,
-		track_lor_prof_evo,
-		write_jet_params,
-		light_curve,
+		int(write_lor_prof),
+		int(track_lor_prof_evo),
+		int(write_jet_params),
+		int(light_curve),
 		light_curve_time_int[0],
 		light_curve_time_int[1],
 		light_curve_energy_int[0],
 		light_curve_energy_int[1],
-		time_log_scale,
+		int(time_log_scale),
 		time_step,
-		spectra,
+		int(spectra),
 		spectra_energy_int[0],
 		spectra_energy_int[1],
 		num_energy_bins,
 		num_spectra,
-		inc_comps
+		int(inc_comps)
 		)
 		
 	for i in range(len(spectra_time_ints)):
 		command_string+=" {} {}".format(spectra_time_ints[i][0], spectra_time_ints[i][1])
+
 
 	subprocess.run([command_string],shell=True,stderr=STDOUT)
 

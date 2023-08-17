@@ -355,7 +355,6 @@ void ShellDist::gauss_inject(float dte, float gamma_ave, float decay, int num_ga
 			std::poisson_distribution<int> dist( shell_gamma.at(i) );
 		    shell_gamma.at(i) = dist(generator);
 		}
-
 	}
 
 	return;
@@ -468,6 +467,8 @@ void ShellDist::square_inject(float dte, float gamma_ave, float decay, int num_s
 
 	return;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Distribute the shells by injecting FREDs at specific places. 
 void ShellDist::fred_inject(float dte, float gamma_ave, float decay, int num_freds, std::vector<float> starts, std::vector<float> tau_1s, std::vector<float> tau_2s, std::vector<float> amps, bool fluctuations)
