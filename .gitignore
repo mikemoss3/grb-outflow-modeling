@@ -1,7 +1,10 @@
+# Directory to ignore 
+testing/ 
+
 # Files to ignore
-c-scripts/figs/*
-c-scripts/data-file-dir/*
-c-scripts/log.txt
+files-data/observed-data/*
+files-data/synthetic-data/*
+files-figs/*
 
 # Ignore Latex temporary files 
 *.out
