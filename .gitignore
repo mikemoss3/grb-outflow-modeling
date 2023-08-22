@@ -1,5 +1,5 @@
 # Directory to ignore 
-testing/ 
+# testing/ 
 
 # Files to ignore
 files-data/observed-data/*
