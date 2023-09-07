@@ -1,0 +1,111 @@
+\documentclass[linenumbers,twocolumn]{aastex631}
+% \documentclass[linenumbers]{aastex631}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{ulem}
+\usepackage{hyperref}
+
+% Editing commands
+\newcommand{\mm}[1]{{\textcolor{purple}{\bf #1}}}
+
+% Make upright subscripts and superscripts in Mathmode.
+\def\subinrm#1{\sb{\mathrm{#1}}}
+{\catcode`\_=13 \global\let_=\subinrm}
+\mathcode`_="8000
+\def\supinrm#1{\sp{\mathrm{#1}}}
+{\catcode`\^=13 \global\let^=\supinrm}
+\mathcode`^="8000
+\def\upsubscripts{\catcode`\_=12 } \def\normalsubscripts{\catcode`\_=8 }
+\def\upsupscripts{\catcode`\^=12 } \def\normalsupscripts{\catcode`\^=7 }
+
+\newcommand{\vdag}{(v)^\dagger}
+\newcommand\aastex{AAS\TeX}
+\newcommand\latex{La\TeX}
+
+% Title
+\shorttitle{Photosphere Luminosity}
+\shortauthors{Moss M.}
+
+
+\begin{document}
+
+\upsubscripts
+\upsupscripts
+
+\title{Deriving the Luminosity of the Photosphere}
+
+\author{Michael Moss}
+\affiliation{The Department of Physics, The George Washington University, 725 21st NW, Washington, DC 20052, USA}
+\affiliation{Astrophysics Science Division, NASA Goddard Space Flight Center, Greenbelt, MD 20771, USA}
+
+\correspondingauthor{Michael Moss}
+\email{mikejmoss3@gmail.com}
+
+\keywords{Gamma-Ray Bursts (629)}
+
+\section{Derivation}
+
+This follows from the work of \citet{2013A&A...551A.124H}.
+
+The thermal energy injected into the outflow at the origin of the jet can be obtained from 
+
+\begin{align}
+	\dot{E}_{th} = \epsilon_{th} \dot{E} = \epsilon_{th} \frac{\Omega}{4\pi}\dot{E}_{iso} = aT_0^4 c S_0 \label{eq: t0}
+\end{align}
+
+where $\dot{E}$ is the total power injected into the outflow, $\dot{E}_{iso}$ is the isotropic equivalent total injected power, $\epsilon_{th}$ is the fraction of energy stored in thermal form, $T_0$ is the temperature at the origin of the flow, $S_0=\pi \ell^2$ is the cross section of the outflow at the origin, $\ell$ is the initial jet radius, $a=4\sigma/c$ is the radiation constant, $\sigma$ is the Stephan-Boltzmann constant, $c$ is the speed of light, and fraction of solid angle is $\frac{\Omega}{4\pi}\simeq \frac{\theta^2}{4}$, where $\theta$ is the jet opening angle. 
+
+The radius at which the material becomes transparent to photons and releases thermal radiation is known as the photosphere, 
+
+\begin{align}
+	R_{ph} &\simeq \frac{\kappa \dot{M}}{8\pi c \Gamma^2} \nonumber\\
+	&\simeq \frac{\kappa \frac{\dot{E}}{c^2\Gamma}}{8\pi c \Gamma^2} = \frac{\kappa \dot{E}}{8\pi c^3 \Gamma^3} \nonumber\\
+	&\simeq 2.9\times10^3\frac{\kappa_{0.2}\dot{E}_{iso,53}}{(1+\sigma)\Gamma_2^3} \text{ cm} \label{eq: phot rad}
+\end{align}
+where $\kappa$ ($\kappa_{0.2}$ in units of 0.2 cm$^2$ g$^{-1}$) is the material opacity, $\Gamma$ ($\Gamma_2$ in units of 100) the Lorentz factor of the shell, and $\sigma$ is the magnetization of the material. 
+
+Assuming no dissipation takes place below the photosphere, mass and entropy conservation lead to the expressions 
+
+\begin{align}
+	\beta \Gamma \rho S(R) & = Const.\\
+	\frac{T}{\rho^{1/3}} &= Const.
+\end{align}
+where $\rho$ is the comoving density, $S(R) = \pi \theta^2 R^2$ is the surface perpendicular to the flow at a radius $R$, $\beta = v/c\sim 1$ where $v$ is the velocity of the flow, and $\Gamma = (1-\beta^2)^{-1/2}$. Equating the two above expressions leads to 
+
+\begin{align}
+	\beta \Gamma T^3 S(R) = const. 
+\end{align}
+allowing us the define the temperature at a radius $R$ to be 
+\begin{align}
+	T(R) \simeq T_0 \times (\theta^{-2/3} R^{-2/3} \ell^{2/3} \Gamma^{-1/3}) \label{eq: temp at r}
+\end{align}
+
+Using Equations \ref{eq: t0}, \ref{eq: phot rad}, and \ref{eq: temp at r}, the luminosity of the thermal radiation released at the photosphere can be expressed as 
+
+\begin{align}
+	L_{th} &= \Gamma^2 a T^4(R_{ph}) c S(R_{ph}) \label{eq: therm lum} \nonumber\\
+	&= \dot{E}_{th} \times (\theta^{-2/3} R_{ph}^{-2/3} \ell^{2/3} \Gamma^{2/3}) \nonumber\\
+	&= \epsilon_{th}\dot{E} \theta^{-2/3} \ell^{2/3} \left( \frac{\kappa \dot{E}}{8\pi c^3 \Gamma^3} \right)^{-2/3}\Gamma^{2/3} \nonumber\\
+	&= \epsilon_{th}c^2\dot{E}^{1/3}\left(\frac{8\pi\ell}{\kappa\theta}\right)^{2/3} \Gamma^{8/3}
+\end{align}
+
+So, we can see that the photospheric luminosity is strongly dependent on only the Lorentz factor of the material in the outflow. 
+
+Questions:
+\begin{enumerate}
+\item Why is there a factor of $\Gamma^2$ in Equation \ref{eq: therm lum}?
+\item In the equation for R_ph (Eq 9 in \citealt{2013A&A...551A.124H}), why is $\dot{M}$ associated with the isotropic equivalent energy and not the beaming corrected? (Note in Eq \ref{eq: phot rad} here I write the beaming correct, but this leads to incorrect results.)
+\end{enumerate}
+
+\newpage 
+\bibliographystyle{aasjournal}
+\bibliography{bibliography}
+
+
+
+\end{document}
