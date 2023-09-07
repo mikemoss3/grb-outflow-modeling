@@ -30,22 +30,23 @@ write_jet_params(tw, dte, E_dot_iso,
 # Write Lorentz distribution parameters
 write_lor_dis_fred_inject(num_freds=2,fred_start_arr=np.array([-0.6,5]),tau_1_arr=np.array([1,2]),tau_2_arr=np.array([3,4]),fred_amp_arr=np.array([450,350]),median=0,decay=0,fluctuate=True)
 
+
 # Run simulation code
 run_main(
-	spectra_time_ints=np.array([(1,2)]),
-	spectra_energy_int=np.array([1,10]),
-	save_dir = "./files-data/synthetic-data/2023-08-17/",
+	save_dir = "./files-data/synthetic-data/2023-09-07/",
 	param_file_name = './packages_simulations/files-input/jet-params.txt',
-	write_lor_prof = False,
+	write_lor_prof = True,
 	track_lor_prof_evo = False,
 	write_jet_params = False,
-	light_curve = False,
-	light_curve_time_int=np.array([-1e10,-1e9]),
-	light_curve_energy_int=np.array([-1e10,-1e9]),
+	light_curve = True	,
+	light_curve_time_int=np.array([0,10]),
+	light_curve_energy_int=np.array([8,4e4]),
 	time_log_scale = False,
 	time_step = 0.1,
 	spectra = True,
+	num_spectra = 2,
+	spectra_time_ints=np.array([(1,2),(3,4)]),
+	spectra_energy_int=np.array([8,4e4]),
 	num_energy_bins = 400,
-	num_spectra = 1,
 	inc_comps = True
 	)

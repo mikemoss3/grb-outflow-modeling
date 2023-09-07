@@ -215,7 +215,7 @@ def plot_lor_prof(file_name,ax=None,color="C0",save_pref=None,xlabel=True,ylabel
 
 	ax.set_ylim(0,np.max(lor_dist_list[0]['GAMMA']+10))
 	ax.set_xlim(0,np.max(lor_dist_list[0]['TE']))
-	ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+	# ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 	ax.invert_xaxis()
 
 	if xlabel is True:
@@ -605,7 +605,7 @@ def plot_data_spec(spec_data, spec_type = 0,y_factor=1 , joined=False, unc=True,
 	else:
 		# Plot spectrum data
 		if unc is True:
-			line = ax.errorbar(x=spec_data['ENERGY'],y=spec_data['RATE']*y_factor,yerr=(neg_errors(spec_data['RATE']),pos_errors(spec_data['RATE']))*y_factor,label=label,fmt=" ",color=color,alpha=alpha,**kwargs)
+			line = ax.errorbar(x=spec_data['ENERGY'],y=spec_data['RATE']*y_factor,yerr=(neg_errors(spec_data['RATE']),pos_errors(spec_data['RATE']))*y_factor,label=label,fmt=",",color=color,alpha=alpha,**kwargs)
 		else:
 			line = ax.errorbar(x=spec_data['ENERGY'],y=spec_data['RATE']*y_factor,label=label,fmt=" ",marker="+",color=color,alpha=alpha,**kwargs)
 
@@ -775,7 +775,7 @@ def plot_light_curve(light_curve_data,xax_units="s",y_factor=1, Tmin=None, Tmax=
 	"""
 	# Make plot instance if it doesn't exist
 	if ax is None:
-		ax = plt.figure.gca()
+		ax = plt.figure().gca()
 	fig = plt.gcf()
 
 	# Unit conversion

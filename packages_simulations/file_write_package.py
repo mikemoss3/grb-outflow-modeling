@@ -64,7 +64,7 @@ def write_lor_dis_linear(gamma_start, gamma_end,fluctuate=True):
 	(variable)		(type)	(description)
 	gamma_start:	float,	Starting Lorentz factor
 	gamma_end:		float,	Ending Lorentz factor
-	fluctuate:		bool, 		Indicates whether to include fluctuations in the distribution or not
+	fluctuate:		bool, 	Indicates whether to include fluctuations in the distribution or not
 	"""
 	fn_jet_params = "./packages_simulations/files-input/jet-params.txt"
 	fn_lor_prof = "./packages_simulations/files-input/lor-prof-params.txt"

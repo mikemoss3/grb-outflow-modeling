@@ -23,11 +23,14 @@ class Data(object):
 				return 0;
 
 			# Load the spectrum designated by the file name
-			tmp_data = np.genfromtxt(file_name,dtype=[("ENERGY",float),("RATE",float),("ERR",float)])
+			
+			tmp_data = np.genfromtxt(file_name,dtype=[("ENERGY",float),("RATE",float),("UNC",float)])
 
 			loaded_spectrum = np.zeros(shape=len(tmp_data),dtype=[("ENERGY",float),("RATE",a_u)] )
 			loaded_spectrum['ENERGY'] = tmp_data['ENERGY']
-			loaded_spectrum['RATE'] = [a_u(tmp_data['RATE'][i], tmp_data['ERR'][i],tmp_data['ERR'][i]) for i in range(len(tmp_data))]
+			loaded_spectrum['RATE'] = [a_u(tmp_data['RATE'][i], tmp_data['UNC'][i],tmp_data['UNC'][i]) for i in range(len(tmp_data))]
+			
+			# loaded_spectrum = np.genfromtxt(file_name,dtype=[("ENERGY",float),("RATE",float),("UNC",float)])
 
 			# Check if this is the first loaded spectrum 
 			if len(self.spectra) == 0:
@@ -77,5 +80,11 @@ class Data(object):
 			self.spectrum = spec_array
 			return 0;
 
-	def load_light_curve(self,file_name):
-		self.light_curve = np.genfromtxt(file_name,dtype=[('TIME',float),('RATE',a_u)])
+	def load_light_curve(self,file_name,inc_unc = False):
+		
+		if inc_unc is False:
+			self.light_curve = np.genfromtxt(file_name,dtype=[('TIME',float),('RATE',float)])
+		else:
+			self.light_curve = np.genfromtxt(file_name,dtype=[('TIME',float),('RATE',float),('UNC',float)])
+
+

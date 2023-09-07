@@ -223,7 +223,7 @@ We have found that all the shells pass their respective photospheres much before
 The photospheric radius and crossing time of each shell is given by:
 
 \begin{align}
-	R_{phot,i} &= \frac{0.2 \dot{E}_{iso}}{(1+\sigma)8\pi c^4 \Gamma_i^3} \text{ cm/c}\\
+	R_{phot,i} &= \frac{0.2 \dot{E}_{iso}}{(1+\sigma)8\pi c^4 \Gamma_i^3} \text{ cm/c} \label{eq: phot rad}\\ 
 	t_{phot,i} &= \frac{R_{phot} - R_{0,i}}{\beta_i}\text{ s}
 \end{align}
 
@@ -243,7 +243,7 @@ Following the prescription from \citet{2013A&A...551A.124H}.
 	&\approx \dot{E}_{iso}^{-2/3} \Gamma^{8/3} \\
 	T0 &= \left(\frac{\dot{E}_{th}^2 \theta^2}{4\pi a c R_{open}^2} \right)^{1/4} \text{ K} \\ 
 	T_{phot,obs} &= T0*\Phi*(1+z) \text{ K} \\
-	L_{phot} &= \frac{\theta^2 \dot{E}_{th} \Phi }{4} \text{ erg/s}
+	L_{phot} &= \frac{\theta^2}{4} \dot{E}_{th} \Phi \text{ erg/s}
 \end{align}
 
 where $a$ is the radiation constant. 

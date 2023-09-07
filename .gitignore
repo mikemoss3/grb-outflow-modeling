@@ -6,10 +6,14 @@ files-data/observed-data/*
 files-data/synthetic-data/*
 files-figs/*
 
+# Ignore output files
+packages_simulations/*.o
+
 # Ignore Latex temporary files 
-*.out
-*.fls
 *.aux
+*.bst
+*.fls
+*.log
+*.out
 *.fdb_latexmk
 *.synctex.gz
-*.bst

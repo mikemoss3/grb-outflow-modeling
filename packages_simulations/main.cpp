@@ -43,21 +43,21 @@ int main(int argc, char const *argv[])
 	istringstream(argv[5]) >> write_jet_params;
 	bool light_curve; // indicates whether to calculate a light curve
 	istringstream(argv[6]) >> light_curve;
-	float light_curve_time_start = atof(argv[8]); // time interval start to calculate the light curve over
-	float light_curve_time_stop = atof(argv[9]); // time interval stop to calculate the light curve over
-	float light_curve_energy_min = atof(argv[10]); // energy interval min to calculate the light curve over
-	float light_curve_energy_max = atof(argv[11]); // energy interval max to calculate the light curve over
+	float light_curve_time_start = atof(argv[7]); // time interval start to calculate the light curve over
+	float light_curve_time_stop = atof(argv[8]); // time interval stop to calculate the light curve over
+	float light_curve_energy_min = atof(argv[9]); // energy interval min to calculate the light curve over
+	float light_curve_energy_max = atof(argv[10]); // energy interval max to calculate the light curve over
 	bool time_log_scale; // indicates whether the time axis should be generated in linear space (False) or log space (True)
-	istringstream(argv[12]) >> time_log_scale;
-	float time_step = atof(argv[13]); // the time step along the time axis
+	istringstream(argv[11]) >> time_log_scale;
+	float time_step = atof(argv[12]); // the time step along the time axis
 	bool spectra; // indicates whether to calculate spectra
-	istringstream(argv[14]) >> spectra;
-	float spectra_energy_min = atof(argv[15]); // energy interval min to calculate the spectra over
-	float spectra_energy_max = atof(argv[16]); // energy interval max to calculate the spectra over
-	int num_energy_bins = atoi(argv[17]); // number of energy bins along the energy axis
-	int num_spectra = atoi(argv[18]); // number of spectra to be created
+	istringstream(argv[13]) >> spectra;
+	float spectra_energy_min = atof(argv[14]); // energy interval min to calculate the spectra over
+	float spectra_energy_max = atof(argv[15]); // energy interval max to calculate the spectra over
+	int num_energy_bins = atoi(argv[16]); // number of energy bins along the energy axis
+	int num_spectra = atoi(argv[17]); // number of spectra to be created
 	bool inc_comps; // indicates whether to record the separate emission components that compose the generated spectra or light curves
-	istringstream(argv[19]) >> inc_comps;
+	istringstream(argv[18]) >> inc_comps;
 
 	float spectra_time_start = 0.; // time interval start to calculate the spectra over
 	float spectra_time_stop = 0.; // time interval stop to calculate the spectra over
@@ -97,7 +97,7 @@ int main(int argc, char const *argv[])
 
 			// Total spectrum
 			synth_grb.make_source_spectrum(spectra_energy_min, spectra_energy_max, num_energy_bins, spectra_time_start, spectra_time_stop);
-			synth_grb.WriteSpectrumToTXT(save_dir+"synthGRB_spec_TOT.txt");
+			synth_grb.WriteSpectrumToTXT(save_dir+"synthGRB_spec_TOT"+"_"+std::to_string(i)+".txt");
 		}
 	}
 
@@ -128,7 +128,7 @@ int main(int argc, char const *argv[])
 				for(int j = 0; j < 4; ++j)
 				{
 					synth_grb.make_source_spectrum(spectra_energy_min, spectra_energy_max, num_energy_bins, spectra_time_start, spectra_time_stop, comp[j]);
-					synth_grb.WriteSpectrumToTXT(save_dir+"synthGRB_spec_"+comp[j]+".txt");
+					synth_grb.WriteSpectrumToTXT(save_dir+"synthGRB_spec_"+comp[j]+"_"+std::to_string(i)+".txt");
 				}
 			}
 		}
