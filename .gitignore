@@ -17,3 +17,6 @@ packages_simulations/*.o
 *.out
 *.fdb_latexmk
 *.synctex.gz
+
+# Ignore annoying MacOS meta files 
+*.DS_Store
