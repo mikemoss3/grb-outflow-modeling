@@ -4,7 +4,7 @@ def write_jet_params( tw = 20,dte = 0.001,E_dot_iso = 1e52,
 	theta = 0.1,r_open = 1e6,eps_th = 0.03,sigma = 0.1,
 	eps_e_int = 0.3,eps_b_int = 0.3,zeta_int = 0.001,p_int = 2.2,
 	eps_e_ext = 0.1,eps_b_ext = 1e-4,zeta_ext = 1,p_ext = 2.2,
-	k = 0,rho_not = 1.672e-24 ):
+	k = 0,rho_not = 1.672e-24):
 	"""
 	Method to write the jet parameter file that is used as an input file for the GRB outflow simulation code.
 

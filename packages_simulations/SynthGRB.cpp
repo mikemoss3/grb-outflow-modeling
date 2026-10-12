@@ -2261,10 +2261,10 @@ double SynthGRB::_calc_pulse_profile_factor(float t_a, float del_t_a, float t_lo
 	}
 
 	// Evaluating lower bound 
-	double bound_low = 1./pow(t_low - t_a + del_t_a,2.);
+	double bound_low = 1./pow(t_low - t_a + del_t_a, 2.);
 
 	// Evaluating upper bound
-	double bound_hi = 1./pow(t_hi - t_a + del_t_a,2.);
+	double bound_hi = 1./pow(t_hi - t_a + del_t_a, 2.);
 
 	// Analytical integral of Equation 5 in Genet et al 2007
 	double pulse_profile_factor = - pow(del_t_a,3.) * (bound_hi - bound_low);
