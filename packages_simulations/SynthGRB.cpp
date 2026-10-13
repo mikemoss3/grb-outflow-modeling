@@ -15,7 +15,7 @@ SynthGRB class which holds and interfaces LightCurve, Spectrum, and Response obj
 #include <vector>
 #include <iterator>
 #include <sstream>
-#include "fitsio.h"
+#include <cfitsio/fitsio.h>
 
 // Import Custom Libraries
 #include "cosmology.hpp"

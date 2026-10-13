@@ -14,7 +14,7 @@ Definitions of the Response class
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include "fitsio.h"
+#include <cfitsio/fitsio.h>
 
 using namespace std;
 

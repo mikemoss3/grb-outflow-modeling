@@ -19,7 +19,7 @@ The light curve calculation is done in light_curve_funcs.cpp and the spectrum ca
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include "fitsio.h"
+#include <cfitsio/fitsio.h>
 
 // Import Custom Libraries
 #include "cosmology.hpp"

@@ -20,7 +20,7 @@ Header file for the Spectrum.hpp class
 #include <vector>
 #include <sstream>
 #include <random>
-#include "fitsio.h"
+#include <cfitsio/fitsio.h>
 
 // Import Custom Libraries
 

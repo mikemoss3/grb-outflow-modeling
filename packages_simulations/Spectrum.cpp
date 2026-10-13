@@ -17,7 +17,7 @@ This script calls methods from spectrum_funcs.cpp to calculate the spectrum of t
 #include <vector>
 #include <sstream>
 #include <random>
-#include "fitsio.h"
+#include <cfitsio/fitsio.h>
 
 
 // Import Custom Libraries

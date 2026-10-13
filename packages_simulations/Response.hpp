@@ -19,7 +19,7 @@ Header file for the Response.hpp class
 #include <fstream>
 #include <vector>
 #include <sstream>
-#include "fitsio.h"
+#include <cfitsio/fitsio.h>
 
 // Import Custom Libraries
 #include "Spectrum.hpp"
