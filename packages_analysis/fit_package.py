@@ -2,7 +2,7 @@ import numpy as np
 from astropy.modeling import fitting
 from collections import defaultdict
 from asymmetric_uncertainty import UncertaintyArray, neg_errors, pos_errors
-import corner
+# import corner
 
 from packages_analysis.model_package import *
 from packages_analysis.data_package import *
@@ -117,8 +117,9 @@ class FittedModel(object):
 		self.set_param_uncs()
 
 		# Make a corner plot if desired
-		if ret_corner is True:
-			corn_plot = corner.corner(distarr, labels=model.param_names, show_titles=True, title_fmt='.3f', truths=model.parameters)
+		corn_plot = None
+		# if ret_corner is True:
+			# corn_plot = corner.corner(distarr, labels=model.param_names, show_titles=True, title_fmt='.3f', truths=model.parameters)
 
 		# Print out likelihood regions and best fit parameters if desired
 		if verbose == True:

@@ -695,8 +695,9 @@ void SynthGRB::SimulateJetDynamics()
 			T_phot.at(i) = T0*Phi; // K, Equation 7 in Hascoet 2013, observed temperature ( not corrected for 1+z )
 
 			// Luminosity at photosphere, from equation 8 in Hascoet 2013
-			L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * Phi; // erg/s, beamed
+			// L_phot.at(i) = (pow((*p_model_params).theta,2.) / 4.) * E_dot_therm * Phi; // erg/s, beamed
 			// L_phot.at(i) = E_dot_therm * Phi; // erg/s, isotropic
+			L_phot.at(i) = E_dot_therm * Phi * delt_therm.at(i); // erg, isotropic
 			// L_phot.at(i) = pow((*p_jet_shells).shell_gamma.at(i),8./3.) * (*p_model_params).eps_th * pow(c_cm,2.) * pow(E_dot,1./3.) * pow(8.*M_PI*(*p_model_params).r_open/ kappa_T /(*p_model_params).theta,2./3.); // erg/s, isotropic
 
 			// Record which shell is producing this thermal emission
@@ -1577,7 +1578,7 @@ void SynthGRB::make_source_spectrum(float energ_min, float energ_max, int num_en
 // Calls function to calculate the thermal spectrum rate for each energy bin
 void SynthGRB::MakeThermalSpec(Spectrum * therm_spectrum, float tmin, float tmax)
 {
-	float num = 0;
+	// float num = 0;
 	// For each thermal emission event, calculate the emitted spectrum
 	for(size_t i=0; i < te_therm.size(); ++i)
 	{
@@ -1591,7 +1592,7 @@ void SynthGRB::MakeThermalSpec(Spectrum * therm_spectrum, float tmin, float tmax
 
 			// Call function to calculate thermal spectrum rate
 			CalcThermalContribution(therm_spectrum, T_phot.at(i),L_phot.at(i));
-			num+=1;
+			// num+=1;
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum.
 	}
@@ -1623,6 +1624,8 @@ void SynthGRB::CalcThermalContribution(Spectrum * therm_spectrum, float temp, do
 		// else: don't contribute to the normalization
 
 	}
+
+	cout << norm << endl;
 
 	// Calculate the rate of the thermal spectrum
 	double tmp_val=0.; // Temporary value to store spectrum contributions

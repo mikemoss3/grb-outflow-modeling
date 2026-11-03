@@ -15,5 +15,5 @@
 2.2
 0
 1.672e-24
-fred_inject
+osci
 ./packages_simulations/files-input/lor-prof-params.txt
