@@ -302,10 +302,16 @@ double Synchrotron(float energy,  double * param_list)
     float p = param_list[2];
     double B = param_list[3];
     float Gamma = param_list[4];
-    double norm = param_list[5];
+    float Y = param_list[5];
+    double norm = param_list[4];
 
-    float en_c = h_planck_kev*nu_c;
-    float en_m = h_planck_kev*nu_m;
+    float en_c = h_planck_kev*nu_c*Gamma;
+    float en_m = h_planck_kev*nu_m*Gamma;
+    
+    float nu_max = 9. * pow(qe, 2.) / (2. * sigma_T * me * c_cm * (1.+Y));
+    // keV, Max Synchrotron energy. Found by equating synch acceleration time scale to synch cooling timescale.
+    float en_max = nu_max * h_planck_kev * Gamma;
+
 
     double synch_norm_factors = 0;
 
@@ -327,7 +333,7 @@ double Synchrotron(float energy,  double * param_list)
         pow_upper_branch = pow(energy/en_c,-p/2.) * (1./2.) * synch_norm_factors * pow(nu_c/nu_m,-(p-1.)/2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_c)) ;
         
         // Return average power
-        return (pow_middle_branch + pow_upper_branch) * pow(energy,-1.);
+        return (pow_middle_branch + pow_upper_branch) * exp(-energy/en_max) * pow(energy,-1.);
     }
     else
     {
@@ -341,7 +347,7 @@ double Synchrotron(float energy,  double * param_list)
         pow_upper_branch = pow(energy/en_m,-p/2.) * (1./2.) * synch_norm_factors * pow(nu_c/nu_m,1./2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_m));
         
         // Return average power
-        return (pow_middle_branch + pow_upper_branch)* pow(energy,-1.);
+        return (pow_middle_branch + pow_upper_branch) * exp(-energy/en_max) * pow(energy,-1.);
     }
 }
 

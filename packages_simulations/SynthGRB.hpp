@@ -132,7 +132,7 @@ public:
 	// Calculate the synchrotron spectrum from the synchrotron energy and flux of the emission
 	void CalcSynchContribution(Spectrum * synch_spectrum, double Esyn, double e_diss, double delt, float nu_c, float nu_m, float p, double B, float Gamma, double profile_factor = 1.);
 	// Synchrotron spectrum function form,
-	double SynchSpec(float energy, double Esyn, float nu_c, float nu_m, float p, double B, float Gamma);
+	double SynchSpec(float energy, float nu_c, float nu_m, float p, double B, float Gamma);
 	// Broken Power Law spectrum function form, Defaults alpha = -1.5, beta = -2.5
 	double BPLSpec(float energy, double esyn, float alpha = -1.5, float beta = -2.5);
 

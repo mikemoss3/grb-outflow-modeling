@@ -17,6 +17,8 @@ SynthGRB class which holds and interfaces LightCurve, Spectrum, and Response obj
 #include <sstream>
 #include <cfitsio/fitsio.h>
 
+#include <iomanip> // For printing higher precision
+
 // Import Custom Libraries
 #include "cosmology.hpp"
 #include "utilfuncs.hpp"
@@ -1071,7 +1073,6 @@ void SynthGRB::SimulateJetDynamics()
 			tmp_nu_c = (18.*M_PI*me*qe*c_cm/pow(sigma_T,2.))/pow(tmp_beq,3.)/pow(tmp_delt,2.);
 			// Calculate nu_m
 			tmp_nu_m = (1./2./M_PI) * pow( ( (*p_model_params).p_int-2.)*(*p_model_params).eps_e_int/((*p_model_params).p_int-1.)/(*p_model_params).zeta_int,2.) * (qe*pow(mp,2.)/pow(me,3.)/pow(c_cm,5.)) * pow(tmp_eps_star,2.) * tmp_beq;
-			
 
 			// Set the Lorentz factor of the merged shells
 			(*p_jet_shells).shell_gamma.at(ind_s_us) = tmp_gamma_r;
@@ -1625,8 +1626,6 @@ void SynthGRB::CalcThermalContribution(Spectrum * therm_spectrum, float temp, do
 
 	}
 
-	cout << norm << endl;
-
 	// Calculate the rate of the thermal spectrum
 	double tmp_val=0.; // Temporary value to store spectrum contributions
 	// For each energy bin along the energy axis
@@ -1763,8 +1762,10 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 	{
 		en_curr = (norm_energy_axis.at(i+1) + norm_energy_axis.at(i) ) / 2.; // Set the current energy
 		// Calculate the contribution according to a Left-Riemann-Sum
-		norm += (norm_energy_axis.at(i+1)-norm_energy_axis.at(i)) * SynchSpec(en_curr, esyn, nu_c, nu_m, p, B, Gamma);
+		norm += (norm_energy_axis.at(i+1)-norm_energy_axis.at(i)) * SynchSpec(en_curr, nu_c, nu_m, p, B, Gamma);
 	}
+
+	cout << std::setprecision (15) << 1./norm << endl;
 
 	// Calculate the rate of the thermal spectrum
 	double tmp_val=0; // Temporary value to store spectrum contributions
@@ -1776,7 +1777,7 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 		// The current temp and energy bin define the count rate, the normalization found above is applied.
 		// This must still be multiplied by the energy dissipated during the emission event.
 		// The energy dissipated can be turned into Flux by dividing the energy dissipated by the observed emission duration (delt).
-		tmp_val = e_diss * profile_factor * SynchSpec(en_curr, esyn, nu_c, nu_m, p, B, Gamma) / norm / delt;
+		tmp_val = e_diss * profile_factor * SynchSpec(en_curr, nu_c, nu_m, p, B, Gamma) / norm;
 		
 		// Add the contribution to the total spectrum according to a Center-Riemann-Sum
 		(*synch_spectrum).spectrum_sum += ((*synch_spectrum).energ_hi.at(i) - (*synch_spectrum).energ_lo.at(i)) * tmp_val;
@@ -1789,10 +1790,10 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Synchrotron spectrum function form,
-double SynthGRB::SynchSpec(float energy, double esyn, float nu_c, float nu_m, float p, double B, float Gamma)
+double SynthGRB::SynchSpec(float energy, float nu_c, float nu_m, float p, double B, float Gamma)
 {
 	// Synchrotron 
-	double param_list[6] = {nu_c*Gamma, nu_m*Gamma, p, B*Gamma, Gamma, 1.};
+	double param_list[6] = {nu_c, nu_m, p, B, Gamma, 1.};
 	return Synchrotron(energy,  param_list);
 }
 

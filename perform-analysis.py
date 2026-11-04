@@ -106,8 +106,7 @@ if __name__ == "__main__":
 
 
 
-	# plot_lor_prof(file_name="files-data/synthetic-data/2026-11-01/synthGRB_shell_dist.txt")
-	# # plot_lor_prof(file_name="synthGRB_shell_dist.txt")
+	# plot_lor_prof(file_name="files-data/synthetic-data/tmp/synthGRB_shell_dist.txt")
 
 	# fn = np.array([
 	# 	"synthGRB_light_curve_IS.txt",
@@ -138,13 +137,19 @@ if __name__ == "__main__":
 	# plot_data_spec(data_inst.spectra['SPECTRUM'][0],ax=ax,color=colors[0],spec_type=2,joined=True)
 	# plot_data_spec(data_inst.spectra['SPECTRUM'][1],ax=ax,color=colors[1],spec_type=2,joined=True)
 	
-	fn_spec = 'files-data/synthetic-data/tmp/synthGRB_spec_TH_0.txt'
+	fig, axes = plt.subplots(2,1, figsize=(5, 8))
+
+	fn_lc = 'files-data/synthetic-data/tmp/synthGRB_light_curve_IS.txt'
+	data_inst = Data()
+	data_inst.load_light_curve(file_name = fn_lc)
+	plot_light_curve(data_inst.light_curve, ax=axes[0])
+
+	fn_spec = 'files-data/synthetic-data/tmp/synthGRB_spec_IS_0.txt'
 	data_inst = Data()
 	data_inst.load_spectrum(fn_spec, 0, 20)
-	ax = plt.figure().gca()
-	plot_data_spec(data_inst.spectra['SPECTRUM'][0], ax=ax, spec_type=2, joined=True)
+	plot_data_spec(data_inst.spectra['SPECTRUM'][0], y_factor=1/20, ax=axes[1], spec_type=2, joined=True)
 
-	ax.set_ylim(1e44, 1e49)
-	ax.set_xlim(8, 4e4)
+	axes[1].set_ylim(1e53, 1e55)
+	axes[1].set_xlim(8, 4e4)
 
 	plt.show()

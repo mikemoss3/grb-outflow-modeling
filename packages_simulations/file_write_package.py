@@ -70,14 +70,14 @@ def write_lor_dis_linear(gamma_start, gamma_end,fluctuate=True):
 	fn_lor_prof = "./packages_simulations/files-input/lor-prof-params.txt"
 
 	file_jet_params = open(fn_jet_params,"a")
-	file_jet_params.write("linear")
-	file_jet_params.write(fn_lor_prof)
+	file_jet_params.write("linear\n")
+	file_jet_params.write(fn_lor_prof+"\n")
 	file_jet_params.close()
 
 	file_lor_prof = open(fn_lor_prof,"w")
-	file_lor_prof.write("{}".format(gamma_start))
-	file_lor_prof.write("{}".format(gamma_end))
-	file_lor_prof.write("{}".format(fluctuate))
+	file_lor_prof.write("{}\n".format(gamma_start))
+	file_lor_prof.write("{}\n".format(gamma_end))
+	file_lor_prof.write("{}\n".format(fluctuate))
 	file_lor_prof.close()
 
 	return 0;
@@ -98,15 +98,15 @@ def write_lor_dis_step(gamma_1,gamma_2,mfrac,fluctuate=True):
 	fn_lor_prof = "./packages_simulations/files-input/lor-prof-params.txt"
 
 	file_jet_params = open(fn_jet_params,"a")
-	file_jet_params.write("osci")
-	file_jet_params.write(fn_lor_prof)
+	file_jet_params.write("step\n")
+	file_jet_params.write(fn_lor_prof+"\n")
 	file_jet_params.close()
 
 	file_lor_prof = open(fn_lor_prof,"w")
-	file_lor_prof.write("{}".format(gamma_1))
-	file_lor_prof.write("{}".format(gamma_2))
-	file_lor_prof.write("{}".format(mfrac))
-	file_lor_prof.write("{}".format(fluctuate))
+	file_lor_prof.write("{}\n".format(gamma_1))
+	file_lor_prof.write("{}\n".format(gamma_2))
+	file_lor_prof.write("{}\n".format(mfrac))
+	file_lor_prof.write("{}\n".format(fluctuate))
 	file_lor_prof.close()
 
 	return 0;
@@ -126,15 +126,15 @@ def write_lor_dis_smoothstep(gamma_1, gamma_2, tfrac, fluctuate = True):
 	fn_lor_prof = "./packages_simulations/files-input/lor-prof-params.txt"
 
 	file_jet_params = open(fn_jet_params,"a")
-	file_jet_params.write("osci")
-	file_jet_params.write(fn_lor_prof)
+	file_jet_params.write("smoothstep\n")
+	file_jet_params.write(fn_lor_prof+"\n")
 	file_jet_params.close()
 
 	file_lor_prof = open(fn_lor_prof,"w")
-	file_lor_prof.write("{}".format(gamma_1))
-	file_lor_prof.write("{}".format(gamma_2))
-	file_lor_prof.write("{}".format(tfrac))
-	file_lor_prof.write("{}".format(fluctuate))
+	file_lor_prof.write("{}\n".format(gamma_1))
+	file_lor_prof.write("{}\n".format(gamma_2))
+	file_lor_prof.write("{}\n".format(tfrac))
+	file_lor_prof.write("{}\n".format(fluctuate))
 	file_lor_prof.close()
 
 	return 0;
@@ -157,7 +157,7 @@ def write_lor_dis_square_inject(num_squares, square_starts, square_durations, sq
 	fn_lor_prof = "./packages_simulations/files-input/lor-prof-params.txt"
 
 	file_jet_params = open(fn_jet_params,"a")
-	file_jet_params.write("osci\n")
+	file_jet_params.write("square_inject\n")
 	file_jet_params.write(fn_lor_prof+"\n")
 	file_jet_params.close()
 
