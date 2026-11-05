@@ -1539,9 +1539,9 @@ void SynthGRB::make_source_spectrum(float energ_min, float energ_max, int num_en
 
 	if(comp.compare("all") == 0)
 	{
-		// MakeThermalSpec(p_source_spectrum, tmin, tmax);
+		MakeThermalSpec(p_source_spectrum, tmin, tmax);
 		MakeISSpec(p_source_spectrum, tmin, tmax);		
-		// MakeExtShockSpec(p_source_spectrum, tmin, tmax);
+		MakeExtShockSpec(p_source_spectrum, tmin, tmax);
 	}
 	else if(comp.compare("TH") == 0)
 	{
@@ -1678,7 +1678,6 @@ void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 				double profile_factor = _calc_pulse_profile_factor(ta_is.at(i), delt_is.at(i), tmin, tmax, (*p_model_params).theta, (te_is.at(i) - ta_is.at(i)));
 
 				// Call function to calculate spectrum count rate, assuming synchrotron emission
-				cout << std::setprecision (15) << ta_is.at(i) << '\t';
 				CalcSynchContribution(intsh_spectrum, esyn_is.at(i),e_diss_is.at(i),delt_is.at(i), nu_c_is.at(i), nu_m_is.at(i), (*p_model_params).p_int, beq_is.at(i), gamma_r_is.at(i), profile_factor);
 			}	
 		}
@@ -1736,7 +1735,6 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 			double profile_factor = _calc_pulse_profile_factor(ta_rs.at(i), delt_rs.at(i), tmin, tmax, (*p_model_params).theta, (te_rs.at(i) - ta_rs.at(i)));
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
-
 			CalcSynchContribution(extsh_spectrum, esyn_rs.at(i),e_diss_rs.at(i),delt_rs.at(i), nu_c_rs.at(i), nu_m_rs.at(i),(*p_model_params).p_int, beq_rs.at(i), gamma_r_rs.at(i), profile_factor);
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum. 
