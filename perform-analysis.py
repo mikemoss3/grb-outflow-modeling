@@ -139,12 +139,12 @@ if __name__ == "__main__":
 	
 	fig, axes = plt.subplots(2,1, figsize=(5, 8))
 
-	fn_lc = 'files-data/synthetic-data/tmp/synthGRB_light_curve_IS.txt'
+	fn_lc = 'files-data/synthetic-data/tmp/synthGRB_light_curve.txt'
 	data_inst = Data()
 	data_inst.load_light_curve(file_name = fn_lc)
 	plot_light_curve(data_inst.light_curve, ax=axes[0])
 
-	fn_spec = 'files-data/synthetic-data/tmp/synthGRB_spec_IS_0.txt'
+	fn_spec = 'files-data/synthetic-data/tmp/synthGRB_spec_TOT_0.txt'
 	data_inst = Data()
 	data_inst.load_spectrum(fn_spec, 0, 20)
 	plot_data_spec(data_inst.spectra['SPECTRUM'][0], y_factor=1/20, ax=axes[1], spec_type=2, joined=True)
