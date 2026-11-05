@@ -303,7 +303,7 @@ double Synchrotron(float energy,  double * param_list)
     double B = param_list[3];
     float Gamma = param_list[4];
     float Y = param_list[5];
-    double norm = param_list[4];
+    double norm = param_list[6];
 
     float en_c = h_planck_kev*nu_c*Gamma;
     float en_m = h_planck_kev*nu_m*Gamma;
@@ -325,12 +325,12 @@ double Synchrotron(float energy,  double * param_list)
     {
         // Slow-cooling
 
-        synch_norm_factors = norm * (p - 1.) * pow( 1. - ( pow(nu_c/nu_m, -(p-1.)/2.) / p ) , -1.) * 3. * pow(3./2.,1./3.) * (pow(qe,3.)*B*Gamma/me/c_cm/c_cm/2.);
+        synch_norm_factors = norm * (p - 1.) * pow( 1. - ( pow(nu_c/nu_m, -(p-1.)/2.) / p ) , -1.) * pow(3./2.,4./3.) * pow(qe,3.)*B*Gamma/me/c_cm/c_cm/2.;
 
         // Calculate power between nu_m and nu_c 
-        pow_middle_branch = pow(energy/en_m,-(p-1.)/2.) * (1./2.) * synch_norm_factors * (gamma_inc(p/2. - 1./6.,energy/en_c) - gamma_inc(p/2. - 1./6.,energy/en_m)) ;
+        pow_middle_branch = pow(energy/en_m,-(p-1.)/2.)  * synch_norm_factors * (gamma_inc(p/2. - 1./6.,energy/en_c) - gamma_inc(p/2. - 1./6.,energy/en_m)) ;
         // Calculate power between nu_c and inf
-        pow_upper_branch = pow(energy/en_c,-p/2.) * (1./2.) * synch_norm_factors * pow(nu_c/nu_m,-(p-1.)/2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_c)) ;
+        pow_upper_branch = pow(energy/en_c,-p/2.) * synch_norm_factors * pow(nu_c/nu_m,-(p-1.)/2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_c)) ;
         
         // Return average power
         return (pow_middle_branch + pow_upper_branch) * exp(-energy/en_max) * pow(energy,-1.);
@@ -339,12 +339,12 @@ double Synchrotron(float energy,  double * param_list)
     {
         // Fast-cooling
 
-        synch_norm_factors = norm * pow( 1. - ( (p-1.) * pow(nu_m/nu_c, -1./2.) / p ) , -1.) * 3. * pow(3./2.,1./3.) * (pow(qe,3.)*B*Gamma/me/c_cm/c_cm);
+        synch_norm_factors = norm * pow( 1. - ( (p-1.) * pow(nu_m/nu_c, -1./2.) / p ) , -1.) * pow(3./2.,4./3.) * pow(qe,3.)*B*Gamma/me/c_cm/c_cm;
 
         // Calculate power between nu_c and nu_m 
-        pow_middle_branch = pow(energy/en_c,-1./2.) * (1./2.) * synch_norm_factors *( gamma_inc(5./6.,energy/en_m) - gamma_inc(5./6.,energy/en_c) );
+        pow_middle_branch = pow(energy/en_c,-1./2.) * synch_norm_factors *( gamma_inc(5./6.,energy/en_m) - gamma_inc(5./6.,energy/en_c) );
         // Calculate power between nu_m and inf
-        pow_upper_branch = pow(energy/en_m,-p/2.) * (1./2.) * synch_norm_factors * pow(nu_c/nu_m,1./2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_m));
+        pow_upper_branch = pow(energy/en_m,-p/2.) * synch_norm_factors * pow(nu_c/nu_m,1./2.) * ( gamma_func(p/2. + 1./3.) - gamma_inc(p/2. + 1./3.,energy/en_m));
         
         // Return average power
         return (pow_middle_branch + pow_upper_branch) * exp(-energy/en_max) * pow(energy,-1.);

@@ -30,18 +30,21 @@ using namespace std;
 int main(int argc, char const *argv[])
 {
 
-	// float en = 150.;
-	float en_c = 200./h_planck_kev;
-	float en_m = 10./h_planck_kev;
+	float en = 25.;
+	float en_c = 1e3/h_planck_kev;
+	float en_m = 0.1/h_planck_kev;
 	float p = 2.2;
-	float B = 1e3;
-	float gamma = 100;
-	float Y = 1.;
+	float B = 2e2;
+	float gamma = 200;
+	float Y = 14.;
 	// float norm = 1.;
 	
-	
-	double e_lo = 1e-3;
-	double e_hi = 1e6;
+	double param_list_1[7] = {en_c, en_m, p, B, gamma, Y, 1.};
+	float val = Synchrotron(en, param_list_1);
+	cout << val << endl;
+
+	double e_lo = 1e-6;
+	double e_hi = 1e8;
 
 	int norm_num_bin= 200.*log10(e_hi/e_lo); // Number of energy bins to use to calculate normalization
 	std::vector<float> norm_energy_axis(norm_num_bin+1); // Make vector to store energy axis (initialized to zero's) 
@@ -56,7 +59,6 @@ int main(int argc, char const *argv[])
 	{
 		norm_energy_axis.at(i) = pow( 10., log_emin + (i*log_de));
 	}
-
 
 	float en_curr=0.; // Current energy to evaluate the addition to the normalization
 	double norm = 0.; // Set normalization to zero

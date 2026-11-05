@@ -1539,9 +1539,9 @@ void SynthGRB::make_source_spectrum(float energ_min, float energ_max, int num_en
 
 	if(comp.compare("all") == 0)
 	{
-		MakeThermalSpec(p_source_spectrum, tmin, tmax);
+		// MakeThermalSpec(p_source_spectrum, tmin, tmax);
 		MakeISSpec(p_source_spectrum, tmin, tmax);		
-		MakeExtShockSpec(p_source_spectrum, tmin, tmax);
+		// MakeExtShockSpec(p_source_spectrum, tmin, tmax);
 	}
 	else if(comp.compare("TH") == 0)
 	{
@@ -1589,7 +1589,6 @@ void SynthGRB::MakeThermalSpec(Spectrum * therm_spectrum, float tmin, float tmax
 		{
 			// Integrated emission profile factor
 			// double profile_factor = _calc_pulse_profile_factor(ta_therm.at(i), delt_therm.at(i), tmin, tmax, (*p_model_params).theta, (te_therm.at(i) - ta_therm.at(i)));
-
 
 			// Call function to calculate thermal spectrum rate
 			CalcThermalContribution(therm_spectrum, T_phot.at(i),L_phot.at(i));
@@ -1679,6 +1678,7 @@ void SynthGRB::MakeISSpec(Spectrum * intsh_spectrum, float tmin, float tmax)
 				double profile_factor = _calc_pulse_profile_factor(ta_is.at(i), delt_is.at(i), tmin, tmax, (*p_model_params).theta, (te_is.at(i) - ta_is.at(i)));
 
 				// Call function to calculate spectrum count rate, assuming synchrotron emission
+				cout << std::setprecision (15) << ta_is.at(i) << '\t';
 				CalcSynchContribution(intsh_spectrum, esyn_is.at(i),e_diss_is.at(i),delt_is.at(i), nu_c_is.at(i), nu_m_is.at(i), (*p_model_params).p_int, beq_is.at(i), gamma_r_is.at(i), profile_factor);
 			}	
 		}
@@ -1736,6 +1736,7 @@ void SynthGRB::MakeRSSpec(Spectrum * extsh_spectrum, float tmin, float tmax)
 			double profile_factor = _calc_pulse_profile_factor(ta_rs.at(i), delt_rs.at(i), tmin, tmax, (*p_model_params).theta, (te_rs.at(i) - ta_rs.at(i)));
 
 			// Call function to calculate spectrum count rate, assuming synchrotron emission
+
 			CalcSynchContribution(extsh_spectrum, esyn_rs.at(i),e_diss_rs.at(i),delt_rs.at(i), nu_c_rs.at(i), nu_m_rs.at(i),(*p_model_params).p_int, beq_rs.at(i), gamma_r_rs.at(i), profile_factor);
 		}
 		// Else, if this emission occurred outside of the time interval, don't add it to the spectrum. 
@@ -1765,8 +1766,6 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 		norm += (norm_energy_axis.at(i+1)-norm_energy_axis.at(i)) * SynchSpec(en_curr, nu_c, nu_m, p, B, Gamma);
 	}
 
-	cout << std::setprecision (15) << 1./norm << endl;
-
 	// Calculate the rate of the thermal spectrum
 	double tmp_val=0; // Temporary value to store spectrum contributions
 	// For each energy bin along the energy axis
@@ -1793,7 +1792,7 @@ void SynthGRB::CalcSynchContribution(Spectrum * synch_spectrum, double esyn, dou
 double SynthGRB::SynchSpec(float energy, float nu_c, float nu_m, float p, double B, float Gamma)
 {
 	// Synchrotron 
-	double param_list[6] = {nu_c, nu_m, p, B, Gamma, 1.};
+	double param_list[7] = {nu_c, nu_m, p, B, Gamma, 1., 1.};
 	return Synchrotron(energy,  param_list);
 }
 
